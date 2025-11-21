@@ -1,0 +1,298 @@
+---
+name: Inspect AI Scheduled Tests
+
+"on":
+  schedule:
+    # Run every 2 hours
+    - cron: "0 */2 * * *"
+  push:
+    branches:
+      - "**" # Run on all branches for testing
+    # This is valuable during action development cycle
+  workflow_dispatch:
+    inputs:
+      run_slow_tests:
+        description: "Run slow tests"
+        required: false
+        default: true
+        type: boolean
+      test_slack_access:
+        description: "Test Slack channel access"
+        required: false
+        default: false
+        type: boolean
+      inspect_ai_ref:
+        description: "inspect_ai branch/tag/commit to checkout"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  slow-tests:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'push' || inputs.run_slow_tests }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Critical: Setup modern Docker build system
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: latest
+          driver-opts: |
+            network=host
+          buildkitd-flags: |
+            --allow-insecure-entitlement security.insecure
+            --allow-insecure-entitlement network.host
+
+      - name: Download last tested inspect_ai SHA artifact from previous run
+        id: download_artifact
+        run: |
+          # Find the most recent successful run that actually has the artifact
+          echo "Searching for a successful run with the 'last-inspect-ai-sha' artifact..."
+
+          # Get successful runs and check each one for the artifact
+          RUN_ID=""
+          for run_id in $(gh api repos/${{ github.repository }}/actions/workflows/inspect-ai-scheduled-tests.yml/runs \
+            --jq '.workflow_runs[] | select(.conclusion == "success") | .id' | head -10); do
+            
+            echo "Checking run $run_id for artifacts..."
+            artifact_count=$(gh api repos/${{ github.repository }}/actions/runs/$run_id/artifacts \
+              --jq '.artifacts[] | select(.name == "last-inspect-ai-sha") | .name' | wc -l)
+            
+            if [ "$artifact_count" -gt 0 ]; then
+              RUN_ID=$run_id
+              echo "Found run with artifact: $RUN_ID"
+              break
+            fi
+          done
+
+          if [ -n "$RUN_ID" ]; then
+            # Create directory for artifact
+            mkdir -p .last-inspect-ai-sha
+            
+            # Download the artifact from the actions repository (where this workflow runs)
+            if gh run download $RUN_ID --name last-inspect-ai-sha --dir .last-inspect-ai-sha --repo ${{ github.repository }}; then
+              echo "Successfully downloaded artifact from run $RUN_ID"
+              
+              # Read the SHA immediately and store it as output (before checkout wipes it)
+              if [ -f ".last-inspect-ai-sha/last_sha.txt" ]; then
+                last_sha=$(cat ".last-inspect-ai-sha/last_sha.txt")
+                echo "last_sha=$last_sha" >> $GITHUB_OUTPUT
+                echo "Found previously tested commit: $last_sha (from run $RUN_ID)"
+              else
+                echo "last_sha=" >> $GITHUB_OUTPUT
+                echo "Downloaded artifact but could not find last_sha.txt file"
+              fi
+            else
+              echo "last_sha=" >> $GITHUB_OUTPUT
+              echo "Artifact download failed for run $RUN_ID"
+            fi
+          else
+            echo "last_sha=" >> $GITHUB_OUTPUT
+            echo "No previous successful runs with artifacts found"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Checkout inspect_ai repository
+        uses: actions/checkout@v4
+        with:
+          repository: UKGovernmentBEIS/inspect_ai
+          ref: ${{ inputs.inspect_ai_ref || '' }}
+
+      - name: Get inspect_ai commit info
+        id: inspect_commit
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "ref=${{ inputs.inspect_ai_ref || 'main' }}" >> $GITHUB_OUTPUT
+
+      - name: Check if commit was already tested
+        id: check_commit_artifact
+        run: |
+          current_sha="${{ steps.inspect_commit.outputs.sha }}"
+          last_sha="${{ steps.download_artifact.outputs.last_sha }}"
+
+          echo "Current commit: $current_sha"
+
+          if [ -n "$last_sha" ]; then
+            echo "Found previously tested commit: $last_sha"
+            if [ "$current_sha" = "$last_sha" ]; then
+              echo "skip_tests=true" >> $GITHUB_OUTPUT
+              echo "Commit $current_sha was already tested successfully, skipping"
+              exit 0
+            else
+              echo "Current commit $current_sha differs from last tested commit $last_sha"
+            fi
+          else
+            echo "No previous artifact found or could not read commit SHA"
+          fi
+          echo "skip_tests=false" >> $GITHUB_OUTPUT
+          echo "Proceeding with tests for commit $current_sha"
+
+      - name: Skip notification
+        if: github.event_name == 'schedule' && (steps.check_commit_artifact.outputs.skip_tests == 'true')
+        run: |
+          echo "🔄 Skipping tests - no changes detected in inspect_ai repository"
+          echo "Last tested commit: ${{ steps.inspect_commit.outputs.sha }}"
+          echo "Current commit: ${{ steps.inspect_commit.outputs.sha }}"
+
+      - name: Set up Python
+        if: steps.check_commit_artifact.outputs.skip_tests != 'true'
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        if: steps.check_commit_artifact.outputs.skip_tests != 'true'
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/setup.py', '**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Cache built wheels
+        if: steps.check_commit_artifact.outputs.skip_tests != 'true'
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip/wheels
+          key: ${{ runner.os }}-wheels-${{ hashFiles('**/pyproject.toml', '**/setup.py', '**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-wheels-
+
+      - name: Install dependencies
+        if: steps.check_commit_artifact.outputs.skip_tests != 'true'
+        # -e is required so that the tests can find dependent media files
+        # that are not part of the package.
+        run: |
+          python -m pip install --upgrade pip
+          # Install inspect_ai with development dependencies for testing
+          pip install --only-binary=all -e ".[dev]"
+
+      - name: Run slow tests
+        if: steps.check_commit_artifact.outputs.skip_tests != 'true'
+        timeout-minutes: 180
+        env:
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_PROGRESS: plain
+          BUILDX_CACHE_FROM: type=local,src=/tmp/.buildx-cache
+          BUILDX_CACHE_TO: type=local,dest=/tmp/.buildx-cache,mode=max
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+        run: |
+          echo "Running slow tests with --runslow flag..."
+          pytest --runslow -m slow --runapi -m api --ignore=tests/agent/test_agent_human.py -k "not test_mcp_sampling_fn"
+
+      - name: Save tested inspect_ai SHA as artifact
+        if: success() && github.event_name == 'schedule'
+        run: |
+          mkdir -p .last-inspect-ai-sha
+          echo "${{ steps.inspect_commit.outputs.sha }}" > .last-inspect-ai-sha/last_sha.txt
+
+      - name: Upload tested SHA artifact
+        if: success() && github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-inspect-ai-sha
+          path: .last-inspect-ai-sha/last_sha.txt
+
+      - name: Report test results to Slack
+        if: always() && steps.inspect_commit.outputs.ref == 'main' && steps.check_commit_artifact.outputs.skip_tests != 'true' && job.status != 'cancelled'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅ Slow Tests Passed' || '🚨 Slow Tests Failed' }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ job.status == 'success' && '✅ Slow Tests Passed' || '🚨 Slow Tests Failed' }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn", 
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Trigger:*\n${{ github.event_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Tested:*\n<https://github.com/UKGovernmentBEIS/inspect_ai/commit/${{ steps.inspect_commit.outputs.sha }}|inspect_ai@${{ steps.inspect_commit.outputs.ref }}#${{ steps.inspect_commit.outputs.short_sha }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ job.status == 'failure' && '<!channel> The slow tests have failed. Please investigate.' || 'All tests completed successfully! 🎉' }}"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Actor: ${{ github.actor }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Cleanup Docker resources
+        if: always()
+        run: |
+          docker system prune -f
+          docker volume prune -f
+
+  test-slack-access:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_slack_access }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test Slack Channel Access
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: |
+            🧪 **Slack Integration Test**
+
+            This is a test message to verify GitHub Actions can successfully post to this Slack channel.
+
+            • Repository: ${{ github.repository }}
+            • Branch: ${{ github.ref_name }}  
+            • Actor: ${{ github.actor }}
+            • Run ID: ${{ github.run_id }}
+
+            If you see this message, the integration is working correctly! ✅
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Test Result
+        run: |
+          echo "✅ Slack channel access test completed successfully!"
+          echo "Check your Slack channel for the test message."
