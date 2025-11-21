@@ -24,122 +24,21 @@ jobs:
       TRACE_DOCKER_BUILDS: yes
       SLOW_TEST_THRESHOLD: 10.0  # seconds
     steps:
-      # Critical: Setup modern Docker build system
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: latest
-          driver-opts: |
-            network=host
-          buildkitd-flags: |
-            --allow-insecure-entitlement security.insecure
-            --allow-insecure-entitlement network.host
-
-      - name: Download last tested inspect_evals SHA artifact from previous run
-        id: download_artifact
-        run: |
-          # Find the most recent successful run that actually has the artifact
-          echo "Searching for a successful run with the 'last-inspect-evals-sha' artifact..."
-
-          # Get successful runs and check each one for the artifact
-          RUN_ID=""
-          for run_id in $(gh api repos/${{ github.repository }}/actions/workflows/run-heavy-tests.yml/runs \
-            --jq '.workflow_runs[] | select(.conclusion == "success") | .id' | head -10); do
-
-            echo "Checking run $run_id for artifacts..."
-            artifact_count=$(gh api repos/${{ github.repository }}/actions/runs/$run_id/artifacts \
-              --jq '.artifacts[] | select(.name == "last-inspect-evals-sha") | .name' | wc -l)
-
-            if [ "$artifact_count" -gt 0 ]; then
-              RUN_ID=$run_id
-              echo "Found run with artifact: $RUN_ID"
-              break
-            fi
-          done
-
-          if [ -n "$RUN_ID" ]; then
-            # Create directory for artifact
-            mkdir -p .last-inspect-evals-sha
-
-            # Download the artifact from the actions repository (where this workflow runs)
-            if gh run download $RUN_ID --name last-inspect-evals-sha --dir .last-inspect-evals-sha --repo ${{ github.repository }}; then
-              echo "Successfully downloaded artifact from run $RUN_ID"
-
-              # Read the SHA immediately and store it as output (before checkout wipes it)
-              if [ -f ".last-inspect-evals-sha/last_sha.txt" ]; then
-                last_sha=$(cat ".last-inspect-evals-sha/last_sha.txt")
-                echo "last_sha=$last_sha" >> $GITHUB_OUTPUT
-                echo "Found previously tested commit: $last_sha (from run $RUN_ID)"
-              else
-                echo "last_sha=" >> $GITHUB_OUTPUT
-                echo "Downloaded artifact but could not find last_sha.txt file"
-              fi
-            else
-              echo "last_sha=" >> $GITHUB_OUTPUT
-              echo "Artifact download failed for run $RUN_ID"
-            fi
-          else
-            echo "last_sha=" >> $GITHUB_OUTPUT
-            echo "No previous successful runs with artifacts found"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
       - name: Checkout inspect_evals repository
         uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ inputs.inspect_evals_ref || '' }}
 
-      - name: Get inspect_evals commit info
-        id: inspect_commit
-        run: |
-          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "ref=${{ inputs.inspect_evals_ref || 'main' }}" >> $GITHUB_OUTPUT
-
-      - name: Check if commit was already tested
-        id: check_commit
-        run: |
-          current_sha="${{ steps.inspect_commit.outputs.sha }}"
-          last_sha="${{ steps.download_artifact.outputs.last_sha }}"
-
-          echo "Current commit: $current_sha"
-
-          if [ -n "$last_sha" ]; then
-            echo "Found previously tested commit: $last_sha"
-            if [ "$current_sha" = "$last_sha" ]; then
-              echo "skip_tests=true" >> $GITHUB_OUTPUT
-              echo "Commit $current_sha was already tested successfully, skipping"
-              exit 0
-            else
-              echo "Current commit $current_sha differs from last tested commit $last_sha"
-            fi
-          else
-            echo "No previous artifact found or could not read commit SHA"
-          fi
-          echo "skip_tests=false" >> $GITHUB_OUTPUT
-          echo "Proceeding with tests for commit $current_sha"
-
-      - name: Skip notification
-        if: github.event_name == 'schedule' && (steps.check_commit.outputs.skip_tests == 'true')
-        run: |
-          echo "🔄 Skipping tests - no changes detected in inspect_evals repository"
-          echo "Last tested commit: ${{ steps.inspect_commit.outputs.sha }}"
-
       - name: Set up Python 3.11
-        if: steps.check_commit.outputs.skip_tests != 'true'
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Install uv
-        if: steps.check_commit.outputs.skip_tests != 'true'
         uses: astral-sh/setup-uv@v6
 
       - name: Cache uv downloads
-        if: steps.check_commit.outputs.skip_tests != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -150,20 +49,16 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
-        if: steps.check_commit.outputs.skip_tests != 'true'
         run: |
           uv sync --frozen --extra test
 
       - name: Run full test suite with report log
-        if: steps.check_commit.outputs.skip_tests != 'true'
         run: |
-          uv run pytest -rA --color=yes --cov=inspect_evals \
+          uv run pytest -rA --color=yes \
             --durations=0 \
             --report-log=pytest-report.jsonl \
-            -n auto \
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
-        if: steps.check_commit.outputs.skip_tests != 'true'
         run: |
           uv run python - <<'PY'
           import json, sys, os
@@ -203,7 +98,6 @@ jobs:
           PY
 
       - name: Detect tests using Docker that are missing @pytest.mark.docker
-        if: steps.check_commit.outputs.skip_tests != 'true'
         run: |
           uv run python - <<'PY'
           import json, sys, os
@@ -257,7 +151,7 @@ jobs:
           PY
 
       - name: Upload timing reports
-        if: always() && steps.check_commit.outputs.skip_tests != 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: heavy-test-reports
@@ -267,22 +161,3 @@ jobs:
             .docker_build_tests.txt
             .docker_compose_tests.txt
             unmarked_docker_tests.txt
-
-      - name: Save tested inspect_evals SHA as artifact
-        if: success() && github.event_name == 'schedule'
-        run: |
-          mkdir -p .last-inspect-evals-sha
-          echo "${{ steps.inspect_commit.outputs.sha }}" > .last-inspect-evals-sha/last_sha.txt
-
-      - name: Upload tested SHA artifact
-        if: success() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@v4
-        with:
-          name: last-inspect-evals-sha
-          path: .last-inspect-evals-sha/last_sha.txt
-
-      - name: Cleanup Docker resources
-        if: always()
-        run: |
-          docker system prune -f
-          docker volume prune -f
