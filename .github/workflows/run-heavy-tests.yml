@@ -1,6 +1,7 @@
+---
 name: Heavy Tests
 
-on:
+"on":
   workflow_dispatch:
     inputs:
       inspect_evals_ref:
