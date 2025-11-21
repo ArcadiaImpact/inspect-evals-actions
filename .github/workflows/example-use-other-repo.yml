@@ -2,13 +2,6 @@
 name: Inspect AI Scheduled Tests
 
 "on":
-  schedule:
-    # Run every 2 hours
-    - cron: "0 */2 * * *"
-  push:
-    branches:
-      - "**" # Run on all branches for testing
-    # This is valuable during action development cycle
   workflow_dispatch:
     inputs:
       run_slow_tests:
