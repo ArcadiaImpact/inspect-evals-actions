@@ -161,7 +161,6 @@ jobs:
             --durations=0 \
             --report-log=pytest-report.jsonl \
             -n auto \
-            --timeout=900
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
         if: steps.check_commit.outputs.skip_tests != 'true'
