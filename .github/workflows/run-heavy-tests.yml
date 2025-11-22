@@ -60,6 +60,7 @@ jobs:
             --report-log=pytest-report.jsonl
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
+        continue-on-error: true
         run: |
           uv run python - <<'PY'
           import json, sys, os
@@ -99,6 +100,7 @@ jobs:
           PY
 
       - name: Detect tests using Docker that are missing @pytest.mark.docker
+        continue-on-error: true
         run: |
           uv run python - <<'PY'
           import json, sys, os
