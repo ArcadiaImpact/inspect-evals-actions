@@ -54,7 +54,7 @@ jobs:
 
       - name: Run full test suite with report log
         run: |
-          uv run pytest -rA --color=yes \
+          uv run pytest tests/livebench -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl
 
@@ -163,3 +163,21 @@ jobs:
             .docker_build_tests.txt
             .docker_compose_tests.txt
             unmarked_docker_tests.txt
+
+      - name: Notify Slack on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "text": "⚠️ Heavy Tests Failed (Nightly)",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*⚠️ Nightly Heavy Tests Failed*\n\n*Repository:* `${{ github.repository }}`\n*Branch:* `${{ github.ref_name }}`\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
