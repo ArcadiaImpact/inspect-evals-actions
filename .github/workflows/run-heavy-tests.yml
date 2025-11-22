@@ -53,6 +53,7 @@ jobs:
           uv sync --frozen --extra test
 
       - name: Run full test suite with report log
+        id: tests
         run: |
           uv run pytest tests/livebench -rA --color=yes \
             --durations=20 \
@@ -165,7 +166,7 @@ jobs:
             unmarked_docker_tests.txt
 
       - name: Notify Slack on scheduled failure
-        if: failure()
+        if: ${{ always() && steps.tests.outcome == 'failure' }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data '{
