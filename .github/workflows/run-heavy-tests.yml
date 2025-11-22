@@ -165,7 +165,7 @@ jobs:
             unmarked_docker_tests.txt
 
       - name: Notify Slack on scheduled failure
-        if: failure() && github.event_name == 'schedule'
+        if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data '{
