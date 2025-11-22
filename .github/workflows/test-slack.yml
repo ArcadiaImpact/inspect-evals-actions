@@ -1,0 +1,261 @@
+name: Test Slack Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      inspect_evals_ref:
+        description: "inspect_evals branch/tag/commit to checkout"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  test-slack-notification:
+    name: Test Slack notification format
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 30
+    env:
+      HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+      RUN_SLOW_TESTS: yes
+      RUN_DATASET_DOWNLOAD_TESTS: yes
+      TRACE_DOCKER_BUILDS: yes
+      SLOW_TEST_THRESHOLD: 10.0
+    steps:
+      - name: Checkout inspect_evals repository
+        uses: actions/checkout@v5
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ inputs.inspect_evals_ref || '' }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Cache uv downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.11-${{ hashFiles('**/uv.lock', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.11-
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --extra test
+
+      - name: Run livebench tests only
+        continue-on-error: true
+        run: |
+          uv run pytest tests/livebench -rA --color=yes \
+            --durations=20 \
+            --report-log=pytest-report.jsonl
+
+      - name: Detect tests >=10s that are missing @pytest.mark.slow
+        continue-on-error: true
+        run: |
+          uv run python - <<'PY'
+          import json, sys, os
+          THRESHOLD = float(os.environ.get('SLOW_TEST_THRESHOLD', '10.0'))
+          report = 'pytest-report.jsonl'
+          offenders = []
+          with open(report, 'r') as f:
+              for line in f:
+                  try:
+                      obj = json.loads(line)
+                  except Exception:
+                      continue
+                  if obj.get('$report_type') != 'TestReport':
+                      continue
+                  if obj.get('when') != 'call':
+                      continue
+                  if obj.get('outcome') == 'skipped':
+                      continue
+                  dur = float(obj.get('duration') or 0.0)
+                  kw = obj.get('keywords') or {}
+                  is_slow = 'slow' in kw
+                  if dur >= THRESHOLD and not is_slow:
+                      offenders.append((dur, obj.get('nodeid', '<unknown>')))
+          offenders.sort(reverse=True)
+          with open('unmarked_slow_tests.txt', 'w') as out:
+              for dur, nodeid in offenders:
+                  out.write(f"{dur:.2f}s\t{nodeid}\n")
+          if offenders:
+              print('\nFound tests taking >= 10s without @pytest.mark.slow:')
+              for dur, nodeid in offenders:
+                  print(f" - {dur:.2f}s  {nodeid}")
+              sys.exit(1)
+          else:
+              print('No unmarked slow tests found (>= 10s).')
+          PY
+
+      - name: Detect tests using Docker that are missing @pytest.mark.docker
+        continue-on-error: true
+        run: |
+          uv run python - <<'PY'
+          import json, sys, os
+          build_file = '.docker_build_tests.txt'
+          compose_file = '.docker_compose_tests.txt'
+          used = set()
+          for path in (build_file, compose_file):
+              if os.path.exists(path):
+                  with open(path, 'r') as f:
+                      for line in f:
+                          nodeid = line.strip()
+                          if nodeid:
+                              used.add(nodeid)
+          if not used:
+              print('No docker usage detected (or trace files empty); skipping docker marker check.')
+              sys.exit(0)
+          report = 'pytest-report.jsonl'
+          keywords = {}
+          try:
+              with open(report, 'r') as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                      except Exception:
+                          continue
+                      if obj.get('$report_type') != 'TestReport':
+                          continue
+                      if obj.get('when') != 'call':
+                          continue
+                      if obj.get('outcome') == 'skipped':
+                          continue
+                      nodeid = obj.get('nodeid')
+                      if nodeid:
+                          keywords[nodeid] = obj.get('keywords') or {}
+          except FileNotFoundError:
+              print('pytest-report.jsonl not found; cannot verify docker markers.')
+              sys.exit(0)
+
+          offenders = sorted([n for n in used if 'docker' not in (keywords.get(n) or {})])
+          with open('unmarked_docker_tests.txt', 'w') as out:
+              for n in offenders:
+                  out.write(f"{n}\n")
+          if offenders:
+              print('\nFound tests that used Docker but are missing @pytest.mark.docker:')
+              for n in offenders:
+                  print(f" - {n}")
+              sys.exit(1)
+          else:
+              print('All Docker-using tests are correctly marked with @pytest.mark.docker.')
+          PY
+
+      - name: Generate Slack payload (test mode)
+        if: always()
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          from collections import defaultdict
+
+          failures_by_folder = defaultdict(list)
+          total_failures = 0
+          
+          try:
+              with open('pytest-report.jsonl', 'r') as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                      except Exception:
+                          continue
+                      if obj.get('$report_type') != 'TestReport':
+                          continue
+                      if obj.get('when') != 'call':
+                          continue
+                      if obj.get('outcome') == 'failed':
+                          nodeid = obj.get('nodeid', '<unknown>')
+                          parts = nodeid.split('/')
+                          if len(parts) >= 2:
+                              folder = '/'.join(parts[:2])
+                          else:
+                              folder = parts[0] if parts else '<root>'
+                          failures_by_folder[folder].append(nodeid)
+                          total_failures += 1
+          except FileNotFoundError:
+              pass
+
+          unmarked_slow = 0
+          unmarked_docker = 0
+          try:
+              with open('unmarked_slow_tests.txt', 'r') as f:
+                  unmarked_slow = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+          try:
+              with open('unmarked_docker_tests.txt', 'r') as f:
+                  unmarked_docker = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+
+          lines = []
+          if total_failures:
+              lines.append(f"*Test Failures:* {total_failures}")
+              for folder in sorted(failures_by_folder.keys()):
+                  count = len(failures_by_folder[folder])
+                  lines.append(f"  • `{folder}`: {count} failed")
+          if unmarked_slow:
+              lines.append(f"*Unmarked slow tests:* {unmarked_slow}")
+          if unmarked_docker:
+              lines.append(f"*Unmarked docker tests:* {unmarked_docker}")
+          if not lines:
+              lines.append("_No failures detected - this notification would not be sent_")
+
+          summary = '\n'.join(lines)
+          run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+
+          payload = {
+              "text": f"⚠️ Heavy Tests Failed (Nightly) - {total_failures} failures",
+              "blocks": [
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"*⚠️ Nightly Heavy Tests Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
+                      }
+                  }
+              ]
+          }
+          
+          with open('slack_payload.json', 'w') as f:
+              json.dump(payload, f, indent=2)
+          
+          with open('slack_preview.txt', 'w') as f:
+              f.write("=" * 60 + "\n")
+              f.write("SLACK MESSAGE PREVIEW\n")
+              f.write("=" * 60 + "\n\n")
+              f.write(f"Fallback text: {payload['text']}\n\n")
+              f.write("Message content:\n")
+              f.write("-" * 40 + "\n")
+              content = payload['blocks'][0]['text']['text']
+              content = content.replace('*', '').replace('`', "'")
+              f.write(content + "\n")
+              f.write("-" * 40 + "\n")
+          
+          print("Generated slack_payload.json and slack_preview.txt")
+          print("\n" + "=" * 60)
+          print("PREVIEW:")
+          print("=" * 60)
+          with open('slack_preview.txt', 'r') as f:
+              print(f.read())
+          PY
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slack-notification-test
+          path: |
+            pytest-report.jsonl
+            unmarked_slow_tests.txt
+            unmarked_docker_tests.txt
+            slack_payload.json
+            slack_preview.txt
+            .docker_build_tests.txt
+            .docker_compose_tests.txt
