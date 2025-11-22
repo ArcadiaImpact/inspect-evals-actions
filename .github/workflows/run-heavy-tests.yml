@@ -56,10 +56,7 @@ jobs:
         run: |
           uv run pytest -rA --color=yes \
             --durations=0 \
-            --report-log=pytest-report.jsonl \
-            -vv \
-            -s \
-            --log-cli-level=INFO
+            --report-log=pytest-report.jsonl
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
         run: |
