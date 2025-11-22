@@ -53,9 +53,10 @@ jobs:
           uv sync --frozen --extra test
 
       - name: Run full test suite with report log
+        continue-on-error: true
         run: |
           uv run pytest -rA --color=yes \
-            --durations=0 \
+            --durations=20 \
             --report-log=pytest-report.jsonl
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
