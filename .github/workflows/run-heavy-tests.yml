@@ -50,12 +50,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen --extra test
+          uv sync --frozen --group test_py312_or_higher --extra test 
 
       - name: Run full test suite with report log
         id: tests
         run: |
-          uv run pytest -rA --color=yes \
+          uv run pytest tests/livebench -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl
 
