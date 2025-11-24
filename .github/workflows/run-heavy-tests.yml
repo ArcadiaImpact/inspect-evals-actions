@@ -55,7 +55,7 @@ jobs:
       - name: Run full test suite with report log
         id: tests
         run: |
-          uv run pytest tests/livebench -rA --color=yes \
+          uv run pytest -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl
 
@@ -166,7 +166,7 @@ jobs:
             unmarked_docker_tests.txt
 
       - name: Notify Slack on scheduled failure
-        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        if: ${{ always() && steps.tests.outcome == 'failure' && github.event_name == 'schedule' }}
         run: |
           python3 <<'PY' > slack_payload.json
           import json
