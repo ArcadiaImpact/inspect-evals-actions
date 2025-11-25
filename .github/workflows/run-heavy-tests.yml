@@ -53,6 +53,7 @@ jobs:
           uv sync --frozen --group test_py311_or_lower --extra test 
 
       - name: Run full test suite with report log
+        id: tests
         run: |
           uv run pytest tests/livebench -rA --color=yes \
             --durations=20 \
@@ -165,19 +166,88 @@ jobs:
             unmarked_docker_tests.txt
 
       - name: Notify Slack on scheduled failure
-        if: failure() && github.event_name == 'schedule'
+        if: ${{ always() && steps.tests.outcome == 'failure' && github.event_name == 'schedule' }}
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{
-              "text": "⚠️ Heavy Tests Failed (Nightly)",
+          python3 <<'PY' > slack_payload.json
+          import json
+          import os
+          from collections import defaultdict
+
+          # Parse test failures from pytest report
+          failures_by_folder = defaultdict(list)
+          total_failures = 0
+          
+          try:
+              with open('pytest-report.jsonl', 'r') as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                      except Exception:
+                          continue
+                      if obj.get('$report_type') != 'TestReport':
+                          continue
+                      if obj.get('when') != 'call':
+                          continue
+                      if obj.get('outcome') == 'failed':
+                          nodeid = obj.get('nodeid', '<unknown>')
+                          # Extract folder (e.g., "tests/livebench" from "tests/livebench/test_foo.py::test_bar")
+                          parts = nodeid.split('/')
+                          if len(parts) >= 2:
+                              folder = '/'.join(parts[:2])
+                          else:
+                              folder = parts[0] if parts else '<root>'
+                          failures_by_folder[folder].append(nodeid)
+                          total_failures += 1
+          except FileNotFoundError:
+              pass
+
+          # Count unmarked slow/docker tests
+          unmarked_slow = 0
+          unmarked_docker = 0
+          try:
+              with open('unmarked_slow_tests.txt', 'r') as f:
+                  unmarked_slow = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+          try:
+              with open('unmarked_docker_tests.txt', 'r') as f:
+                  unmarked_docker = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+
+          # Build summary
+          lines = []
+          if total_failures:
+              lines.append(f"*Test Failures:* {total_failures}")
+              for folder in sorted(failures_by_folder.keys()):
+                  count = len(failures_by_folder[folder])
+                  lines.append(f"  • `{folder}`: {count} failed")
+          if unmarked_slow:
+              lines.append(f"*Unmarked slow tests:* {unmarked_slow}")
+          if unmarked_docker:
+              lines.append(f"*Unmarked docker tests:* {unmarked_docker}")
+          if not lines:
+              lines.append("_Check run logs for details_")
+
+          summary = '\n'.join(lines)
+          run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+
+          payload = {
+              "text": f"⚠️ Heavy Tests Failed (Nightly) - {total_failures} failures",
               "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*⚠️ Nightly Heavy Tests Failed*\n\n*Repository:* `${{ github.repository }}`\n*Branch:* `${{ github.ref_name }}`\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"*⚠️ Nightly Heavy Tests Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
+                      }
                   }
-                }
               ]
-            }' \
+          }
+          
+          print(json.dumps(payload))
+          PY
+          
+          curl -X POST -H 'Content-type: application/json' \
+            -d @slack_payload.json \
             ${{ secrets.SLACK_WEBHOOK_URL }}
