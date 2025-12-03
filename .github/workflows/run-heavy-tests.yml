@@ -60,6 +60,7 @@ jobs:
             --report-log=pytest-report.jsonl
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
+        id: slow_check
         if: always()
         run: |
           uv run python - <<'PY'
@@ -100,6 +101,7 @@ jobs:
           PY
 
       - name: Detect tests using Docker that are missing @pytest.mark.docker
+        id: docker_check
         if: always()
         run: |
           uv run python - <<'PY'
@@ -166,7 +168,7 @@ jobs:
             unmarked_docker_tests.txt
 
       - name: Notify Slack on scheduled failure
-        if: ${{ always() && steps.tests.outcome == 'failure' && github.event_name == 'schedule' }}
+        if: ${{ always() && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') && github.event_name == 'schedule' }}
         run: |
           python3 <<'PY' > slack_payload.json
           import json
@@ -232,8 +234,18 @@ jobs:
           summary = '\n'.join(lines)
           run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
 
+          # Build title based on what failed
+          issues = []
+          if total_failures:
+              issues.append(f"{total_failures} test failure{'s' if total_failures != 1 else ''}")
+          if unmarked_slow:
+              issues.append(f"{unmarked_slow} unmarked slow test{'s' if unmarked_slow != 1 else ''}")
+          if unmarked_docker:
+              issues.append(f"{unmarked_docker} unmarked docker test{'s' if unmarked_docker != 1 else ''}")
+          title_summary = ', '.join(issues) if issues else 'issues detected'
+
           payload = {
-              "text": f"⚠️ Heavy Tests Failed (Nightly) - {total_failures} failures",
+              "text": f"⚠️ Heavy Tests Failed (Nightly) - {title_summary}",
               "blocks": [
                   {
                       "type": "section",
