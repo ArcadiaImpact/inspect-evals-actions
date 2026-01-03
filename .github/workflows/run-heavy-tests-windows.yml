@@ -1,0 +1,219 @@
+---
+name: Heavy Tests (Windows)
+
+"on":
+  workflow_dispatch:
+    inputs:
+      inspect_evals_ref:
+        description: "inspect_evals branch/tag/commit to checkout"
+        required: false
+        default: ""
+        type: string
+  schedule:
+    - cron: "0 14 * * *"  # Nightly at 14:00 UTC (12 hours after Ubuntu heavy tests)
+
+jobs:
+  heavy-tests-windows:
+    name: Heavy tests (full suite) - Windows
+    runs-on: windows-latest-l
+    timeout-minutes: 180
+    env:
+      HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+      RUN_SLOW_TESTS: yes
+      RUN_DATASET_DOWNLOAD_TESTS: yes
+      SLOW_TEST_THRESHOLD: 10.0  # seconds
+    steps:
+      - name: Checkout inspect_evals repository
+        uses: actions/checkout@v5
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ inputs.inspect_evals_ref || '' }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Cache uv downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\AppData\Local\uv\cache
+          key: ${{ runner.os }}-uv-3.11-${{ hashFiles('**/uv.lock', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.11-
+            ${{ runner.os }}-uv-
+
+      - name: Cache Hugging Face datasets
+        uses: actions/cache@v4
+        with:
+          path: ~\.cache\huggingface
+          key: hf-datasets-${{ runner.os }}-py3.11-v1
+          restore-keys: |
+            hf-datasets-${{ runner.os }}-py3.11-
+            hf-datasets-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --group test_py311_or_lower --extra test
+
+      - name: Run full test suite with report log
+        id: tests
+        run: |
+          uv run pytest -rA --color=yes --durations=20 --report-log=pytest-report.jsonl
+
+      - name: Detect tests >=10s that are missing @pytest.mark.slow
+        id: slow_check
+        if: always()
+        shell: python
+        run: |
+          import json
+          import sys
+          import os
+
+          THRESHOLD = float(os.environ.get('SLOW_TEST_THRESHOLD', '10.0'))
+          report = 'pytest-report.jsonl'
+          offenders = []
+
+          with open(report, 'r') as f:
+              for line in f:
+                  try:
+                      obj = json.loads(line)
+                  except Exception:
+                      continue
+                  if obj.get('$report_type') != 'TestReport':
+                      continue
+                  if obj.get('when') != 'call':
+                      continue
+                  # Skip skipped tests
+                  if obj.get('outcome') == 'skipped':
+                      continue
+                  dur = float(obj.get('duration') or 0.0)
+                  kw = obj.get('keywords') or {}
+                  # keywords is a dict of names -> True
+                  is_slow = 'slow' in kw
+                  if dur >= THRESHOLD and not is_slow:
+                      offenders.append((dur, obj.get('nodeid', '<unknown>')))
+
+          offenders.sort(reverse=True)
+
+          with open('unmarked_slow_tests.txt', 'w') as out:
+              for dur, nodeid in offenders:
+                  out.write(f"{dur:.2f}s\t{nodeid}\n")
+
+          if offenders:
+              print('\nFound tests taking >= 10s without @pytest.mark.slow:')
+              for dur, nodeid in offenders:
+                  print(f" - {dur:.2f}s  {nodeid}")
+              sys.exit(1)
+          else:
+              print('No unmarked slow tests found (>= 10s).')
+
+      - name: Upload timing reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heavy-test-reports-windows
+          path: |
+            pytest-report.jsonl
+            unmarked_slow_tests.txt
+
+      - name: Notify Slack on scheduled failure
+        if: ${{ always() && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure') && github.event_name == 'schedule' }}
+        shell: python
+        run: |
+          import json
+          import os
+          import urllib.request
+          from collections import defaultdict
+
+          # Parse test failures from pytest report
+          failures_by_folder = defaultdict(list)
+          total_failures = 0
+
+          try:
+              with open('pytest-report.jsonl', 'r') as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                      except Exception:
+                          continue
+                      if obj.get('$report_type') != 'TestReport':
+                          continue
+                      if obj.get('when') != 'call':
+                          continue
+                      if obj.get('outcome') == 'failed':
+                          nodeid = obj.get('nodeid', '<unknown>')
+                          # Extract folder - handle both / and \ separators
+                          nodeid_normalized = nodeid.replace('\\', '/')
+                          parts = nodeid_normalized.split('/')
+                          if len(parts) >= 2:
+                              folder = '/'.join(parts[:2])
+                          else:
+                              folder = parts[0] if parts else '<root>'
+                          failures_by_folder[folder].append(nodeid)
+                          total_failures += 1
+          except FileNotFoundError:
+              pass
+
+          # Count unmarked slow tests
+          unmarked_slow = 0
+          try:
+              with open('unmarked_slow_tests.txt', 'r') as f:
+                  unmarked_slow = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+
+          # Build summary
+          lines = []
+          if total_failures:
+              lines.append(f"*Test Failures:* {total_failures}")
+              for folder in sorted(failures_by_folder.keys()):
+                  count = len(failures_by_folder[folder])
+                  lines.append(f"  • `{folder}`: {count} failed")
+          if unmarked_slow:
+              lines.append(f"*Unmarked slow tests:* {unmarked_slow}")
+          if not lines:
+              lines.append("_Check run logs for details_")
+
+          summary = '\n'.join(lines)
+          run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+
+          # Build title based on what failed
+          issues = []
+          if total_failures:
+              issues.append(f"{total_failures} test failure{'s' if total_failures != 1 else ''}")
+          if unmarked_slow:
+              issues.append(f"{unmarked_slow} unmarked slow test{'s' if unmarked_slow != 1 else ''}")
+          title_summary = ', '.join(issues) if issues else 'issues detected'
+
+          payload = {
+              "text": f"⚠️ Heavy Tests (Windows) Failed (Nightly) - {title_summary}",
+              "blocks": [
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"*⚠️ Nightly Heavy Tests (Windows) Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
+                      }
+                  }
+              ]
+          }
+
+          slack_url = os.environ.get('SLACK_WEBHOOK_URL', '')
+          if slack_url:
+              req = urllib.request.Request(
+                  slack_url,
+                  data=json.dumps(payload).encode('utf-8'),
+                  headers={'Content-Type': 'application/json'},
+                  method='POST'
+              )
+              urllib.request.urlopen(req)
+          else:
+              print("SLACK_WEBHOOK_URL not set, skipping notification")
+              print(json.dumps(payload, indent=2))
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
