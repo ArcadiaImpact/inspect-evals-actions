@@ -15,7 +15,7 @@ name: Heavy Tests (Windows)
 jobs:
   heavy-tests-windows:
     name: Heavy tests (full suite) - Windows
-    runs-on: windows-latest-l
+    runs-on: windows-latest-8-cores
     timeout-minutes: 180
     env:
       HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
