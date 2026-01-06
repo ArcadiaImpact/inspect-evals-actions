@@ -272,7 +272,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     env:
       HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
