@@ -1,16 +1,16 @@
 name: Build
 
 on:
-  workflow_call:
-    inputs:
-      ref:
-        description: 'The git ref to checkout'
-        required: false
-        type: string
-        default: ''
-    secrets:
-      HF_ACCESS_TOKEN:
-        required: false
+  repository_dispatch:
+    types: [build]
+
+# Payload expected from caller:
+# {
+#   "ref": "<git sha to checkout>",
+#   "pr_number": "<PR number or empty>",
+#   "is_pr": "true/false",
+#   "source_repo": "UKGovernmentBEIS/inspect_evals"
+# }
 
 jobs:
   run-listing-check:
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
           fetch-depth: 0 # Need full history to compare with main for new eval detection
 
       - name: Install uv
@@ -50,7 +50,7 @@ jobs:
         run: uv run python tools/check_unlisted_evals.py
 
       - name: Lint new evaluations
-        if: github.event_name == 'pull_request'
+        if: github.event.client_payload.is_pr == 'true'
         run: |
           # Get list of eval directories that exist now
           current_evals=$(ls -d src/inspect_evals/*/ 2>/dev/null | xargs -I{} basename {} | grep -v '^_' | sort)
@@ -114,7 +114,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
           fetch-depth: 0
 
       - name: Install uv
@@ -132,7 +132,7 @@ jobs:
         run: uv run python tools/check_task_versions.py
 
       - name: Check version bumps for changed tasks
-        if: github.event_name == 'pull_request'
+        if: github.event.client_payload.is_pr == 'true'
         run: uv run python tools/check_version_bumps.py
 
   markdown-link-check:
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@v5
@@ -166,7 +166,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -203,7 +203,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -233,7 +233,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -284,7 +284,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -341,7 +341,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -410,7 +410,7 @@ jobs:
 
   targeted-slow-tests:
     name: Slow Tests relevant to PR
-    if: github.event_name == 'pull_request'
+    if: github.event.client_payload.is_pr == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -426,7 +426,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
           fetch-depth: 0
 
       - name: Get changed files
@@ -594,5 +594,5 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ github.event.client_payload.ref }}
       - uses: hynek/build-and-inspect-python-package@v2
