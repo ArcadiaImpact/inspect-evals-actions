@@ -13,6 +13,26 @@ on:
 # }
 
 jobs:
+  create-check:
+    runs-on: ubuntu-latest
+    outputs:
+      check_run_id: ${{ steps.create.outputs.check_run_id }}
+    steps:
+      - name: Create check run
+        id: create
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+        run: |
+          check_run=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.event.client_payload.source_repo }}/check-runs \
+            -f name="Build (inspect-evals-actions)" \
+            -f head_sha="${{ github.event.client_payload.ref }}" \
+            -f status="in_progress" \
+            -f details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}")
+          echo "check_run_id=$(echo "$check_run" | jq -r '.id')" >> $GITHUB_OUTPUT
+
   run-listing-check:
     runs-on: ubuntu-latest
     env:
@@ -596,3 +616,52 @@ jobs:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref }}
       - uses: hynek/build-and-inspect-python-package@v2
+
+  report-status:
+    runs-on: ubuntu-latest
+    needs:
+      - create-check
+      - run-listing-check
+      - task-version-check
+      - markdown-link-check
+      - posix-code-check
+      - ruff
+      - mypy
+      - test
+      - clean-install-test
+      - targeted-slow-tests
+      - package
+    if: always()
+    steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          # Check if any required job failed (excluding create-check which we need to succeed)
+          needs_json='${{ toJSON(needs) }}'
+
+          # Parse results, skipping create-check and skipped jobs
+          failed=false
+          for job in $(echo "$needs_json" | jq -r 'to_entries[] | select(.key != "create-check") | select(.value.result != "skipped") | .key + ":" + .value.result'); do
+            result="${job#*:}"
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              failed=true
+              break
+            fi
+          done
+
+          if [ "$failed" = "true" ]; then
+            echo "conclusion=failure" >> $GITHUB_OUTPUT
+          else
+            echo "conclusion=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update check run
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.event.client_payload.source_repo }}/check-runs/${{ needs.create-check.outputs.check_run_id }} \
+            -f status="completed" \
+            -f conclusion="${{ steps.status.outputs.conclusion }}"
