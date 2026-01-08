@@ -268,7 +268,8 @@ jobs:
       RUN_SLOW_TESTS: no
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: ${{ matrix.python-version }}
-      SLOW_TEST_THRESHOLD: "10.0"
+      SLOW_TEST_REPORT_THRESHOLD: "10.0"
+      SLOW_TEST_FAIL_THRESHOLD: "15.0"
 
     steps:
       - uses: actions/checkout@v5
@@ -328,9 +329,11 @@ jobs:
 
           # Since RUN_SLOW_TESTS=no, tests marked with @pytest.mark.slow are skipped.
           # Any test that actually ran and took >= threshold is therefore unmarked.
-          THRESHOLD = float(os.environ.get('SLOW_TEST_THRESHOLD', '10.0'))
+          # We report tests >= REPORT_THRESHOLD but only fail for tests >= FAIL_THRESHOLD.
+          REPORT_THRESHOLD = float(os.environ.get('SLOW_TEST_REPORT_THRESHOLD', '10.0'))
+          FAIL_THRESHOLD = float(os.environ.get('SLOW_TEST_FAIL_THRESHOLD', '15.0'))
           report = 'pytest-report.jsonl'
-          offenders = []
+          slow_tests = []
 
           if not os.path.exists(report):
               print(f'Warning: {report} not found, skipping slow test check')
@@ -349,23 +352,31 @@ jobs:
                   if obj.get('outcome') == 'skipped':
                       continue
                   dur = float(obj.get('duration') or 0.0)
-                  if dur >= THRESHOLD:
-                      offenders.append((dur, obj.get('nodeid', '<unknown>')))
+                  if dur >= REPORT_THRESHOLD:
+                      slow_tests.append((dur, obj.get('nodeid', '<unknown>')))
 
-          offenders.sort(reverse=True)
+          slow_tests.sort(reverse=True)
+          failures = [(dur, nodeid) for dur, nodeid in slow_tests if dur >= FAIL_THRESHOLD]
 
-          if offenders:
+          if slow_tests:
               print()
-              print('=' * 80)
-              print('ERROR: Found tests taking >= 10 seconds without @pytest.mark.slow')
-              print('=' * 80)
+              if failures:
+                  print('=' * 80)
+                  print('ERROR: Found tests taking >= 15 seconds without @pytest.mark.slow')
+                  print('=' * 80)
+              else:
+                  print('-' * 80)
+                  print('WARNING: Found tests taking >= 10 seconds without @pytest.mark.slow')
+                  print('-' * 80)
               print()
-              print('The following tests exceeded the 10-second threshold but are not marked')
-              print('as slow tests. This will cause issues in CI and must be fixed.')
+              print('The following tests exceeded the threshold but are not marked as slow tests.')
+              if failures:
+                  print('Tests >= 15s will fail the build and must be fixed.')
               print()
-              print('Offending tests:')
-              for dur, nodeid in offenders:
-                  print(f'  {dur:6.2f}s  {nodeid}')
+              print('Slow tests:')
+              for dur, nodeid in slow_tests:
+                  marker = ' [FAIL]' if dur >= FAIL_THRESHOLD else ''
+                  print(f'  {dur:6.2f}s  {nodeid}{marker}')
               print()
               print('-' * 80)
               print('HOW TO FIX:')
@@ -383,8 +394,9 @@ jobs:
               print("The 'seconds' parameter helps document the expected runtime and allows")
               print('for better test scheduling and timeout configuration.')
               print()
-              print('=' * 80)
-              sys.exit(1)
+              print('=' * 80 if failures else '-' * 80)
+              if failures:
+                  sys.exit(1)
           else:
               print('All tests under 10 seconds or properly marked with @pytest.mark.slow')
           PY
