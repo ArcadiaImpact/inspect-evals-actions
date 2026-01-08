@@ -370,8 +370,11 @@ jobs:
                   print('-' * 80)
               print()
               print('The following tests exceeded the threshold but are not marked as slow tests.')
+              print('Please add @pytest.mark.slow to these tests.')
               if failures:
                   print('Tests >= 15s will fail the build and must be fixed.')
+              else:
+                  print('This is non-blocking, but should still be fixed.')
               print()
               print('Slow tests:')
               for dur, nodeid in slow_tests:
