@@ -268,6 +268,7 @@ jobs:
       RUN_SLOW_TESTS: no
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: ${{ matrix.python-version }}
+      SLOW_TEST_THRESHOLD: "10.0"
 
     steps:
       - uses: actions/checkout@v5
@@ -314,7 +315,79 @@ jobs:
 
       - name: Test with pytest
         run: |
-          uv run pytest -rA --doctest-modules --color=yes --cov=inspect_evals
+          uv run pytest -rA --doctest-modules --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
+
+      - name: Check for unmarked slow tests
+        if: always()
+        shell: bash
+        run: |
+          uv run python - <<'PY'
+          import json
+          import os
+          import sys
+
+          # Since RUN_SLOW_TESTS=no, tests marked with @pytest.mark.slow are skipped.
+          # Any test that actually ran and took >= threshold is therefore unmarked.
+          THRESHOLD = float(os.environ.get('SLOW_TEST_THRESHOLD', '10.0'))
+          report = 'pytest-report.jsonl'
+          offenders = []
+
+          if not os.path.exists(report):
+              print(f'Warning: {report} not found, skipping slow test check')
+              sys.exit(0)
+
+          with open(report, 'r') as f:
+              for line in f:
+                  try:
+                      obj = json.loads(line)
+                  except Exception:
+                      continue
+                  if obj.get('$report_type') != 'TestReport':
+                      continue
+                  if obj.get('when') != 'call':
+                      continue
+                  if obj.get('outcome') == 'skipped':
+                      continue
+                  dur = float(obj.get('duration') or 0.0)
+                  if dur >= THRESHOLD:
+                      offenders.append((dur, obj.get('nodeid', '<unknown>')))
+
+          offenders.sort(reverse=True)
+
+          if offenders:
+              print()
+              print('=' * 80)
+              print('ERROR: Found tests taking >= 10 seconds without @pytest.mark.slow')
+              print('=' * 80)
+              print()
+              print('The following tests exceeded the 10-second threshold but are not marked')
+              print('as slow tests. This will cause issues in CI and must be fixed.')
+              print()
+              print('Offending tests:')
+              for dur, nodeid in offenders:
+                  print(f'  {dur:6.2f}s  {nodeid}')
+              print()
+              print('-' * 80)
+              print('HOW TO FIX:')
+              print('-' * 80)
+              print()
+              print('Add the @pytest.mark.slow decorator to each test function listed above.')
+              print('Include the expected duration in seconds as an argument:')
+              print()
+              print('    import pytest')
+              print()
+              print('    @pytest.mark.slow(seconds=15)  # Adjust based on actual duration')
+              print('    def test_my_slow_test():')
+              print('        ...')
+              print()
+              print("The 'seconds' parameter helps document the expected runtime and allows")
+              print('for better test scheduling and timeout configuration.')
+              print()
+              print('=' * 80)
+              sys.exit(1)
+          else:
+              print('All tests under 10 seconds or properly marked with @pytest.mark.slow')
+          PY
 
   clean-install-test:
     runs-on: ${{ matrix.os }}
@@ -573,7 +646,7 @@ jobs:
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
         run: |
-          uv run python .github/scripts/run_targeted_tests.py
+          uv run pytest -rA --color=yes --durations=50 $TEST_PATHS
 
   package:
     name: Build & inspect the package.
