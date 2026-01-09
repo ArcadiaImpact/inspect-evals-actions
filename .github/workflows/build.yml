@@ -1,4 +1,5 @@
 name: Build
+run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1}', github.event.client_payload.pr_number, github.event.client_payload.pr_title) || 'Build' }}
 
 on:
   repository_dispatch:
@@ -8,6 +9,7 @@ on:
 # {
 #   "ref": "<git sha to checkout>",
 #   "pr_number": "<PR number or empty>",
+#   "pr_title": "<PR title or empty>",
 #   "is_pr": "true/false",
 #   "source_repo": "UKGovernmentBEIS/inspect_evals"
 # }
