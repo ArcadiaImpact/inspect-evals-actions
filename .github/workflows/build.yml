@@ -362,7 +362,7 @@ jobs:
               print()
               if failures:
                   print('=' * 80)
-                  print('ERROR: Found tests taking >= 15 seconds without @pytest.mark.slow')
+                  print('ERROR: Found tests taking >= 10 seconds without @pytest.mark.slow')
                   print('=' * 80)
               else:
                   print('-' * 80)
@@ -396,6 +396,13 @@ jobs:
               print()
               print("The 'seconds' parameter helps document the expected runtime and allows")
               print('for better test scheduling and timeout configuration.')
+              print()
+              print('-' * 80)
+              print('USING A CODING AGENT?')
+              print('-' * 80)
+              print()
+              print('Link this job URL to your coding agent and tell it to use the')
+              print('"Mark Slow Tests" workflow in AGENTS.md to fix this issue.')
               print()
               print('=' * 80 if failures else '-' * 80)
               if failures:
