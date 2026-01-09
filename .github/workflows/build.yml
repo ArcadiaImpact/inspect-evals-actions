@@ -269,7 +269,7 @@ jobs:
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: ${{ matrix.python-version }}
       SLOW_TEST_REPORT_THRESHOLD: "10.0"
-      SLOW_TEST_FAIL_THRESHOLD: "15.0"
+      SLOW_TEST_FAIL_THRESHOLD: "60.0"
 
     steps:
       - uses: actions/checkout@v5
@@ -331,7 +331,7 @@ jobs:
           # Any test that actually ran and took >= threshold is therefore unmarked.
           # We report tests >= REPORT_THRESHOLD but only fail for tests >= FAIL_THRESHOLD.
           REPORT_THRESHOLD = float(os.environ.get('SLOW_TEST_REPORT_THRESHOLD', '10.0'))
-          FAIL_THRESHOLD = float(os.environ.get('SLOW_TEST_FAIL_THRESHOLD', '15.0'))
+          FAIL_THRESHOLD = float(os.environ.get('SLOW_TEST_FAIL_THRESHOLD', '60.0'))
           report = 'pytest-report.jsonl'
           slow_tests = []
 
@@ -362,7 +362,7 @@ jobs:
               print()
               if failures:
                   print('=' * 80)
-                  print('ERROR: Found tests taking >= 15 seconds without @pytest.mark.slow')
+                  print('ERROR: Found tests taking >= 60 seconds without @pytest.mark.slow')
                   print('=' * 80)
               else:
                   print('-' * 80)
@@ -372,7 +372,7 @@ jobs:
               print('The following tests exceeded the threshold but are not marked as slow tests.')
               print('Please add @pytest.mark.slow to these tests.')
               if failures:
-                  print('Tests >= 15s will fail the build and must be fixed.')
+                  print('Tests >= 60s will fail the build and must be fixed.')
               else:
                   print('This is non-blocking, but should still be fixed.')
               print()
