@@ -48,4 +48,4 @@ jobs:
 
       - name: Run test
         run: |
-          uv run python tools/run_evals.py
+          uv run python tools/run_evals.py --no-fail-fast
