@@ -669,6 +669,7 @@ jobs:
 
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
+        shell: bash
         run: |
           uv run pytest -rA --color=yes --durations=50 $TEST_PATHS
 
