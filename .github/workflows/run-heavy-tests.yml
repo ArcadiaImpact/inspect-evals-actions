@@ -59,6 +59,12 @@ jobs:
             --durations=20 \
             --report-log=pytest-report.jsonl
 
+      - name: Clean
+        run: make clean DRY_RUN=false CLEAN_ARGS=--force
+
+      - name: Check disk space
+        run: df -h
+      
       - name: Detect tests >=10s that are missing @pytest.mark.slow
         id: slow_check
         if: always()
