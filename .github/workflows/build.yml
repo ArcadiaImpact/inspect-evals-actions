@@ -501,7 +501,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
     env:
       HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
       RUN_SLOW_TESTS: yes
