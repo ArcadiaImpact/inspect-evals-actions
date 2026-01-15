@@ -353,6 +353,10 @@ jobs:
                       continue
                   if obj.get('outcome') == 'skipped':
                       continue
+                  # Skip tests marked with @pytest.mark.huggingface (retries can be slow)
+                  keywords = obj.get('keywords', {})
+                  if 'huggingface' in keywords:
+                      continue
                   dur = float(obj.get('duration') or 0.0)
                   if dur >= REPORT_THRESHOLD:
                       slow_tests.append((dur, obj.get('nodeid', '<unknown>')))
