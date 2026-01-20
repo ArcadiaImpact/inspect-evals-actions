@@ -1,0 +1,137 @@
+name: Lint New Evaluations
+run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1}', github.event.client_payload.pr_number, github.event.client_payload.pr_title) || 'Lint New Evals' }}
+
+on:
+  repository_dispatch:
+    types: [build]
+
+# Payload expected from caller:
+# {
+#   "ref": "<git sha to checkout>",
+#   "pr_number": "<PR number or empty>",
+#   "pr_title": "<PR title or empty>",
+#   "is_pr": "true/false",
+#   "source_repo": "UKGovernmentBEIS/inspect_evals"
+# }
+
+jobs:
+  lint-new-evals:
+    # Only run on PRs
+    if: github.event.client_payload.is_pr == 'true'
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - name: Set pending commit status
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.event.client_payload.source_repo }}/statuses/${{ github.event.client_payload.ref }} \
+            -f state="pending" \
+            -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f description="Linting new evaluations..." \
+            -f context="Lint New Evaluations (inspect-evals-actions)"
+
+      - uses: actions/checkout@v5
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ github.event.client_payload.ref }}
+          fetch-depth: 0 # Need full history to compare with main for new eval detection
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Cache uv downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.12-${{ hashFiles('**/uv.lock', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.12-
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --group test_py312_or_higher --extra test
+
+      - name: Lint new evaluations
+        id: lint
+        run: |
+          # Get list of eval directories that exist now
+          current_evals=$(ls -d src/inspect_evals/*/ 2>/dev/null | xargs -I{} basename {} | grep -v '^_' | sort)
+
+          # Get list of eval directories that existed on main
+          git fetch origin main --depth=1
+          main_evals=$(git ls-tree --name-only origin/main src/inspect_evals/ | xargs -I{} basename {} | grep -v '^_' | sort)
+
+          # Find evals that are new (exist now but not on main)
+          new_evals=""
+          for eval in $current_evals; do
+            if ! echo "$main_evals" | grep -q "^${eval}$"; then
+              new_evals="$new_evals $eval"
+            fi
+          done
+
+          new_evals=$(echo "$new_evals" | xargs)  # trim whitespace
+
+          if [ -z "$new_evals" ]; then
+            echo "No new evaluations detected in this PR."
+            exit 0
+          fi
+
+          echo "New evaluations: $new_evals"
+
+          failed=0
+          for eval_name in $new_evals; do
+            echo "=========================================="
+            echo "Linting new evaluation: $eval_name"
+            echo "=========================================="
+            if ! uv run python tools/run_autolint.py "$eval_name"; then
+              failed=1
+            fi
+            echo ""
+          done
+
+          if [ $failed -eq 1 ]; then
+            echo ""
+            echo "::error::One or more new evaluations failed linting. See above for details."
+            echo "To suppress a check, add '# noautolint: <check_name>' or create a .noautolint file."
+            exit 1
+          fi
+
+      - name: Update commit status (success)
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.event.client_payload.source_repo }}/statuses/${{ github.event.client_payload.ref }} \
+            -f state="success" \
+            -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f description="Lint passed" \
+            -f context="Lint New Evaluations (inspect-evals-actions)"
+
+      - name: Update commit status (failure)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.event.client_payload.source_repo }}/statuses/${{ github.event.client_payload.ref }} \
+            -f state="failure" \
+            -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f description="Lint failed" \
+            -f context="Lint New Evaluations (inspect-evals-actions)"
