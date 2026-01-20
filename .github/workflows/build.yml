@@ -14,6 +14,11 @@ on:
 #   "source_repo": "UKGovernmentBEIS/inspect_evals"
 # }
 
+env:
+  HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+  KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+  KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+
 jobs:
   set-pending-status:
     runs-on: ubuntu-latest
@@ -220,14 +225,11 @@ jobs:
         os: [ubuntu-latest-8-cores, windows-latest-8-cores]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     env:
-      HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
       RUN_SLOW_TESTS: no
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: ${{ matrix.python-version }}
       SLOW_TEST_REPORT_THRESHOLD: "10.0"
       SLOW_TEST_FAIL_THRESHOLD: "60.0"
-      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     steps:
       - uses: actions/checkout@v5
@@ -463,12 +465,9 @@ jobs:
       matrix:
         os: [ubuntu-latest-8-cores, windows-latest-8-cores]
     env:
-      HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: "3.12"
-      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     steps:
       - uses: actions/checkout@v5

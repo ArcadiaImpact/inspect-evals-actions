@@ -12,18 +12,20 @@ name: Heavy Tests (Windows)
   schedule:
     - cron: "0 14 * * *"  # Nightly at 14:00 UTC (12 hours after Ubuntu heavy tests)
 
+env:
+  HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+  KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+  KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+
 jobs:
   heavy-tests-windows:
     name: Heavy tests (full suite) - Windows
     runs-on: windows-latest-8-cores
     timeout-minutes: 180
     env:
-      HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
       SLOW_TEST_THRESHOLD: 10.0  # seconds
-      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
     steps:
       - name: Checkout inspect_evals repository
         uses: actions/checkout@v5
