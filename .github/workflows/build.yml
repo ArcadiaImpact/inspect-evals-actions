@@ -226,6 +226,8 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
       SLOW_TEST_REPORT_THRESHOLD: "10.0"
       SLOW_TEST_FAIL_THRESHOLD: "60.0"
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     steps:
       - uses: actions/checkout@v5
@@ -465,6 +467,8 @@ jobs:
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: "3.12"
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
     steps:
       - uses: actions/checkout@v5

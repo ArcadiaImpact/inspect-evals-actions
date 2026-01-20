@@ -23,6 +23,8 @@ jobs:
       RUN_DATASET_DOWNLOAD_TESTS: yes
       TRACE_DOCKER_BUILDS: yes
       SLOW_TEST_THRESHOLD: 10.0  # seconds
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
     steps:
       - name: Checkout inspect_evals repository
         uses: actions/checkout@v5
