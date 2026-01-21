@@ -141,5 +141,5 @@ jobs:
                 }'
               )
 
-              curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+              curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL_DEV"
           fi
