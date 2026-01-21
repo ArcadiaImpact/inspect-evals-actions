@@ -477,11 +477,26 @@ jobs:
           ref: ${{ github.event.client_payload.ref }}
           fetch-depth: 0
 
+      - name: Determine base SHA for comparison
+        id: base
+        shell: bash
+        run: |
+          # Use provided base_sha if available, otherwise compute merge-base with main
+          if [ -n "${{ github.event.client_payload.base_sha }}" ]; then
+            echo "sha=${{ github.event.client_payload.base_sha }}" >> $GITHUB_OUTPUT
+            echo "Using provided base_sha: ${{ github.event.client_payload.base_sha }}"
+          else
+            # Fallback: compute merge-base with origin/main
+            MERGE_BASE=$(git merge-base origin/main HEAD)
+            echo "sha=$MERGE_BASE" >> $GITHUB_OUTPUT
+            echo "No base_sha provided, using merge-base with main: $MERGE_BASE"
+          fi
+
       - name: Get changed files
         id: changed
         uses: tj-actions/changed-files@v46
         with:
-          base_sha: ${{ github.event.client_payload.base_sha }}
+          base_sha: ${{ steps.base.outputs.sha }}
           files_yaml: |
             eval_src:
               - src/inspect_evals/**/*
