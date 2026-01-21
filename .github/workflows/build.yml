@@ -8,6 +8,7 @@ on:
 # Payload expected from caller:
 # {
 #   "ref": "<git sha to checkout>",
+#   "base_sha": "<base sha for PR comparison, empty for non-PRs>",
 #   "pr_number": "<PR number or empty>",
 #   "pr_title": "<PR title or empty>",
 #   "is_pr": "true/false",
@@ -480,6 +481,7 @@ jobs:
         id: changed
         uses: tj-actions/changed-files@v46
         with:
+          base_sha: ${{ github.event.client_payload.base_sha }}
           files_yaml: |
             eval_src:
               - src/inspect_evals/**/*
