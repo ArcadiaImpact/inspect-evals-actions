@@ -103,10 +103,10 @@ jobs:
           summary+="Total evals: $n_total\n"
           summary+="Successes: $n_success\n"
           summary+="Not-successes: $n_not_success\n"
-          summary+="Accepted errors: $n_accepted\n"
-          summary+="Expected skips: $n_skipped\n"
-          summary+="Timeouts: $n_timeouts\n"
-          summary+="Unexpected errors: $n_unexpected\n"
+          summary+="  Accepted errors: $n_accepted\n"
+          summary+="  Expected skips: $n_skipped\n"
+          summary+="  Timeouts: $n_timeouts\n"
+          summary+="  Unexpected errors: $n_unexpected\n"
 
           if [ "$n_unexpected" -gt 0 ]; then
               summary+="\n*Unexpected tasks:*\n$(echo "$unexpected_errors" | sed 's/^/• /')"
@@ -117,7 +117,10 @@ jobs:
 
           if [ "$n_unexpected" -gt 0 ] && [ -n "$SLACK_WEBHOOK_URL" ]; then
               run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-              payload=$(jq -n --arg text "```\n$summary\n\n<$run_url|View Run Details>\n```" \
-                           '{text: $text, blocks:[{type:"section", text:{type:"mrkdwn", text:$text}}]}')
+
+              payload=$(jq -n \
+                --arg text "```\n$summary\n\n<${run_url}|View Run Details>\n```" \
+                '{text: $text, blocks:[{type:"section", text:{type:"mrkdwn", text:$text}}]}')
+
               curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
           fi
