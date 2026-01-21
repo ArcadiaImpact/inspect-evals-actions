@@ -109,18 +109,37 @@ jobs:
           summary+="  Unexpected errors: $n_unexpected\n"
 
           if [ "$n_unexpected" -gt 0 ]; then
-              summary+="\n*Unexpected tasks:*\n$(echo "$unexpected_errors" | sed 's/^/• /')"
+              summary+="\n*Unexpected error tasks:*\n$(echo "$unexpected_errors" | sed 's/^/• /')"
           fi
 
-          summary="====================\n$summary"
           echo -e "$summary"
 
           if [ "$n_unexpected" -gt 0 ] && [ -n "$SLACK_WEBHOOK_URL" ]; then
               run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
               payload=$(jq -n \
-                --arg text "```\n$summary\n\n<${run_url}|View Run Details>\n```" \
-                '{text: $text, blocks:[{type:"section", text:{type:"mrkdwn", text:$text}}]}')
+                --arg summary "$summary" \
+                --arg run_url "$run_url" \
+                '{
+                  text: ("Smoke Test Summary - unexpected tasks: " + ($summary | split("\n") | map(select(length>0)) | length | tostring)),
+                  blocks: [
+                    {
+                      type: "section",
+                      text: {
+                        type: "mrkdwn",
+                        text: "*Smoke Test Summary*\n\($summary)"
+                      }
+                    },
+                    {
+                      type: "section",
+                      text: {
+                        type: "mrkdwn",
+                        text: "<\($run_url)|View Run Details>"
+                      }
+                    }
+                  ]
+                }'
+              )
 
               curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
           fi
