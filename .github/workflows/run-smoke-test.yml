@@ -51,4 +51,73 @@ jobs:
 
       - name: Run test
         run: |
-          uv run python tools/run_evals.py --no-fail-fast --eval-timeout-mins 15
+          uv run python tools/run_evals.py \
+            --no-fail-fast \
+            --eval-timeout-mins 15 \
+          2>&1 | tee smoke_output.log || true
+
+      - name: Upload smoke output
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-output
+          path: smoke_output.log
+
+  summarise-smoke:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download smoke output
+        uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-output
+          path: .
+
+      - name: Send smoke test summary
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          LOG_FILE: smoke_output.log
+        run: |
+          # Total -> {successes, not successes}
+          total=$(grep "Testing eval" "$LOG_FILE" | sed -E 's/.*Testing eval [0-9]+: //')
+          successes=$(grep succeeded "$LOG_FILE" | sed -E 's/.*succeeded: //')
+          not_successes=$(comm -23 <(echo "$total" | sort) <(echo "$successes" | sort))
+
+          # Not successes --> {acceptable, expected, timeout, unexpected}
+          accepted_errors=$(grep "ignoring" "$LOG_FILE" | sed -E "s/.*on task_name='([^']+)'.*/\1/")
+          a_priori_expected=$(grep "Skipping eval" "$LOG_FILE" | sed -E 's/.*Skipping eval [0-9]+: ([^\.]+)\..*/\1/')
+          timeouts=$(grep 'timed out:' "$LOG_FILE" | sed -E 's/.*timed out: ([^ ]+).*/\1/')
+          unexpected_errors=$(grep "is not considered" "$LOG_FILE" | sed -E "s/.*on task task_name='([^']+)'.*/\1/")
+
+          # Counts
+          n_total=$(echo "$total" | wc -l)
+          n_success=$(echo "$successes" | wc -l)
+          n_not_success=$(echo "$not_successes" | wc -l)
+          n_accepted=$(echo "$accepted_errors" | wc -l)
+          n_skipped=$(echo "$a_priori_expected" | wc -l)
+          n_timeouts=$(echo "$timeouts" | wc -l)
+          n_unexpected=$(echo "$unexpected_errors" | wc -l)
+
+          summary="### Smoke Test Summary\n"
+          summary+="Total evals: $n_total\n"
+          summary+="Successes: $n_success\n"
+          summary+="Not-successes: $n_not_success\n"
+          summary+="Accepted errors: $n_accepted\n"
+          summary+="Expected skips: $n_skipped\n"
+          summary+="Timeouts: $n_timeouts\n"
+          summary+="Unexpected errors: $n_unexpected\n"
+
+          if [ "$n_unexpected" -gt 0 ]; then
+              summary+="\n*Unexpected tasks:*\n$(echo "$unexpected_errors" | sed 's/^/• /')"
+          fi
+
+          summary="====================\n$summary"
+          echo -e "$summary"
+
+          if [ "$n_unexpected" -gt 0 ] && [ -n "$SLACK_WEBHOOK_URL" ]; then
+              run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+              payload=$(jq -n --arg text "```\n$summary\n\n<$run_url|View Run Details>\n```" \
+                           '{text: $text, blocks:[{type:"section", text:{type:"mrkdwn", text:$text}}]}')
+              curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+          fi
