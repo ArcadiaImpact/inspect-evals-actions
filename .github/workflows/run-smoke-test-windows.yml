@@ -51,4 +51,55 @@ jobs:
 
       - name: Run test
         run: |
-          uv run python tools/run_evals.py --no-fail-fast --eval-timeout-mins 15
+          uv run python tools/run_evals.py \
+            --no-fail-fast \
+            --eval-timeout-mins 15 \
+          2>&1 | tee smoke_output.log || true
+
+      - name: Upload smoke output
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-output
+          path: smoke_output.log
+
+  summarise-smoke:
+    needs: smoke-test-windows
+    runs-on: windows-latest-8-cores
+
+    steps:
+      - name: Checkout inspect-evals-actions
+        uses: actions/checkout@v5
+
+      - name: Download smoke output
+        uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-output
+          path: .
+
+      - name: Generate summary
+        id: summary
+        if: always()
+        run: ./scripts/smoke/summarise_smoke_test_log.sh smoke_output.log > smoke_summary.txt
+
+      - name: Notify slack if there are unexpected failures
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ always() && (steps.summary.conclusion == 'failure') }}
+        run: |
+          ./scripts/send_to_slack.sh smoke_summary.txt "$SLACK_WEBHOOK_URL"
+
+      - name: Find stale skips
+        id: stale
+        if: always()
+        run: ./scripts/smoke/find_stale_skips.sh smoke_output.log > stale_skips.txt
+
+      - name: Notify slack if there are stale skip marks
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ always() && (steps.stale.conclusion == 'failure') }}
+        run: |
+          ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
