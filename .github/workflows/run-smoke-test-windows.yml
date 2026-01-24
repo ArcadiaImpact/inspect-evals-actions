@@ -46,10 +46,12 @@ jobs:
             hf-datasets-${{ runner.os }}-
 
       - name: Install dependencies
+        shell: bash
         run: |
           uv sync --frozen --group test_py311_or_lower --extra test
 
       - name: Run test
+        shell: bash
         run: |
           uv run python tools/run_evals.py \
             --no-fail-fast \
@@ -79,6 +81,7 @@ jobs:
       - name: Generate summary
         id: summary
         if: always()
+        shell: bash
         run: ./scripts/smoke/summarise_smoke_test_log.sh smoke_output.log > smoke_summary.txt
 
       - name: Notify slack if there are unexpected failures
@@ -87,12 +90,14 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: ${{ always() && (steps.summary.conclusion == 'failure') }}
+        shell: bash
         run: |
           ./scripts/send_to_slack.sh smoke_summary.txt "$SLACK_WEBHOOK_URL"
 
       - name: Find stale skips
         id: stale
         if: always()
+        shell: bash
         run: ./scripts/smoke/find_stale_skips.sh smoke_output.log > stale_skips.txt
 
       - name: Notify slack if there are stale skip marks
@@ -101,5 +106,6 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: ${{ always() && (steps.stale.conclusion == 'failure') }}
+        shell: bash
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
