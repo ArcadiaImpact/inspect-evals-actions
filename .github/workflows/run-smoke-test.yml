@@ -100,7 +100,7 @@ jobs:
         run: |
           ./scripts/smoke/find_stale_skips.sh \
             smoke_output.log \
-            "Tasks With Out-Of-Date Skips (Ubuntu)"
+            "Tasks With Out-Of-Date Skips (Ubuntu)" \
           > stale_skips.txt
 
       - name: Notify slack if there are stale skip marks
