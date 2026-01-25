@@ -3,13 +3,14 @@ set -eu
 
 usage() {
   echo "Summarise a smoke test log"
-  echo "Usage: $0 log_file"
+  echo "Usage: $0 <log_file> <summary_title>"
   exit 1
 }
 
-log_file="${1:-}"
+log_file="${1}"
+summary_title="${2}"
 
-if [[ -z "$log_file" || ! -f "$log_file" ]]; then
+if [[ ! -f "$log_file" ]]; then
   usage
 fi
 
@@ -34,7 +35,7 @@ n_unexpected=$(echo "$unexpected_errors" | grep -c . || echo 0)
 n_unexpected=${n_unexpected:-0}
 
 summary=$(cat <<EOF
-*Smoke Test Summary*
+*$summary_title*
 • *Total evals:* $n_total
 • *Successes:* $n_success
 • *Not-successes:* $n_not_success

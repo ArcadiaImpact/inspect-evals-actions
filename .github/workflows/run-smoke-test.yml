@@ -79,7 +79,11 @@ jobs:
       - name: Generate summary
         id: summary
         if: always()
-        run: ./scripts/smoke/summarise_smoke_test_log.sh smoke_output.log > smoke_summary.txt
+        run: |
+          ./scripts/smoke/summarise_smoke_test_log.sh \
+            smoke_output.log \
+            "Smoke Test Summary (Ubuntu)" \
+          > smoke_summary.txt
 
       - name: Notify slack if there are unexpected failures
         env:
@@ -93,7 +97,11 @@ jobs:
       - name: Find stale skips
         id: stale
         if: always()
-        run: ./scripts/smoke/find_stale_skips.sh smoke_output.log > stale_skips.txt
+        run: |
+          ./scripts/smoke/find_stale_skips.sh \
+            smoke_output.log \
+            "Tasks With Out-Of-Date Skips (Ubuntu)"
+          > stale_skips.txt
 
       - name: Notify slack if there are stale skip marks
         env:
