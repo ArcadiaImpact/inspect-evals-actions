@@ -16,6 +16,9 @@ env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  PYTHONUTF8: "1"
 
 jobs:
   smoke-test-windows:
@@ -82,7 +85,11 @@ jobs:
         id: summary
         if: always()
         shell: bash
-        run: ./scripts/smoke/summarise_smoke_test_log.sh smoke_output.log > smoke_summary.txt
+        run: | 
+          ./scripts/smoke/summarise_smoke_test_log.sh \
+            smoke_output.log \
+            "Smoke Test Summary (Windows)" \
+          > smoke_summary.txt
 
       - name: Notify slack if there are unexpected failures
         env:
@@ -98,7 +105,11 @@ jobs:
         id: stale
         if: always()
         shell: bash
-        run: ./scripts/smoke/find_stale_skips.sh smoke_output.log > stale_skips.txt
+        run: |
+          ./scripts/smoke/find_stale_skips.sh \
+            smoke_output.log \
+            "Tasks With Out-Of-Date Skips (Windows)"
+          > stale_skips.txt
 
       - name: Notify slack if there are stale skip marks
         env:

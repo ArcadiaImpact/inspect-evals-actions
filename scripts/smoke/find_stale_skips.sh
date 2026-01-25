@@ -2,13 +2,14 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 log_file"
+  echo "Usage: $0 <log_file> <summary_title>"
   exit 1
 }
 
-log_file="${1:-}"
+log_file="${1}"
+summary_title="${2}"
 
-if [[ -z "$log_file" || ! -f "$log_file" ]]; then
+if [[ ! -f "$log_file" ]]; then
   usage
 fi
 
@@ -20,7 +21,7 @@ n_stale=$(echo "$stale_tasks" | grep -c . 2>/dev/null || true)
 n_stale=${n_stale:-0}
 
 if [ "$n_stale" -gt 0 ]; then
-    echo "*Found evals that are being skipped that do not need to be skipped:*"
+    echo "*$summary_title*"
     while IFS= read -r task; do
         echo "• $task"
     done <<< "$stale_tasks"
