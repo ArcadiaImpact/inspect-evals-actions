@@ -16,6 +16,9 @@ env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  PYTHONUTF8: "1"
 
 jobs:
   smoke-test-windows:
