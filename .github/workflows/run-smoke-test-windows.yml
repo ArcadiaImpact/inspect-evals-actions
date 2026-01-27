@@ -56,12 +56,13 @@ jobs:
           uv sync --frozen --group test_py311_or_lower --extra test
 
       - name: Run test
-        shell: bash
+        shell: pwsh
         run: |
-          uv run python tools/run_evals.py \
-            --no-fail-fast \
-            --eval-timeout-mins 15 \
-          2>&1 | tee smoke_output.log || true
+          uv run python tools/run_evals.py `
+            --no-fail-fast `
+            --eval-timeout-mins 15 `
+          2>&1 | Tee-Object smoke_output.log
+          exit 0
 
       - name: Upload smoke output
         uses: actions/upload-artifact@v4
