@@ -36,13 +36,13 @@ n_unexpected=${n_unexpected:-0}
 
 summary=$(cat <<EOF
 *$summary_title*
-• *Total evals:* $n_total
-• *Successes:* $n_success
-• *Not-successes:* $n_not_success
-    ◦ Accepted errors: $n_accepted
-    ◦ Expected skips: $n_skipped
-    ◦ Timeouts: $n_timeouts
-    ◦ Unexpected errors: $n_unexpected
+- *Total evals:* $n_total
+- *Successes:* $n_success
+- *Not-successes:* $n_not_success
+    - Accepted errors: $n_accepted
+    - Expected skips: $n_skipped
+    - Timeouts: $n_timeouts
+    - Unexpected errors: $n_unexpected
 EOF
 )
 
