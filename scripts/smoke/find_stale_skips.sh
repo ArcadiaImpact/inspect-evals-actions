@@ -23,7 +23,7 @@ n_stale=${n_stale:-0}
 if [ "$n_stale" -gt 0 ]; then
     echo "*$summary_title*"
     while IFS= read -r task; do
-        echo "• $task"
+        echo "- $task"
     done <<< "$stale_tasks"
     exit 1
 fi
