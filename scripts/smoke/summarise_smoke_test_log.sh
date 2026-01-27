@@ -49,7 +49,7 @@ EOF
 if [ "$n_unexpected" -gt 0 ]; then
   bullet_list=""
   while IFS= read -r task; do
-    bullet_list+=$'• '"$task"$'\n'
+    bullet_list+=$'- '"$task"$'\n'
   done <<< "$unexpected_errors"
 
   summary+=$'\n\n*Tasks with unexpected errors:*\n'
