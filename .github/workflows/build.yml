@@ -260,9 +260,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-datasets-${{ matrix.os }}-py${{ matrix.python-version }}-v1
+          # Note: HF datasets are Python-version independent, so we only key by OS
+          # to avoid redundant downloads across Python versions (reduces API calls by 4x)
+          key: hf-datasets-${{ matrix.os }}-v2
           restore-keys: |
-            hf-datasets-${{ matrix.os }}-py${{ matrix.python-version }}-
             hf-datasets-${{ matrix.os }}-
 
       - name: Install dependencies for python < 3.12
