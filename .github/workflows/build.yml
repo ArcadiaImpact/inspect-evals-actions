@@ -230,8 +230,6 @@ jobs:
       RUN_SLOW_TESTS: no
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: ${{ matrix.python-version }}
-      SLOW_TEST_REPORT_THRESHOLD: "10.0"
-      SLOW_TEST_FAIL_THRESHOLD: "60.0"
 
     steps:
       - uses: actions/checkout@v5
@@ -281,102 +279,40 @@ jobs:
         run: |
           uv run pytest -rA --doctest-modules --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
 
-      - name: Check for unmarked slow tests
-        if: always()
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: pytest-report.jsonl
+          
+  slow-test-check:
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+
+    steps:
+      - name: Download all pytest reports
+        uses: actions/download-artifact@v4
+        with:
+          path: ./reports
+
+      - name: Keep only reports for this OS
         shell: bash
         run: |
-          uv run python - <<'PY'
-          import json
-          import os
-          import sys
+          ls -1d ./reports/* \
+            | grep -v "^./reports/pytest-report-${{ matrix.os }}-" \
+            | xargs -r rm -rf
 
-          # Since RUN_SLOW_TESTS=no, tests marked with @pytest.mark.slow are skipped.
-          # Any test that actually ran and took >= threshold is therefore unmarked.
-          # We report tests >= REPORT_THRESHOLD but only fail for tests >= FAIL_THRESHOLD.
-          REPORT_THRESHOLD = float(os.environ.get('SLOW_TEST_REPORT_THRESHOLD', '10.0'))
-          FAIL_THRESHOLD = float(os.environ.get('SLOW_TEST_FAIL_THRESHOLD', '60.0'))
-          report = 'pytest-report.jsonl'
-          slow_tests = []
+      - name: Run slow test check
+        shell: bash
+        env:
+          SLOW_TEST_REPORT_THRESHOLD: "10.0"
+          SLOW_TEST_FAIL_THRESHOLD: "60.0"
+        run: |
+          python scripts/build/check_slow_tests.py --reports-dir ./reports
 
-          if not os.path.exists(report):
-              print(f'Warning: {report} not found, skipping slow test check')
-              sys.exit(0)
-
-          with open(report, 'r') as f:
-              for line in f:
-                  try:
-                      obj = json.loads(line)
-                  except Exception:
-                      continue
-                  if obj.get('$report_type') != 'TestReport':
-                      continue
-                  if obj.get('when') != 'call':
-                      continue
-                  if obj.get('outcome') == 'skipped':
-                      continue
-                  # Skip tests marked with @pytest.mark.huggingface (retries can be slow)
-                  keywords = obj.get('keywords', {})
-                  if 'huggingface' in keywords:
-                      continue
-                  dur = float(obj.get('duration') or 0.0)
-                  if dur >= REPORT_THRESHOLD:
-                      slow_tests.append((dur, obj.get('nodeid', '<unknown>')))
-
-          slow_tests.sort(reverse=True)
-          failures = [(dur, nodeid) for dur, nodeid in slow_tests if dur >= FAIL_THRESHOLD]
-
-          if slow_tests:
-              print()
-              if failures:
-                  print('=' * 80)
-                  print('ERROR: Found tests taking >= 10 seconds without @pytest.mark.slow')
-                  print('=' * 80)
-              else:
-                  print('-' * 80)
-                  print('WARNING: Found tests taking >= 10 seconds without @pytest.mark.slow')
-                  print('-' * 80)
-              print()
-              print('The following tests exceeded the threshold but are not marked as slow tests.')
-              print('Please add @pytest.mark.slow to these tests.')
-              if failures:
-                  print('Tests >= 60s will fail the build and must be fixed.')
-              else:
-                  print('This is non-blocking, but should still be fixed.')
-              print()
-              print('Slow tests:')
-              for dur, nodeid in slow_tests:
-                  marker = ' [FAIL]' if dur >= FAIL_THRESHOLD else ''
-                  print(f'  {dur:6.2f}s  {nodeid}{marker}')
-              print()
-              print('-' * 80)
-              print('HOW TO FIX:')
-              print('-' * 80)
-              print()
-              print('Add the @pytest.mark.slow decorator to each test function listed above.')
-              print('Include the expected duration in seconds as an argument:')
-              print()
-              print('    import pytest')
-              print()
-              print('    @pytest.mark.slow(seconds=15)  # Adjust based on actual duration')
-              print('    def test_my_slow_test():')
-              print('        ...')
-              print()
-              print("The 'seconds' parameter helps document the expected runtime and allows")
-              print('for better test scheduling and timeout configuration.')
-              print()
-              print('-' * 80)
-              print('USING A CODING AGENT?')
-              print('-' * 80)
-              print()
-              print('Link this job URL to your coding agent and tell it to use the')
-              print('"Mark Slow Tests" workflow in AGENTS.md to fix this issue.')
-              print()
-              print('=' * 80 if failures else '-' * 80)
-              if failures:
-                  sys.exit(1)
-          else:
-              print('All tests under 10 seconds or properly marked with @pytest.mark.slow')
-          PY
 
   clean-install-test:
     runs-on: ${{ matrix.os }}
