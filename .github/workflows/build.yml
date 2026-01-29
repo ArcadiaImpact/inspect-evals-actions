@@ -98,7 +98,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          node-version: "lts/Jod"
+          node-version: "20"
 
       - name: Install markdown-link-check
         run: npm install --no-fund -g markdown-link-check
