@@ -285,16 +285,23 @@ jobs:
           
   slow-test-check:
     runs-on: ${{ matrix.os }}
+    needs: test
     strategy:
       matrix:
         os: [ubuntu-latest-8-cores, windows-latest-8-cores]
 
     steps:
-      - name: Download all pytest reports for this OS
+      - name: Download all pytest reports
         uses: actions/download-artifact@v4
         with:
-          name: pytest-report-${{ matrix.os }}-*
           path: ./reports
+
+      - name: Keep only reports for this OS
+        shell: bash
+        run: |
+          ls -1d ./reports/* \
+            | grep -v "^./reports/pytest-report-${{ matrix.os }}-" \
+            | xargs -r rm -rf
 
       - name: Run slow test check
         shell: bash
