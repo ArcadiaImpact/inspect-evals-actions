@@ -286,11 +286,8 @@ jobs:
           path: pytest-report.jsonl
           
   slow-test-check:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     needs: test
-    strategy:
-      matrix:
-        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
 
     steps:
 
@@ -301,13 +298,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./reports
-
-      - name: Keep only reports for this OS
-        shell: bash
-        run: |
-          ls -1d ./reports/* \
-            | grep -v "^./reports/pytest-report-${{ matrix.os }}-" \
-            | xargs -r rm -rf
 
       - name: Run slow test check
         shell: bash
