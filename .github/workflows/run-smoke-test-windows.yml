@@ -16,6 +16,9 @@ env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  PYTHONUTF8: "1"
 
 jobs:
   smoke-test-windows:
@@ -35,20 +38,88 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+        with:
+          prune-cache: false
 
       - name: Cache Hugging Face datasets
         uses: actions/cache@v4
         with:
-          path: ~\.cache\huggingface
+          path: ~/.cache/huggingface
           key: hf-datasets-${{ runner.os }}-py3.11-v1
           restore-keys: |
             hf-datasets-${{ runner.os }}-py3.11-
             hf-datasets-${{ runner.os }}-
 
       - name: Install dependencies
+        shell: bash
         run: |
           uv sync --frozen --group test_py311_or_lower --extra test
 
       - name: Run test
+        shell: pwsh
         run: |
-          uv run python tools/run_evals.py --no-fail-fast --eval-timeout-mins 15
+          uv run python tools/run_evals.py `
+            --no-fail-fast `
+            --eval-timeout-mins 15 `
+          2>&1 | Tee-Object smoke_output.log
+          exit 0
+
+      - name: Upload smoke output
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-output
+          path: smoke_output.log
+
+  summarise-smoke:
+    needs: smoke-test-windows
+    runs-on: windows-latest-8-cores
+
+    steps:
+      - name: Checkout inspect-evals-actions
+        uses: actions/checkout@v5
+
+      - name: Download smoke output
+        uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-output
+          path: .
+
+      - name: Generate summary
+        id: summary
+        if: always()
+        shell: bash
+        run: | 
+          ./scripts/smoke/summarise_smoke_test_log.sh \
+            smoke_output.log \
+            "Smoke Test Summary (Windows)" \
+          > smoke_summary.txt
+
+      - name: Notify slack if there are unexpected failures
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_DEV }}
+        if: ${{ always() && (steps.summary.conclusion == 'failure') }}
+        shell: bash
+        run: |
+          ./scripts/send_to_slack.sh smoke_summary.txt "$SLACK_WEBHOOK_URL"
+
+      - name: Find stale skips
+        id: stale
+        if: always()
+        shell: bash
+        run: |
+          ./scripts/smoke/find_stale_skips.sh \
+            smoke_output.log \
+            "Tasks With Out-Of-Date Skips (Windows)" \
+          > stale_skips.txt
+
+      - name: Notify slack if there are stale skip marks
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_DEV }}
+        if: ${{ always() && (steps.stale.conclusion == 'failure') }}
+        shell: bash
+        run: |
+          ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
