@@ -403,7 +403,7 @@ jobs:
         if: env.HAS_SLOW_TESTS == 'true'
         shell: bash
         run: |
-          uv run pytest -rA --color=yes --durations=50 $TEST_PATHS
+          uv run pytest -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
 
   report-status:
     runs-on: ubuntu-latest
