@@ -91,7 +91,7 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_DEV }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: ${{ always() && (steps.summary.conclusion == 'failure') }}
         run: |
           ./scripts/send_to_slack.sh smoke_summary.txt "$SLACK_WEBHOOK_URL"
