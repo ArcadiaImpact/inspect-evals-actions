@@ -1,5 +1,5 @@
 ---
-name:  Smoke Test (Windows)
+name: Smoke Test (Windows)
 
 "on":
   workflow_dispatch:
@@ -88,7 +88,7 @@ jobs:
         id: summary
         if: always()
         shell: bash
-        run: | 
+        run: |
           ./scripts/smoke/summarise_smoke_test_log.sh \
             smoke_output.log \
             "Smoke Test Summary (Windows)" \

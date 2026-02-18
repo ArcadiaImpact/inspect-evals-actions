@@ -2,16 +2,16 @@
 set -eu
 
 usage() {
-  echo "Summarise a smoke test log"
-  echo "Usage: $0 <log_file> <summary_title>"
-  exit 1
+	echo "Summarise a smoke test log"
+	echo "Usage: $0 <log_file> <summary_title>"
+	exit 1
 }
 
 log_file="${1}"
 summary_title="${2}"
 
 if [[ ! -f "$log_file" ]]; then
-  usage
+	usage
 fi
 
 # Total --> {success, not success}
@@ -25,16 +25,23 @@ a_priori_expected=$(grep "Skipping eval" "$log_file" | sed -E 's/.*Skipping eval
 timeouts=$(grep 'timed out:' "$log_file" | sed -E 's/.*timed out: ([^ ]+).*/\1/' || true)
 unexpected_errors=$(grep "is not considered" "$log_file" | sed -E "s/.*on task task_name='([^']+)'.*/\1/" || true)
 
-n_total=$(echo "$total" | grep -c . || echo 0)
-n_success=$(echo "$successes" | grep -c . || echo 0)
-n_not_success=$(echo "$not_successes" | grep -c . || echo 0)
-n_accepted=$(echo "$accepted_errors" | grep -c . || echo 0)
-n_skipped=$(echo "$a_priori_expected" | grep -c . || echo 0)
-n_timeouts=$(echo "$timeouts" | grep -c . || echo 0)
-n_unexpected=$(echo "$unexpected_errors" | grep -c . || echo 0)
+n_total=$(echo "$total" | grep -c . || true)
+n_total=${n_total:-0}
+n_success=$(echo "$successes" | grep -c . || true)
+n_success=${n_success:-0}
+n_not_success=$(echo "$not_successes" | grep -c . || true)
+n_not_success=${n_not_success:-0}
+n_accepted=$(echo "$accepted_errors" | grep -c . || true)
+n_accepted=${n_accepted:-0}
+n_skipped=$(echo "$a_priori_expected" | grep -c . || true)
+n_skipped=${n_skipped:-0}
+n_timeouts=$(echo "$timeouts" | grep -c . || true)
+n_timeouts=${n_timeouts:-0}
+n_unexpected=$(echo "$unexpected_errors" | grep -c . || true)
 n_unexpected=${n_unexpected:-0}
 
-summary=$(cat <<EOF
+summary=$(
+	cat <<EOF
 *$summary_title*
 - *Total evals:* $n_total
 - *Successes:* $n_success
@@ -47,18 +54,19 @@ EOF
 )
 
 if [ "$n_unexpected" -gt 0 ]; then
-  bullet_list=""
-  while IFS= read -r task; do
-    bullet_list+=$'- '"$task"$'\n'
-  done <<< "$unexpected_errors"
+	bullet_list=""
+	while IFS= read -r task; do
+		bullet_list+=$'- '"$task"$'\n'
+	done <<<"$unexpected_errors"
 
-  summary+=$'\n\n*Tasks with unexpected errors:*\n'
-  summary+="$bullet_list"
+	summary+=$'\n\n*Tasks with unexpected errors:*\n'
+	summary+="$bullet_list"
 fi
 
 echo "$summary"
 
 # Unexpected errors implies a failure
 if [ "$n_unexpected" -gt 0 ]; then
-  exit 1
+	exit 1
 fi
+
