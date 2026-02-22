@@ -62,7 +62,7 @@ jobs:
           uv run pytest -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl \
-            tests/agentbench
+            tests/agent_bench
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
         id: slow_check
