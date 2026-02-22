@@ -61,6 +61,7 @@ jobs:
           uv run python tools/run_evals.py `
             --no-fail-fast `
             --eval-timeout-mins 15 `
+            --clean `
           2>&1 | Tee-Object smoke_output.log
           exit 0
 
