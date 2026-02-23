@@ -61,7 +61,8 @@ jobs:
         run: |
           uv run pytest -rA --color=yes \
             --durations=20 \
-            --report-log=pytest-report.jsonl
+            --report-log=pytest-report.jsonl \
+            tests/b3 tests/livebench
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
         id: slow_check
@@ -267,3 +268,102 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
             -d @slack_payload.json \
             ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Dispatch failures to inspect_evals for automated fix
+        if: ${{ always() && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        env:
+          GH_TOKEN: ${{ secrets.INSPECT_EVALS_AUTOMATIC_FIX_TOKEN }}
+        run: |
+          python3 <<'PY' > dispatch_payload.json
+          import json
+          import math
+          import os
+          import sys
+
+          run_id = os.environ["GITHUB_RUN_ID"]
+          run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{run_id}"
+
+          # --- Parse test failures from pytest-report.jsonl ---
+          test_failures = []
+          try:
+              with open("pytest-report.jsonl", "r") as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                      except Exception:
+                          continue
+                      if obj.get("$report_type") != "TestReport":
+                          continue
+                      if obj.get("when") != "call":
+                          continue
+                      if obj.get("outcome") == "failed":
+                          longrepr = obj.get("longrepr", "")
+                          if isinstance(longrepr, dict):
+                              longrepr = longrepr.get("reprcrash", {}).get("message", "")
+                          test_failures.append({
+                              "node_id": obj.get("nodeid", "unknown"),
+                              "error_summary": str(longrepr)[:500],
+                          })
+          except FileNotFoundError:
+              pass
+
+          # --- Parse unmarked slow tests (format: "45.20s\tnodeid") ---
+          slow_tests = []
+          try:
+              with open("unmarked_slow_tests.txt", "r") as f:
+                  for line in f:
+                      line = line.strip()
+                      if not line:
+                          continue
+                      parts = line.split("\t", maxsplit=1)
+                      if len(parts) == 2:
+                          dur_str = parts[0].rstrip("s")
+                          try:
+                              dur = float(dur_str)
+                          except ValueError:
+                              dur = 0.0
+                          slow_tests.append({
+                              "node_id": parts[1],
+                              "duration": dur,
+                              "marker_value": math.ceil(dur),
+                          })
+          except FileNotFoundError:
+              pass
+
+          # --- Parse unmarked docker tests (format: one nodeid per line) ---
+          docker_tests = []
+          try:
+              with open("unmarked_docker_tests.txt", "r") as f:
+                  for line in f:
+                      line = line.strip()
+                      if line:
+                          docker_tests.append({"node_id": line})
+          except FileNotFoundError:
+              pass
+
+          if not any([test_failures, slow_tests, docker_tests]):
+              print("No failures to dispatch.", file=sys.stderr)
+              sys.exit(0)
+
+          payload = {
+              "run_id": run_id,
+              "run_url": run_url,
+              "test_failures": test_failures,
+              "slow_tests": slow_tests,
+              "docker_tests": docker_tests,
+          }
+          print(json.dumps(payload))
+          PY
+
+          if [ ! -s dispatch_payload.json ]; then
+            echo "No dispatch payload generated — skipping."
+            exit 0
+          fi
+
+          echo "Dispatch payload:"
+          python3 -m json.tool dispatch_payload.json
+
+          # Send repository_dispatch to inspect_evals
+          jq -n --argjson payload "$(cat dispatch_payload.json)" \
+            '{"event_type": "heavy-test-failure", "client_payload": $payload}' | \
+            gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
