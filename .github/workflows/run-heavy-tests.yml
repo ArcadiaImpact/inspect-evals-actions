@@ -10,7 +10,7 @@ name: Heavy Tests
         default: ""
         type: string
   schedule:
-    - cron: "0 2 * * *"  # Nightly at 02:00 UTC
+    - cron: "0 2 * * 1,3,5"  # Mon/Wed/Fri at 02:00 UTC
 
 env:
     HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
@@ -250,13 +250,13 @@ jobs:
           title_summary = ', '.join(issues) if issues else 'issues detected'
 
           payload = {
-              "text": f"⚠️ Heavy Tests Failed (Nightly) - {title_summary}",
+              "text": f"⚠️ Heavy Tests Failed - {title_summary}",
               "blocks": [
                   {
                       "type": "section",
                       "text": {
                           "type": "mrkdwn",
-                          "text": f"*⚠️ Nightly Heavy Tests Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
+                          "text": f"*⚠️ Heavy Tests Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
                       }
                   }
               ]

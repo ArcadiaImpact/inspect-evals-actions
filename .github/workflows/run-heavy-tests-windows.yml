@@ -10,7 +10,7 @@ name: Heavy Tests (Windows)
         default: ""
         type: string
   schedule:
-    - cron: "0 14 * * *"  # Nightly at 14:00 UTC (12 hours after Ubuntu heavy tests)
+    - cron: "0 2 * * 2,4,6"  # Tue/Thu/Sat at 2:00 UTC
 
 env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
@@ -195,13 +195,13 @@ jobs:
           title_summary = ', '.join(issues) if issues else 'issues detected'
 
           payload = {
-              "text": f"⚠️ Heavy Tests (Windows) Failed (Nightly) - {title_summary}",
+              "text": f"⚠️ Heavy Tests (Windows) Failed - {title_summary}",
               "blocks": [
                   {
                       "type": "section",
                       "text": {
                           "type": "mrkdwn",
-                          "text": f"*⚠️ Nightly Heavy Tests (Windows) Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
+                          "text": f"*⚠️ Heavy Tests (Windows) Failed*\n\n{summary}\n\n<{run_url}|View Run Details>"
                       }
                   }
               ]
