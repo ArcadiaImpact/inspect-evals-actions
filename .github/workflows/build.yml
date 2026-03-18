@@ -6,6 +6,10 @@ on:
   repository_dispatch:
     types: [build]
 
+concurrency:
+  group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref }}
+  cancel-in-progress: true
+
 # Payload expected from caller:
 # {
 #   "ref": "<git sha to checkout>",
