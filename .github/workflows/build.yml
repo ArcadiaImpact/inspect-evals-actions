@@ -235,10 +235,8 @@ jobs:
         id: base
         shell: bash
         run: |
-          # Always compute merge-base so the diff only contains the PR's own
-          # changes. Using base_sha (main's tip) directly causes the diff to
-          # include every eval merged into main since the PR branched, which
-          # makes the targeted slow-test job run far more tests than intended.
+          # Compute merge-base so the diff only reflects the PR's own
+          # changes, not unrelated work merged into main since the branch point.
           BASE_REF="${{ github.event.client_payload.base_sha }}"
           if [ -z "$BASE_REF" ]; then
             BASE_REF="origin/main"
