@@ -235,16 +235,17 @@ jobs:
         id: base
         shell: bash
         run: |
-          # Use provided base_sha if available, otherwise compute merge-base with main
-          if [ -n "${{ github.event.client_payload.base_sha }}" ]; then
-            echo "sha=${{ github.event.client_payload.base_sha }}" >> $GITHUB_OUTPUT
-            echo "Using provided base_sha: ${{ github.event.client_payload.base_sha }}"
-          else
-            # Fallback: compute merge-base with origin/main
-            MERGE_BASE=$(git merge-base origin/main HEAD)
-            echo "sha=$MERGE_BASE" >> $GITHUB_OUTPUT
-            echo "No base_sha provided, using merge-base with main: $MERGE_BASE"
+          # Always compute merge-base so the diff only contains the PR's own
+          # changes. Using base_sha (main's tip) directly causes the diff to
+          # include every eval merged into main since the PR branched, which
+          # makes the targeted slow-test job run far more tests than intended.
+          BASE_REF="${{ github.event.client_payload.base_sha }}"
+          if [ -z "$BASE_REF" ]; then
+            BASE_REF="origin/main"
           fi
+          MERGE_BASE=$(git merge-base "$BASE_REF" HEAD)
+          echo "sha=$MERGE_BASE" >> $GITHUB_OUTPUT
+          echo "Using merge-base: $MERGE_BASE (base ref: $BASE_REF)"
 
       - name: Get changed files
         id: changed
