@@ -47,6 +47,12 @@ jobs:
             hf-datasets-${{ runner.os }}-py3.11-
             hf-datasets-${{ runner.os }}-
 
+      - name: Cache Kaggle TOS verification
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/inspect_evals/mle_bench/tos_accepted
+          key: kaggle-tos-${{ runner.os }}-v1
+
       - name: Install dependencies
         run: |
           uv sync --frozen --group test_py311_or_lower --extra test
