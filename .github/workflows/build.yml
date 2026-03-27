@@ -178,10 +178,10 @@ jobs:
         run: |
           set +e  # Don't exit on error, we want to capture the output
           echo "::group::Running inspect eval command"
-          echo "Command: uv run inspect eval inspect_evals/humaneval --limit=0"
+          echo "Command: uv run inspect eval inspect_evals/make_me_pay --limit=0"
 
           # Run the command and capture both stdout and stderr
-          output=$(uv run inspect eval inspect_evals/humaneval --limit=0 2>&1)
+          output=$(uv run inspect eval inspect_evals/make_me_pay --limit=0 2>&1)
           exit_code=$?
 
           echo "Exit code: $exit_code"
