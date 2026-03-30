@@ -28,6 +28,7 @@ env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+  INSPECT_HF_TELEMETRY: 1
 
 jobs:
   set-pending-status:
