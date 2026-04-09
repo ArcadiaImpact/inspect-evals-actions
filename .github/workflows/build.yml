@@ -96,15 +96,21 @@ jobs:
         if: ${{ matrix.python-version < '3.12' }}
         run: |
           uv sync --frozen --group test_py311_or_lower --extra test
+          uv pip install pytest-xdist
 
       - name: Install dependencies for python >= 3.12
         if: ${{ matrix.python-version >= '3.12' }}
         run: |
           uv sync --frozen --group test_py312_or_higher --extra test
+          uv pip install pytest-xdist
+
+      - name: Run doctests
+        run: |
+          uv run pytest --doctest-modules --color=yes
 
       - name: Test with pytest
         run: |
-          uv run pytest -rA --doctest-modules --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
+          uv run pytest -n 2 --dist=loadgroup -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
@@ -347,6 +353,7 @@ jobs:
         if: env.TEST_PATHS != ''
         run: |
           uv sync --frozen --group test_py312_or_higher --extra test
+          uv pip install pytest-xdist
 
       - name: Check for slow tests in derived paths
         id: check_slow
@@ -406,7 +413,7 @@ jobs:
         if: env.HAS_SLOW_TESTS == 'true'
         shell: bash
         run: |
-          uv run pytest -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
+          uv run pytest -n 2 --dist=loadgroup -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
 
   report-status:
     runs-on: ubuntu-latest
