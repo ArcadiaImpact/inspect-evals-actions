@@ -61,7 +61,7 @@ jobs:
           uv run python tools/run_evals.py \
             --no-fail-fast \
             --eval-timeout-mins 15 \
-            --clean \
+            --clean-after-chunk \
           2>&1 | tee smoke_output.log || true
 
       - name: Upload smoke output
