@@ -107,9 +107,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_AUTOMATIC_FIX_TOKEN }}
         run: |
-          # Extract failing eval names from the log (same grep as summarise script)
+          # Extract failing task names from the log. Descriptor format
+          # emitted by tools/run_evals.py is:
+          #   "eval N (EVAL_ID) task M of K (TASK_NAME)"
+          # Same extraction as scripts/smoke/summarise_smoke_test_log.sh.
           FAILING_EVALS=$(grep "is not considered" smoke_output.log \
-            | sed -E "s/.*on task task_name='([^']+)'.*/\1/" \
+            | sed -nE 's/.*task [0-9]+ of [0-9]+ \(([^)]+)\).*/\1/p' \
             | head -10 \
             | jq -R -s 'split("\n") | map(select(length > 0))')
 
