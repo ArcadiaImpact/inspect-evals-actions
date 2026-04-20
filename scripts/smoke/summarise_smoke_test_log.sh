@@ -14,16 +14,22 @@ if [[ ! -f "$log_file" ]]; then
 	usage
 fi
 
+# The descriptor format emitted by tools/run_evals.py is:
+#   "eval N (EVAL_ID) task M of K (TASK_NAME)"
+# We extract TASK_NAME by matching the 'task M of K (TASK_NAME)' portion,
+# which appears in every relevant log line.
+extract_task_name='s/.*task [0-9]+ of [0-9]+ \(([^)]+)\).*/\1/p'
+
 # Total --> {success, not success}
-total=$(grep "Testing eval" "$log_file" | sed -E 's/.*Testing eval [0-9]+: //')
-successes=$(grep succeeded "$log_file" | sed -E 's/.*succeeded: //')
+total=$(grep "Testing eval" "$log_file" | sed -nE "$extract_task_name")
+successes=$(grep "Succeeded:" "$log_file" | sed -nE "$extract_task_name")
 not_successes=$(comm -23 <(echo "$total" | sort) <(echo "$successes" | sort) || true)
 
 # Not success --> {acceptable, expected, timeouts, unexpected}
-accepted_errors=$(grep "ignoring" "$log_file" | sed -E "s/.*on task_name='([^']+)'.*/\1/" || true)
-a_priori_expected=$(grep "Skipping eval" "$log_file" | sed -E 's/.*Skipping eval [0-9]+: ([^\.]+)\..*/\1/' || true)
-timeouts=$(grep 'timed out:' "$log_file" | sed -E 's/.*timed out: ([^ ]+).*/\1/' || true)
-unexpected_errors=$(grep "is not considered" "$log_file" | sed -E "s/.*on task task_name='([^']+)'.*/\1/" || true)
+accepted_errors=$(grep "ignoring" "$log_file" | sed -nE "$extract_task_name" || true)
+a_priori_expected=$(grep "Skipping eval" "$log_file" | sed -nE "$extract_task_name" || true)
+timeouts=$(grep "Timed out:" "$log_file" | sed -nE "$extract_task_name" || true)
+unexpected_errors=$(grep "is not considered" "$log_file" | sed -nE "$extract_task_name" || true)
 
 n_total=$(echo "$total" | grep -c . || true)
 n_total=${n_total:-0}
