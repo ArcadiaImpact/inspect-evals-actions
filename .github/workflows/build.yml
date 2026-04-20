@@ -96,13 +96,11 @@ jobs:
         if: ${{ matrix.python-version < '3.12' }}
         run: |
           uv sync --frozen --group test_py311_or_lower --extra test
-          uv pip install pytest-xdist
 
       - name: Install dependencies for python >= 3.12
         if: ${{ matrix.python-version >= '3.12' }}
         run: |
           uv sync --frozen --group test_py312_or_higher --extra test
-          uv pip install pytest-xdist
 
       - name: Run doctests
         run: |
@@ -353,7 +351,6 @@ jobs:
         if: env.TEST_PATHS != ''
         run: |
           uv sync --frozen --group test_py312_or_higher --extra test
-          uv pip install pytest-xdist
 
       - name: Check for slow tests in derived paths
         id: check_slow
