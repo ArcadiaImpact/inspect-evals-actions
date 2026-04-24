@@ -102,9 +102,13 @@ jobs:
         run: |
           uv sync --frozen --group test_py312_or_higher --extra test
 
+      - name: Run doctests
+        run: |
+          uv run pytest --doctest-modules --color=yes
+
       - name: Test with pytest
         run: |
-          uv run pytest -rA --doctest-modules --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
+          uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
@@ -406,7 +410,7 @@ jobs:
         if: env.HAS_SLOW_TESTS == 'true'
         shell: bash
         run: |
-          uv run pytest -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
+          uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
 
   report-status:
     runs-on: ubuntu-latest
