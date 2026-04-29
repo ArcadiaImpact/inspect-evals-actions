@@ -59,7 +59,7 @@ jobs:
       - name: Run full test suite with report log
         id: tests
         run: |
-          uv run pytest -n 2 -rA --color=yes \
+          uv run pytest -n 2 --dist=loadgroup -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl \
             tests/
