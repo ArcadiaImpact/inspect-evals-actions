@@ -86,11 +86,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/huggingface
-          # Note: HF datasets are Python-version independent, so we only key by OS
-          # to avoid redundant downloads across Python versions (reduces API calls by 4x)
-          key: hf-datasets-${{ matrix.os }}-v2
-          restore-keys: |
-            hf-datasets-${{ matrix.os }}-
+          # Keyed by OS (HF datasets are Python-version independent) and uv.lock
+          # so a `datasets` bump invalidates the cache automatically.
+          key: hf-datasets-${{ matrix.os }}-${{ hashFiles('uv.lock') }}
 
       - name: Install dependencies for python < 3.12
         if: ${{ matrix.python-version < '3.12' }}
