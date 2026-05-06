@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          uv sync --frozen --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --extra test
 
       - name: Run test
         shell: pwsh
