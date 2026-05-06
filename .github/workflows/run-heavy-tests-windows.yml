@@ -59,7 +59,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --extra test
 
       - name: Run full test suite with report log
         id: tests

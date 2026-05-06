@@ -93,12 +93,12 @@ jobs:
       - name: Install dependencies for python < 3.12
         if: ${{ matrix.python-version < '3.12' }}
         run: |
-          uv sync --frozen --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --extra test
 
       - name: Install dependencies for python >= 3.12
         if: ${{ matrix.python-version >= '3.12' }}
         run: |
-          uv sync --frozen --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --extra test
 
       - name: Run doctests
         run: |
@@ -348,7 +348,7 @@ jobs:
       - name: Install dependencies
         if: env.TEST_PATHS != ''
         run: |
-          uv sync --frozen --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --extra test
 
       - name: Check for slow tests in derived paths
         id: check_slow
