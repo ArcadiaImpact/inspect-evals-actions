@@ -43,8 +43,6 @@ jobs:
         with:
           path: ~/.cache/huggingface
           key: hf-datasets-${{ runner.os }}-py3.11-${{ hashFiles('uv.lock') }}
-          restore-keys: |
-            hf-datasets-${{ runner.os }}-py3.11-
 
       - name: Cache Kaggle TOS verification
         uses: actions/cache@v5

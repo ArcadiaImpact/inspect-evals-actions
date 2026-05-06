@@ -55,10 +55,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~\.cache\huggingface
-          key: hf-datasets-${{ runner.os }}-py3.11-v1
-          restore-keys: |
-            hf-datasets-${{ runner.os }}-py3.11-
-            hf-datasets-${{ runner.os }}-
+          key: hf-datasets-${{ runner.os }}-py3.11-${{ hashFiles('uv.lock') }}
 
       - name: Install dependencies
         run: |
