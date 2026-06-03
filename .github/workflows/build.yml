@@ -450,7 +450,7 @@ jobs:
             ${{ runner.os }}-uv-3.12-
 
       - name: Run isolated eval tests via tox
-        run: tox -e kernelbench,novelty_bench,livebench,bold,abstention_bench
+        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,bold,abstention_bench
 
   report-status:
     runs-on: ubuntu-latest
