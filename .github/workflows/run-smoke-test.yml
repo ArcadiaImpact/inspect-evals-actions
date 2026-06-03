@@ -52,7 +52,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen --group dev --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --group test
 
       - name: Run test
         run: |
@@ -144,3 +144,4 @@ jobs:
         if: ${{ always() && (steps.stale.conclusion == 'failure') }}
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
+
