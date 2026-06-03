@@ -93,12 +93,12 @@ jobs:
       - name: Install dependencies for python < 3.12
         if: ${{ matrix.python-version < '3.12' }}
         run: |
-          uv sync --frozen --group dev --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --group test
 
       - name: Install dependencies for python >= 3.12
         if: ${{ matrix.python-version >= '3.12' }}
         run: |
-          uv sync --frozen --group dev --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --group test
 
       - name: Run doctests
         run: |
@@ -106,7 +106,13 @@ jobs:
 
       - name: Test with pytest
         run: |
-          uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
+          uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
+            --ignore=tests/kernelbench \
+            --ignore=tests/novelty_bench \
+            --ignore=tests/livebench \
+            --ignore=tests/mle_bench \
+            --ignore=tests/bold \
+            --ignore=tests/abstention_bench
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
@@ -348,7 +354,7 @@ jobs:
       - name: Install dependencies
         if: env.TEST_PATHS != ''
         run: |
-          uv sync --frozen --group dev --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --group test
 
       - name: Check for slow tests in derived paths
         id: check_slow
@@ -410,6 +416,42 @@ jobs:
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
 
+
+  tox-isolated-evals:
+    name: Isolated eval tests (tox)
+    runs-on: ubuntu-latest-8-cores
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ github.event.client_payload.ref }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install tox and tox-uv
+        run: pip install tox tox-uv
+
+      - name: Cache uv downloads
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.12-isolated-${{ hashFiles('packages/*/uv.lock', 'packages/*/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.12-isolated-
+            ${{ runner.os }}-uv-3.12-
+
+      - name: Run isolated eval tests via tox
+        run: tox -e kernelbench,novelty_bench,livebench,bold,abstention_bench
+
   report-status:
     runs-on: ubuntu-latest
     needs:
@@ -418,6 +460,7 @@ jobs:
       - slow-test-check
       - clean-install-test
       - targeted-slow-tests
+      - tox-isolated-evals
     if: always()
     steps:
       - name: Determine overall status
@@ -456,3 +499,4 @@ jobs:
             -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -f description="${{ steps.status.outputs.description }}" \
             -f context="Tests (inspect-evals-actions)"
+
