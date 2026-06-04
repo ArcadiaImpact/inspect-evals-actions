@@ -66,6 +66,7 @@ jobs:
             --ignore=tests/novelty_bench \
             --ignore=tests/livebench \
             --ignore=tests/mle_bench \
+            --ignore=tests/cve_bench \
             --ignore=tests/bold \
             --ignore=tests/abstention_bench \
             tests/
