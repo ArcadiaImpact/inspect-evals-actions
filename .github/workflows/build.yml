@@ -111,6 +111,7 @@ jobs:
           echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
 
       - name: Test with pytest
+        shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
             --ignore=tests/kernelbench \
