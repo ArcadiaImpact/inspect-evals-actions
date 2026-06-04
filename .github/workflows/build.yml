@@ -111,6 +111,7 @@ jobs:
             --ignore=tests/novelty_bench \
             --ignore=tests/livebench \
             --ignore=tests/mle_bench \
+            --ignore=tests/cve_bench \
             --ignore=tests/bold \
             --ignore=tests/abstention_bench
 
@@ -330,7 +331,7 @@ jobs:
 
           ISOLATED_EVALS = {
               'kernelbench', 'novelty_bench', 'livebench',
-              'mle_bench', 'bold', 'abstention_bench',
+              'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
           }
 
           isolated_envs: list[str] = []
@@ -384,7 +385,7 @@ jobs:
 
           ISOLATED_EVALS = {
               'kernelbench', 'novelty_bench', 'livebench',
-              'mle_bench', 'bold', 'abstention_bench',
+              'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
           }
 
           def scan_for_slow(paths: list[str]) -> bool:
@@ -482,7 +483,7 @@ jobs:
             ${{ runner.os }}-uv-3.12-
 
       - name: Run isolated eval tests via tox
-        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,bold,abstention_bench
+        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
     runs-on: ubuntu-latest
