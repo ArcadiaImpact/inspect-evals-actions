@@ -93,12 +93,12 @@ jobs:
       - name: Install dependencies for python < 3.12
         if: ${{ matrix.python-version < '3.12' }}
         run: |
-          uv sync --frozen --group dev --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --group test
 
       - name: Install dependencies for python >= 3.12
         if: ${{ matrix.python-version >= '3.12' }}
         run: |
-          uv sync --frozen --group dev --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --group test
 
       - name: Run doctests
         run: |
@@ -106,7 +106,14 @@ jobs:
 
       - name: Test with pytest
         run: |
-          uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl
+          uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
+            --ignore=tests/kernelbench \
+            --ignore=tests/novelty_bench \
+            --ignore=tests/livebench \
+            --ignore=tests/mle_bench \
+            --ignore=tests/cve_bench \
+            --ignore=tests/bold \
+            --ignore=tests/abstention_bench
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
@@ -322,20 +329,37 @@ jobs:
               if len(parts) >= 2 and parts[0] == 'tests':
                   maybe_add(parts[1])
 
-          paths = ' '.join(sorted(found))
+          ISOLATED_EVALS = {
+              'kernelbench', 'novelty_bench', 'livebench',
+              'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
+          }
 
-          # Export for subsequent steps
+          isolated_envs: list[str] = []
+          root_paths: list[str] = []
+          for p in sorted(found):
+              eval_name = Path(p).name
+              if eval_name in ISOLATED_EVALS:
+                  isolated_envs.append(eval_name)
+              else:
+                  root_paths.append(p)
+
+          root_paths_str = ' '.join(root_paths)
+          isolated_envs_str = ','.join(isolated_envs)
+
           with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-              env_file.write(f'TEST_PATHS={paths}\n')
+              env_file.write(f'TEST_PATHS={root_paths_str}\n')
+              env_file.write(f'ISOLATED_TOX_ENVS={isolated_envs_str}\n')
 
-          if not paths:
+          if root_paths_str:
+              print(f'Root env test paths: {root_paths_str}')
+          if isolated_envs_str:
+              print(f'Isolated eval tox environments: {isolated_envs_str}')
+          if not root_paths_str and not isolated_envs_str:
               print('No eval test paths derived; skipping targeted slow run.')
-          else:
-              print(f'Derived test paths: {paths}')
           PY
 
       - name: Cache uv downloads
-        if: env.TEST_PATHS != ''
+        if: env.TEST_PATHS != '' || env.ISOLATED_TOX_ENVS != ''
         uses: actions/cache@v5
         with:
           path: |
@@ -346,51 +370,58 @@ jobs:
             ${{ matrix.os }}-uv-
 
       - name: Install dependencies
-        if: env.TEST_PATHS != ''
+        if: env.TEST_PATHS != '' || env.ISOLATED_TOX_ENVS != ''
         run: |
-          uv sync --frozen --group dev --group test_py312_or_higher --extra test
+          uv sync --frozen --group dev --group test_py312_or_higher --group test
 
       - name: Check for slow tests in derived paths
         id: check_slow
         shell: bash
-        if: env.TEST_PATHS != ''
+        if: env.TEST_PATHS != '' || env.ISOLATED_TOX_ENVS != ''
         run: |
           uv run python - <<'PY'
           import os
           from pathlib import Path
 
-          test_paths = os.environ.get('TEST_PATHS', '').split()
-          has_slow = False
+          ISOLATED_EVALS = {
+              'kernelbench', 'novelty_bench', 'livebench',
+              'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
+          }
 
-          for path_str in test_paths:
-              path = Path(path_str)
-              if not path.exists():
-                  continue
+          def scan_for_slow(paths: list[str]) -> bool:
+              for path_str in paths:
+                  path = Path(path_str)
+                  if not path.exists():
+                      continue
+                  for f in path.rglob("*.py"):
+                      name = f.name
+                      if name.startswith("test_") or name.endswith("_test.py"):
+                          try:
+                              text = f.read_text(encoding='utf-8')
+                              if '@pytest.mark.slow' in text:
+                                  print(f'Found slow tests in: {f}')
+                                  return True
+                          except Exception:
+                              pass
+              return False
 
-              for f in path.rglob("*.py"):
-                  name = f.name
-                  if name.startswith("test_") or name.endswith("_test.py"):
-                      try:
-                          content = f.read_text(encoding='utf-8')
-                          if '@pytest.mark.slow' in content:
-                              has_slow = True
-                              print(f'Found slow tests in: {f}')
-                              break
-                      except Exception:
-                          # Skip files we can't read
-                          pass
+          root_paths = os.environ.get('TEST_PATHS', '').split()
+          isolated_envs = [e for e in os.environ.get('ISOLATED_TOX_ENVS', '').split(',') if e]
+          isolated_paths = [str(Path('tests') / e) for e in isolated_envs]
 
-              if has_slow:
-                  break
+          has_slow = scan_for_slow(root_paths)
+          has_isolated_slow = scan_for_slow(isolated_paths)
 
-          # Set output for subsequent steps
           with open(os.environ['GITHUB_ENV'], 'a') as env_file:
               env_file.write(f'HAS_SLOW_TESTS={str(has_slow).lower()}\n')
+              env_file.write(f'HAS_ISOLATED_SLOW_TESTS={str(has_isolated_slow).lower()}\n')
 
           if has_slow:
-              print('Slow tests detected - will run targeted slow test suite.')
-          else:
-              print('No slow tests found in changed paths - skipping slow test run.')
+              print('Slow tests detected in root paths - will run targeted pytest suite.')
+          if has_isolated_slow:
+              print('Slow tests detected in isolated evals - will run targeted tox suite.')
+          if not has_slow and not has_isolated_slow:
+              print('No slow tests found in changed paths - skipping targeted runs.')
           PY
 
       - name: Free disk space (before targeted run)
@@ -410,6 +441,50 @@ jobs:
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code $TEST_PATHS
 
+      - name: Install tox and tox-uv (for isolated eval slow tests)
+        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
+        run: pip install tox tox-uv
+
+      - name: Run targeted isolated eval slow tests via tox
+        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
+        run: tox -e ${{ env.ISOLATED_TOX_ENVS }}
+
+
+  tox-isolated-evals:
+    name: Isolated eval tests (tox)
+    runs-on: ubuntu-latest-8-cores
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ github.event.client_payload.ref }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install tox and tox-uv
+        run: pip install tox tox-uv
+
+      - name: Cache uv downloads
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.12-isolated-${{ hashFiles('packages/*/uv.lock', 'packages/*/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.12-isolated-
+            ${{ runner.os }}-uv-3.12-
+
+      - name: Run isolated eval tests via tox
+        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
+
   report-status:
     runs-on: ubuntu-latest
     needs:
@@ -418,6 +493,7 @@ jobs:
       - slow-test-check
       - clean-install-test
       - targeted-slow-tests
+      - tox-isolated-evals
     if: always()
     steps:
       - name: Determine overall status
@@ -456,3 +532,4 @@ jobs:
             -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -f description="${{ steps.status.outputs.description }}" \
             -f context="Tests (inspect-evals-actions)"
+

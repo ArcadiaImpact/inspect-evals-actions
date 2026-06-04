@@ -54,7 +54,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen --group dev --group test_py311_or_lower --extra test
+          uv sync --frozen --group dev --group test_py311_or_lower --group test
 
       - name: Run full test suite with report log
         id: tests
@@ -62,6 +62,13 @@ jobs:
           uv run pytest -n 2 --dist=loadgroup -rA --color=yes \
             --durations=20 \
             --report-log=pytest-report.jsonl \
+            --ignore=tests/kernelbench \
+            --ignore=tests/novelty_bench \
+            --ignore=tests/livebench \
+            --ignore=tests/mle_bench \
+            --ignore=tests/cve_bench \
+            --ignore=tests/bold \
+            --ignore=tests/abstention_bench \
             tests/
 
       - name: Detect tests >=10s that are missing @pytest.mark.slow
@@ -367,3 +374,4 @@ jobs:
           jq -n --argjson payload "$(cat dispatch_payload.json)" \
             '{"event_type": "heavy-test-failure", "client_payload": $payload}' | \
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
+
