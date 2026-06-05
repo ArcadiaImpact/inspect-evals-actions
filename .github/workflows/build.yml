@@ -24,6 +24,10 @@ concurrency:
 # in the inspect_evals repository. This workflow only handles heavy test jobs
 # that require larger runners.
 
+# zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
+permissions:
+  contents: read
+
 env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -36,13 +40,17 @@ jobs:
       - name: Set pending commit status
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+          SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          COMMIT_REF: ${{ github.event.client_payload.ref }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.event.client_payload.source_repo }}/statuses/${{ github.event.client_payload.ref }} \
+            "/repos/${SOURCE_REPO}/statuses/${COMMIT_REF}" \
             -f state="pending" \
-            -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f target_url="https://github.com/${REPO}/actions/runs/${RUN_ID}" \
             -f description="Tests in progress..." \
             -f context="Tests (inspect-evals-actions)"
 
@@ -63,6 +71,7 @@ jobs:
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref }}
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -129,6 +138,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       - name: Download all pytest reports
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -158,6 +169,7 @@ jobs:
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref }}
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -243,14 +255,17 @@ jobs:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Determine base SHA for comparison
         id: base
         shell: bash
+        env:
+          CLIENT_BASE_SHA: ${{ github.event.client_payload.base_sha }}
         run: |
           # Compute merge-base so the diff only reflects the PR's own
           # changes, not unrelated work merged into main since the branch point.
-          BASE_REF="${{ github.event.client_payload.base_sha }}"
+          BASE_REF="${CLIENT_BASE_SHA}"
           if [ -z "$BASE_REF" ]; then
             BASE_REF="origin/main"
           fi
@@ -447,7 +462,7 @@ jobs:
 
       - name: Run targeted isolated eval slow tests via tox
         if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        run: tox -e ${{ env.ISOLATED_TOX_ENVS }}
+        run: tox -e "$ISOLATED_TOX_ENVS"
 
 
   tox-isolated-evals:
@@ -460,6 +475,7 @@ jobs:
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref }}
+          persist-credentials: false
 
       - name: Set up Python 3.12
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -523,13 +539,19 @@ jobs:
       - name: Update commit status
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
+          SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          COMMIT_REF: ${{ github.event.client_payload.ref }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          STATUS_STATE: ${{ steps.status.outputs.state }}
+          STATUS_DESC: ${{ steps.status.outputs.description }}
         run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.event.client_payload.source_repo }}/statuses/${{ github.event.client_payload.ref }} \
-            -f state="${{ steps.status.outputs.state }}" \
-            -f target_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            -f description="${{ steps.status.outputs.description }}" \
+            "/repos/${SOURCE_REPO}/statuses/${COMMIT_REF}" \
+            -f state="${STATUS_STATE}" \
+            -f target_url="https://github.com/${REPO}/actions/runs/${RUN_ID}" \
+            -f description="${STATUS_DESC}" \
             -f context="Tests (inspect-evals-actions)"
 

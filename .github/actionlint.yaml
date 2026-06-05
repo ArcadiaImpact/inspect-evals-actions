@@ -1,0 +1,8 @@
+## actionlint configuration
+##
+## References:
+## - Configuration: https://github.com/rhysd/actionlint/blob/main/docs/config.md
+## - Checks: https://github.com/rhysd/actionlint/blob/main/docs/checks.md
+## - List of Shellcheck rules: https://www.shellcheck.net/wiki/
+##
+## actionlint auto-discovers this file at `.github/actionlint.yaml`.

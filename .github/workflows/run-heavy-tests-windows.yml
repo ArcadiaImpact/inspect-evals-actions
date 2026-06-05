@@ -12,6 +12,14 @@ name: Heavy Tests (Windows)
   schedule:
     - cron: "0 2 * * 2,4,6"  # Tue/Thu/Sat at 2:00 UTC
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+# zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
+permissions:
+  contents: read
+
 env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
@@ -32,6 +40,7 @@ jobs:
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ inputs.inspect_evals_ref || '' }}
+          persist-credentials: false
 
       - name: Set up Python 3.11
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
