@@ -1,0 +1,19 @@
+# This repository only hosts CI/CD workflows for Inspect Evals; it is not a
+# Python package. The project metadata below exists solely so `uv` can manage a
+# dev environment containing the GitHub Actions linters (actionlint + zizmor)
+# used by `.github/workflows/workflow-lint.yml` and `.pre-commit-config.yaml`.
+[project]
+name = "inspect-evals-actions"
+version = "0.0.0"
+description = "CI/CD workflows for Inspect Evals"
+requires-python = ">=3.11"
+
+[dependency-groups]
+dev = [
+    "actionlint-py==1.7.12.24",  # third-party Python wrapper around the upstream Go binary
+    "zizmor==1.24.1",  # security-focused GitHub Actions linter
+]
+
+[tool.uv]
+# Treat this as a virtual project: there is nothing to build or install.
+package = false

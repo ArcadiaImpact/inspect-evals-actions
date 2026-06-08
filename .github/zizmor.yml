@@ -1,0 +1,35 @@
+# zizmor configuration
+#
+# Reference: https://docs.zizmor.sh/configuration/
+#
+# This file lists current findings that the maintainers have explicitly
+# accepted or deferred.  Keep each entry narrow and explain why the current
+# workflow shape is intentional.
+#
+# Adding a new entry to this file is **not** a fix.  New entries should be
+# the rare exception, justified by review, and removed as soon as the
+# underlying workflow no longer needs them.  The CI workflow at
+# `.github/workflows/workflow-lint.yml` runs zizmor with
+# `--min-severity=low`, so the goal is to drive this file toward empty.
+#
+# Schema:
+#   rules:
+#     <rule-id>:
+#       ignore:
+#         - <path>              # all findings of this rule in path
+#         - <path>:<line>
+#         - <path>:<line>:<col>
+# Paths are relative to the workflows root, e.g. `build.yml`.
+
+rules:
+  # `secrets-outside-env` findings are deferred because addressing them
+  # requires configuring GitHub environments, which is a larger infrastructure
+  # change.  The current workflows access secrets directly at the job level
+  # without environment protections.  This is tracked for future hardening.
+  secrets-outside-env:
+    ignore:
+      - build.yml
+      - run-heavy-tests.yml
+      - run-heavy-tests-windows.yml
+      - run-smoke-test.yml
+      - run-smoke-test-windows.yml

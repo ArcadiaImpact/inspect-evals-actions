@@ -1,0 +1,29 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # GitHub Actions linters.  These match the invocations in
+  # .github/workflows/workflow-lint.yml so commits that pass
+  # pre-commit also pass the CI gate.  Pin versions in lockstep with
+  # the `actionlint-py` and `zizmor` entries in pyproject.toml's dev group.
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12  # Match actionlint-py version specified in pyproject.toml
+    # Configuration lives in .github/actionlint.yaml.
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.24.1  # Match zizmor version specified in pyproject.toml
+    # Configuration lives in .github/zizmor.yml
+    hooks:
+      - id: zizmor
+        args:
+          - --no-progress
+          - --persona=auditor
+          - --min-severity=high
