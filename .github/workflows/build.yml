@@ -3,8 +3,18 @@ run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [build]
+  # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
+  # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
+  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution)
+  # while HF_ACCESS_TOKEN / KAGGLE_USERNAME / KAGGLE_KEY are present in the job env.
+  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate those secrets
+  # via the run logs. Do NOT re-enable until untrusted PR code can no longer run in
+  # a job that holds secrets (e.g. label/approval-gated trusted job, or secret-free
+  # fork runs). Until then, trusted runs can be started manually via workflow_dispatch.
+  #
+  # To re-enable after hardening, restore:
+  # repository_dispatch:
+  #   types: [build]
 
 concurrency:
   group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref }}
