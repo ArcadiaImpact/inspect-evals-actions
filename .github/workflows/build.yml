@@ -17,6 +17,31 @@ run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1
 # }
 on:
   workflow_dispatch:
+    # Manual trusted runs. These inputs let a maintainer drive the same jobs the
+    # (killswitched) repository_dispatch path would, e.g. to audit egress. Every
+    # consumer below reads `client_payload.X || inputs.X`, so repository_dispatch
+    # is unaffected (its `inputs` context is empty, so client_payload always wins).
+    inputs:
+      ref:
+        description: "inspect_evals git ref/SHA to check out (blank = default branch)"
+        required: false
+        default: ""
+      base_sha:
+        description: "Base SHA for the targeted-slow-tests diff (blank = origin/main). Set an older commit to make slow tests actually run."
+        required: false
+        default: ""
+      is_pr:
+        description: "Set true to run the PR-only targeted-slow-tests job"
+        required: false
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+      run_all_slow_tests:
+        description: "Run ALL slow tests (ignore the changed-files diff). Implies is_pr. Slow + many dataset downloads."
+        required: false
+        type: choice
+        options: ["false", "true"]
+        default: "false"
   # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
   # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
   # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution)
@@ -31,7 +56,7 @@ on:
   #   types: [build]
 
 concurrency:
-  group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref }}
+  group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref || inputs.ref || github.run_id }}
   cancel-in-progress: true
 
 # zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
@@ -105,7 +130,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -224,7 +249,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -294,7 +319,7 @@ jobs:
 
   targeted-slow-tests:
     name: Slow Tests relevant to PR
-    if: github.event.client_payload.is_pr == 'true'
+    if: ${{ github.event.client_payload.is_pr == 'true' || inputs.is_pr == 'true' || inputs.run_all_slow_tests == 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -335,7 +360,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -343,7 +368,7 @@ jobs:
         id: base
         shell: bash
         env:
-          CLIENT_BASE_SHA: ${{ github.event.client_payload.base_sha }}
+          CLIENT_BASE_SHA: ${{ github.event.client_payload.base_sha || inputs.base_sha }}
         run: |
           # Compute merge-base so the diff only reflects the PR's own
           # changes, not unrelated work merged into main since the branch point.
@@ -380,6 +405,7 @@ jobs:
         env:
           EVAL_SRC: ${{ steps.changed.outputs.eval_src_all_changed_files }}
           EVAL_TESTS: ${{ steps.changed.outputs.eval_tests_all_changed_files }}
+          RUN_ALL_SLOW: ${{ inputs.run_all_slow_tests }}
         run: |
           uv run python - <<'PY'
           import os
@@ -406,25 +432,34 @@ jobs:
               if has_tests(p):
                   found.add(str(p))
 
-          # From src changes -> tests/<eval>/
-          for f in src_files:
-              p = Path(f)
-              # Skip README.md files
-              if p.name.lower() == 'readme.md':
-                  continue
-              parts = p.parts
-              if len(parts) >= 3 and parts[0] == 'src' and parts[1] == 'inspect_evals':
-                  maybe_add(parts[2])
+          run_all = os.environ.get('RUN_ALL_SLOW', '') == 'true'
 
-          # From tests changes -> tests/<eval>/
-          for f in test_files:
-              p = Path(f)
-              # Skip README.md files
-              if p.name.lower() == 'readme.md':
-                  continue
-              parts = p.parts
-              if len(parts) >= 2 and parts[0] == 'tests':
-                  maybe_add(parts[1])
+          if run_all:
+              # Audit/full mode: enumerate every tests/<eval> dir and ignore the
+              # changed-files diff, so ALL slow tests are selected to run.
+              for child in sorted(Path('tests').iterdir()):
+                  if child.is_dir() and has_tests(child):
+                      found.add(str(child))
+          else:
+              # From src changes -> tests/<eval>/
+              for f in src_files:
+                  p = Path(f)
+                  # Skip README.md files
+                  if p.name.lower() == 'readme.md':
+                      continue
+                  parts = p.parts
+                  if len(parts) >= 3 and parts[0] == 'src' and parts[1] == 'inspect_evals':
+                      maybe_add(parts[2])
+
+              # From tests changes -> tests/<eval>/
+              for f in test_files:
+                  p = Path(f)
+                  # Skip README.md files
+                  if p.name.lower() == 'readme.md':
+                      continue
+                  parts = p.parts
+                  if len(parts) >= 2 and parts[0] == 'tests':
+                      maybe_add(parts[1])
 
           ISOLATED_EVALS = {
               'kernelbench', 'novelty_bench', 'livebench',
@@ -561,7 +596,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python 3.12
