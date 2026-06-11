@@ -91,6 +91,17 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
+      # Defense-in-depth (incident 2026-06-09): disable sudo so untrusted PR code
+      # cannot dump the runner's process memory to recover secrets, and audit
+      # egress to baseline CI endpoints (switch to egress-policy: block once the
+      # allowlist is known). Linux-only action; skipped on Windows runners.
+      - name: Harden runner
+        if: runner.os == 'Linux'
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
@@ -202,6 +213,14 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
+      # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
+      - name: Harden runner
+        if: runner.os == 'Linux'
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
@@ -287,6 +306,32 @@ jobs:
       UV_PYTHON: "3.12"
 
     steps:
+      # free-disk-space requires sudo, so this step must run before harden-runner
+      # It takes a couple of minutes and runs unconditionally, but optimising it
+      # to only run after HAS_SLOW_TESTS is set would risk future changes adding
+      # steps that execute untrusted PR code when sudo is still enabled.
+      - name: Free disk space (before targeted run)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+        with:
+          tool-cache: false # keep python and tools installed by setup-uv/setup-python
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
+      # Defense-in-depth (incident 2026-06-09): placed BEFORE any step that executes
+      # untrusted PR code (the pytest/tox steps below). Disables sudo for those steps
+      # so PR code can't dump runner memory to recover secrets, and audits egress.
+      # Linux-only; skipped on Windows.
+      - name: Harden runner
+        if: runner.os == 'Linux'
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
@@ -475,18 +520,6 @@ jobs:
           if not has_slow and not has_isolated_slow:
               print('No slow tests found in changed paths - skipping targeted runs.')
           PY
-
-      - name: Free disk space (before targeted run)
-        if: env.HAS_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
-        with:
-          tool-cache: false # keep python and tools installed by setup-uv/setup-python
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
         # Secrets scoped to this run step (see workflow-level NOTE).
@@ -518,6 +551,13 @@ jobs:
     env:
       UV_PYTHON: "3.12"
     steps:
+      # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
