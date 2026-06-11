@@ -38,10 +38,15 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-  KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-  KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+# NOTE (incident 2026-06-09): dataset-download credentials (HF_ACCESS_TOKEN,
+# KAGGLE_USERNAME, KAGGLE_KEY) are deliberately NOT declared at workflow level.
+# They are scoped to the individual steps that actually run dataset tests
+# (the test / targeted-slow-tests / tox-isolated-evals jobs below), so that:
+#   - jobs that run untrusted PR code but need no datasets (clean-install-test)
+#   - jobs that never run PR code (set-pending-status, slow-test-check, report-status)
+# never receive them. NOTE this does not by itself stop an exfil from the test
+# steps that DO hold secrets while running PR code — see the kill-switch comment;
+# gating + egress controls are tracked separately.
 
 jobs:
   set-pending-status:
@@ -139,6 +144,12 @@ jobs:
           echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
 
       - name: Test with pytest
+        # Dataset-download tests need these credentials. Scoped to this step
+        # (not workflow/job env) so steps that don't run dataset tests never see them.
+        env:
+          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
@@ -478,6 +489,11 @@ jobs:
 
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
+        # Secrets scoped to this run step (see workflow-level NOTE).
+        env:
+          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code "$TEST_PATHS"
@@ -488,6 +504,11 @@ jobs:
 
       - name: Run targeted isolated eval slow tests via tox
         if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
+        # Secrets scoped to this run step (see workflow-level NOTE).
+        env:
+          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: tox -e "$ISOLATED_TOX_ENVS"
 
 
@@ -525,6 +546,12 @@ jobs:
             ${{ runner.os }}-uv-3.12-
 
       - name: Run isolated eval tests via tox
+        # Runs dataset_download tests by default; mle_bench needs Kaggle creds.
+        # Secrets scoped to this run step (see workflow-level NOTE).
+        env:
+          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
