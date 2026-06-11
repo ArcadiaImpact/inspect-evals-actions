@@ -1,6 +1,20 @@
+# Heavy test jobs that require larger runners than the GitHub defaults
+#
+# Fast checks (linting, type checking, package build, etc.) run directly in the
+# inspect_evals repository. 
+
 name: Tests
 run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1}', github.event.client_payload.pr_number, github.event.client_payload.pr_title) || 'Tests' }}
 
+# `github.event.client_payload` expected from caller:
+# {
+#   "ref": "<git sha to checkout>",
+#   "base_sha": "<base sha for PR comparison, empty for non-PRs>",
+#   "pr_number": "<PR number or empty>",
+#   "pr_title": "<PR title or empty>",
+#   "is_pr": "true/false",
+#   "source_repo": "UKGovernmentBEIS/inspect_evals"
+# }
 on:
   workflow_dispatch:
   # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
@@ -20,20 +34,6 @@ concurrency:
   group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref }}
   cancel-in-progress: true
 
-# Payload expected from caller:
-# {
-#   "ref": "<git sha to checkout>",
-#   "base_sha": "<base sha for PR comparison, empty for non-PRs>",
-#   "pr_number": "<PR number or empty>",
-#   "pr_title": "<PR title or empty>",
-#   "is_pr": "true/false",
-#   "source_repo": "UKGovernmentBEIS/inspect_evals"
-# }
-#
-# Fast checks (linting, type checking, package build, etc.) now run directly
-# in the inspect_evals repository. This workflow only handles heavy test jobs
-# that require larger runners.
-
 # zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
 permissions:
   contents: read
@@ -48,6 +48,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set pending commit status
+        # INSPECT_EVALS_CHECKS_TOKEN posts the "Tests (inspect-evals-actions)"
+        # commit status back onto the PR commit in the SOURCE repo
+        # (UKGovernmentBEIS/inspect_evals). This is a cross-repo write, so the
+        # built-in GITHUB_TOKEN (scoped to this repo) cannot do it.
+        # Required permission, least-privilege:
+        #   fine-grained PAT / GitHub App: "Commit statuses: Read and write"
+        #     on UKGovernmentBEIS/inspect_evals only (no code or other access)
+        #   classic PAT: repo:status scope (NOT full repo)
+        # Also used by the "Update commit status" step in the report-status job.
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
@@ -554,6 +563,8 @@ jobs:
           fi
 
       - name: Update commit status
+        # INSPECT_EVALS_CHECKS_TOKEN: see the set-pending-status job for what this
+        # token is for and the least-privilege permissions it needs.
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
