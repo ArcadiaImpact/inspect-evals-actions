@@ -104,6 +104,7 @@ jobs:
             -f context="Tests (inspect-evals-actions)"
 
   test:
+    name: Fast tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -124,8 +125,35 @@ jobs:
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
+          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
           disable-sudo: ${{ runner.os == 'Linux' }}
+          # Allowlist (host:port), enforced in block mode on Linux only:
+          #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
+          #                release-assets.githubusercontent.com
+          #   HuggingFace: huggingface.co, datasets-server.huggingface.co,
+          #                {cas-bridge,cas-server,transfer}.xethub.hf.co (Xet/LFS blobs)
+          #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
+          #     openaipublic.blob.core.windows.net — browse_comp, gpqa, healthbench, mgsm, simpleqa
+          #     storage.googleapis.com + yonatanbisk.com — piqa
+          #     s3.amazonaws.com — HF/`datasets` S3 backend (not an ASSETS direct_url)
+          allowed-endpoints: >
+            api.github.com:443
+            cas-bridge.xethub.hf.co:443
+            cas-server.xethub.hf.co:443
+            datasets-server.huggingface.co:443
+            files.pythonhosted.org:443
+            github.com:443
+            huggingface.co:443
+            openaipublic.blob.core.windows.net:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            releases.astral.sh:443
+            s3.amazonaws.com:443
+            storage.googleapis.com:443
+            transfer.xethub.hf.co:443
+            yonatanbisk.com:443
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -204,10 +232,16 @@ jobs:
           path: pytest-report.jsonl
 
   slow-test-check:
+    name: Check slow tests are all marked
     runs-on: ubuntu-latest
     needs: test
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >+
 
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -228,6 +262,7 @@ jobs:
           python scripts/build/check_slow_tests.py --reports-dir ./reports
 
   clean-install-test:
+    name: Clean Install Test
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -248,6 +283,10 @@ jobs:
         with:
           disable-sudo: ${{ runner.os == 'Linux' }}
           egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
+          # Allowlist (host:port), block mode on Linux only. Tiny, stable surface
+          # (no datasets — this job only runs `inspect eval make_me_pay --limit=0`):
+          #   tooling: releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:  github.com, api.github.com, raw.githubusercontent.com
           allowed-endpoints: >
             api.github.com:443
             files.pythonhosted.org:443
@@ -350,10 +389,57 @@ jobs:
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
+          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
           disable-sudo: ${{ runner.os == 'Linux' }}
+          # Allowlist (host:port), enforced in block mode on Linux only:
+          #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
+          #                release-assets.githubusercontent.com, github-cloud.githubusercontent.com
+          #   HuggingFace: huggingface.co, datasets-server.huggingface.co,
+          #                {cas-server,transfer}.xethub.hf.co, us.aws.cdn.hf.co (Xet/LFS/CDN)
+          #   Kaggle:      www.kaggle.com — mle_bench, mlrc_bench
+          #   Sandbox build (any Docker-based eval): {auth,registry-1}.docker.io +
+          #                production.cloudfront.docker.com (image pulls);
+          #                {archive,security}.ubuntu.com:80 (apt); conda.anaconda.org
+          #                (conda envs, e.g. mle_bench/mlrc_bench)
+          #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
+          #     openaipublic.blob.core.windows.net — browse_comp, gpqa, healthbench, mgsm, simpleqa
+          #     storage.googleapis.com — piqa
+          #     qasper-dataset.s3.us-west-2.amazonaws.com — abstention_bench
+          #     drive.google.com + *.googleusercontent.com — abstention_bench, scicode, sciknoweval
+          #     s3.amazonaws.com — HF/`datasets` S3 backend (not an ASSETS direct_url)
+          # WARNING: doc-*-*-docs.googleusercontent.com below are Google Drive's
+          # rotating download shards — the prefix changes between runs.
+          allowed-endpoints: >
+            api.github.com:443
+            archive.ubuntu.com:80
+            auth.docker.io:443
+            cas-server.xethub.hf.co:443
+            conda.anaconda.org:443
+            datasets-server.huggingface.co:443
+            doc-*-*-docs.googleusercontent.com:443
+            drive.google.com:443
+            files.pythonhosted.org:443
+            github-cloud.githubusercontent.com:443
+            github.com:443
+            huggingface.co:443
+            openaipublic.blob.core.windows.net:443
+            production.cloudfront.docker.com:443
+            pypi.org:443
+            qasper-dataset.s3.us-west-2.amazonaws.com:443
+            raw.githubusercontent.com:443
+            registry-1.docker.io:443
+            release-assets.githubusercontent.com:443
+            releases.astral.sh:443
+            s3.amazonaws.com:443
+            security.ubuntu.com:80
+            storage.googleapis.com:443
+            transfer.xethub.hf.co:443
+            us.aws.cdn.hf.co:443
+            www.kaggle.com:443
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Checkout inspect_evals repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
           ref: ${{ github.event.client_payload.ref || inputs.ref }}
