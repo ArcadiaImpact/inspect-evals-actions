@@ -242,7 +242,8 @@ jobs:
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: block
-          allowed-endpoints: >+
+          allowed-endpoints:
+            github.com:443
 
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -678,8 +679,17 @@ jobs:
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
+          egress-policy: block
           disable-sudo: true
+          allowed-endpoints: >
+            api.github.com:443
+            datasets-server.huggingface.co:443
+            files.pythonhosted.org:443
+            github.com:443
+            *.blob.core.windows.net:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            releases.astral.sh:443
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
