@@ -132,7 +132,7 @@ jobs:
           #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
           #                release-assets.githubusercontent.com
           #   HuggingFace: huggingface.co, datasets-server.huggingface.co,
-          #                {cas-bridge,cas-server,transfer}.xethub.hf.co (Xet/LFS blobs)
+          #                {cas-bridge,cas-server,transfer}.xethub.hf.co, us.aws.cdn.hf.co
           #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
           #     openaipublic.blob.core.windows.net — browse_comp, gpqa, healthbench, mgsm, simpleqa
           #     storage.googleapis.com + yonatanbisk.com — piqa
@@ -153,6 +153,7 @@ jobs:
             s3.amazonaws.com:443
             storage.googleapis.com:443
             transfer.xethub.hf.co:443
+            us.aws.cdn.hf.co:443
             yonatanbisk.com:443
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -403,27 +404,32 @@ jobs:
           #                {archive,security}.ubuntu.com:80 (apt); conda.anaconda.org
           #                (conda envs, e.g. mle_bench/mlrc_bench)
           #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
-          #     openaipublic.blob.core.windows.net — browse_comp, gpqa, healthbench, mgsm, simpleqa
+          #     *.blob.core.windows.net — openaipublic (browse_comp, gpqa, healthbench,
+          #       mgsm, simpleqa) + HF Xet's rotating Azure content shards
           #     storage.googleapis.com — piqa
           #     qasper-dataset.s3.us-west-2.amazonaws.com — abstention_bench
           #     drive.google.com + *.googleusercontent.com — abstention_bench, scicode, sciknoweval
           #     s3.amazonaws.com — HF/`datasets` S3 backend (not an ASSETS direct_url)
-          # WARNING: doc-*-*-docs.googleusercontent.com below are Google Drive's
-          # rotating download shards — the prefix changes between runs.
+          # NOTE: *.googleusercontent.com and *.blob.core.windows.net are leading-"*."
+          # wildcards for Google Drive download shards and HF Xet Azure content hosts,
+          # which rotate per request and can't be pinned. A mid-host wildcard
+          # (doc-*-*-docs.googleusercontent.com) was tried and DROPPED by harden-runner;
+          # if these leading wildcards also drop on the next run, this job must use audit.
           allowed-endpoints: >
             api.github.com:443
             archive.ubuntu.com:80
             auth.docker.io:443
+            cas-bridge.xethub.hf.co:443
             cas-server.xethub.hf.co:443
             conda.anaconda.org:443
             datasets-server.huggingface.co:443
-            doc-*-*-docs.googleusercontent.com:443
+            *.googleusercontent.com:443
             drive.google.com:443
             files.pythonhosted.org:443
             github-cloud.githubusercontent.com:443
             github.com:443
             huggingface.co:443
-            openaipublic.blob.core.windows.net:443
+            *.blob.core.windows.net:443
             production.cloudfront.docker.com:443
             pypi.org:443
             qasper-dataset.s3.us-west-2.amazonaws.com:443
