@@ -116,16 +116,16 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
-      # Defense-in-depth (incident 2026-06-09): disable sudo so untrusted PR code
-      # cannot dump the runner's process memory to recover secrets, and audit
-      # egress to baseline CI endpoints (switch to egress-policy: block once the
-      # allowlist is known). Linux-only action; skipped on Windows runners.
+      # Defense-in-depth (incident 2026-06-09): disable sudo on Linux so untrusted
+      # PR code can't dump the runner's process memory to recover secrets, and
+      # audit egress to baseline CI endpoints. Runs on all OSes; harden-runner
+      # supports disable-sudo / egress blocking on Linux only, so Windows is
+      # audit-only (disable-sudo resolves to false there).
       - name: Harden runner
-        if: runner.os == 'Linux'
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
-          disable-sudo: true
+          disable-sudo: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -239,12 +239,22 @@ jobs:
 
     steps:
       # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
+      # This job's egress is small and stable (packages + GitHub, no dataset
+      # downloads), so Linux uses block mode with an allowlist. Windows is
+      # audit-only (harden-runner supports block/disable-sudo on Linux only);
+      # allowed-endpoints is ignored in audit mode.
       - name: Harden runner
-        if: runner.os == 'Linux'
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
-          disable-sudo: true
+          disable-sudo: ${{ runner.os == 'Linux' }}
+          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            releases.astral.sh:443
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -336,12 +346,12 @@ jobs:
       # takes effect at job start — it is incompatible with any step that needs
       # sudo (e.g. jlumbroso/free-disk-space, which was removed when this job
       # moved to larger runners that no longer need disk cleanup).
+      # Runs on all OSes in audit mode; disable-sudo is Linux-only (false on Windows).
       - name: Harden runner
-        if: runner.os == 'Linux'
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
-          disable-sudo: true
+          disable-sudo: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
