@@ -44,14 +44,21 @@ on:
         default: "false"
   # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
   # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
-  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution)
-  # while HF_ACCESS_TOKEN / KAGGLE_USERNAME / KAGGLE_KEY are present in the job env.
-  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate those secrets
-  # via the run logs. Do NOT re-enable until untrusted PR code can no longer run in
-  # a job that holds secrets (e.g. label/approval-gated trusted job, or secret-free
-  # fork runs). Until then, trusted runs can be started manually via workflow_dispatch.
+  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution).
+  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate dataset secrets.
   #
-  # To re-enable after hardening, restore:
+  # Hardening landed since: dataset secrets removed from this path, Windows runners
+  # removed (their egress can't be filtered), and harden-runner (disable-sudo +
+  # egress block) added to every job that runs PR code.
+  #
+  # Do NOT re-enable until the remaining controls are live:
+  #   - the inspect_evals dispatcher only fires on an "ok to test" maintainer label,
+  #     auto-removed on each new push (so each commit is re-reviewed), and
+  #   - dataset tests skip cleanly when HF/Kaggle auth is absent, and
+  #   - the protected `fork-pr-tests` environment (required reviewers) exists.
+  # Until then, trusted runs can be started manually via workflow_dispatch.
+  #
+  # To re-enable, restore:
   # repository_dispatch:
   #   types: [build]
 
@@ -63,15 +70,11 @@ concurrency:
 permissions:
   contents: read
 
-# NOTE (incident 2026-06-09): dataset-download credentials (HF_ACCESS_TOKEN,
-# KAGGLE_USERNAME, KAGGLE_KEY) are deliberately NOT declared at workflow level.
-# They are scoped to the individual steps that actually run dataset tests
-# (the test / targeted-slow-tests / tox-isolated-evals jobs below), so that:
-#   - jobs that run untrusted PR code but need no datasets (clean-install-test)
-#   - jobs that never run PR code (set-pending-status, slow-test-check, report-status)
-# never receive them. NOTE this does not by itself stop an exfil from the test
-# steps that DO hold secrets while running PR code — see the kill-switch comment;
-# gating + egress controls are tracked separately.
+# NOTE (incident 2026-06-09 follow-up): this fork-PR test path carries NO dataset
+# credentials. HF_ACCESS_TOKEN / KAGGLE_USERNAME / KAGGLE_KEY were removed entirely
+# so untrusted PR code can never exfiltrate them (the incident's target). Tests that
+# require auth skip themselves when the tokens are absent; auth-needing dataset tests
+# run only in the scheduled run-heavy-tests* workflows on trusted (merged) code.
 
 jobs:
   set-pending-status:
@@ -109,7 +112,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        os: [ubuntu-latest-8-cores]
         python-version: ["3.11", "3.12", "3.13"]
     env:
       RUN_SLOW_TESTS: no
@@ -117,16 +120,15 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
-      # Defense-in-depth (incident 2026-06-09): disable sudo on Linux so untrusted
-      # PR code can't dump the runner's process memory to recover secrets, and
-      # audit egress to baseline CI endpoints. Runs on all OSes; harden-runner
-      # supports disable-sudo / egress blocking on Linux only, so Windows is
-      # audit-only (disable-sudo resolves to false there).
+      # Defense-in-depth (incident 2026-06-09): disable sudo so untrusted PR code
+      # can't dump the runner's process memory, and block egress to an allowlist so
+      # it can't POST data out. The fork-PR path is Linux-only (Windows removed
+      # because harden-runner can't filter its egress), so both are enforced.
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
-          disable-sudo: ${{ runner.os == 'Linux' }}
+          egress-policy: block
+          disable-sudo: true
           # Allowlist (host:port), enforced in block mode on Linux only:
           #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
           #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
@@ -209,12 +211,9 @@ jobs:
           echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
 
       - name: Test with pytest
-        # Dataset-download tests need these credentials. Scoped to this step
-        # (not workflow/job env) so steps that don't run dataset tests never see them.
-        env:
-          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09): tests
+        # that require auth skip themselves when the tokens are absent. Dataset
+        # tests needing auth run only in the scheduled run-heavy-tests workflows.
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
@@ -269,7 +268,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
     env:
       UV_PYTHON: ${{ matrix.python-version }}
@@ -277,14 +276,12 @@ jobs:
     steps:
       # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
       # This job's egress is small and stable (packages + GitHub, no dataset
-      # downloads), so Linux uses block mode with an allowlist. Windows is
-      # audit-only (harden-runner supports block/disable-sudo on Linux only);
-      # allowed-endpoints is ignored in audit mode.
+      # downloads), so it uses block mode with a tiny allowlist.
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          disable-sudo: ${{ runner.os == 'Linux' }}
-          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
+          disable-sudo: true
+          egress-policy: block
           # Allowlist (host:port), block mode on Linux only. Tiny, stable surface
           # (no datasets — this job only runs `inspect eval make_me_pay --limit=0`):
           #   tooling: releases.astral.sh (uv), pypi.org, files.pythonhosted.org
@@ -375,7 +372,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        os: [ubuntu-latest-8-cores]
     env:
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
@@ -387,12 +384,11 @@ jobs:
       # takes effect at job start — it is incompatible with any step that needs
       # sudo (e.g. jlumbroso/free-disk-space, which was removed when this job
       # moved to larger runners that no longer need disk cleanup).
-      # Runs on all OSes in audit mode; disable-sudo is Linux-only (false on Windows).
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: ${{ runner.os == 'Linux' && 'block' || 'audit' }}
-          disable-sudo: ${{ runner.os == 'Linux' }}
+          egress-policy: block
+          disable-sudo: true
           # Allowlist (host:port), enforced in block mode on Linux only:
           #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
           #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
@@ -646,26 +642,18 @@ jobs:
           PY
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
-        # Secrets scoped to this run step (see workflow-level NOTE).
-        env:
-          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code "$TEST_PATHS"
 
       - name: Install tox and tox-uv (for isolated eval slow tests)
-        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
+        if: env.HAS_ISOLATED_SLOW_TESTS == 'true'
         run: pip install tox tox-uv
 
       - name: Run targeted isolated eval slow tests via tox
-        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        # Secrets scoped to this run step (see workflow-level NOTE).
-        env:
-          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        if: env.HAS_ISOLATED_SLOW_TESTS == 'true'
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
         run: tox -e "$ISOLATED_TOX_ENVS"
 
 
@@ -719,12 +707,8 @@ jobs:
             ${{ runner.os }}-uv-3.12-
 
       - name: Run isolated eval tests via tox
-        # Runs dataset_download tests by default; mle_bench needs Kaggle creds.
-        # Secrets scoped to this run step (see workflow-level NOTE).
-        env:
-          HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09): mle_bench's
+        # Kaggle tests skip themselves when KAGGLE_* is absent.
         run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
