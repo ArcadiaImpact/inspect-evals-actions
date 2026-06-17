@@ -84,6 +84,7 @@ jobs:
           path: smoke_output.log
 
   summarise-smoke:
+    name: Summarise smoke tests (Windows)
     needs: smoke-test-windows
     runs-on: windows-latest-8-cores
 
@@ -138,4 +139,3 @@ jobs:
         shell: bash
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
-

@@ -1,7 +1,7 @@
 # Heavy test jobs that require larger runners than the GitHub defaults
 #
 # Fast checks (linting, type checking, package build, etc.) run directly in the
-# inspect_evals repository. 
+# inspect_evals repository.
 
 name: Tests
 run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1}', github.event.client_payload.pr_number, github.event.client_payload.pr_title) || 'Tests' }}
@@ -66,9 +66,9 @@ concurrency:
 permissions:
   contents: read
 
-
 jobs:
   set-pending-status:
+    name: Set pending check status on dispatching repo
     runs-on: ubuntu-latest
     steps:
       - name: Set pending commit status
@@ -98,7 +98,7 @@ jobs:
             -f context="Tests (inspect-evals-actions)"
 
   test:
-    name: Fast tests
+    name: Fast tests (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -198,7 +198,7 @@ jobs:
           # failures in bfcl, healthbench, mmlu, and deps_utils.
           # Those are being fixed in https://github.com/UKGovernmentBEIS/inspect_evals/pull/1751.
           # This step will be re-enabled once that PR merges.
-          echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
+          echo "Doctests temporarily disabled — see inspect_evals PR #1751"
 
       - name: Test with pytest
         # No HF/Kaggle secrets on the fork-PR path: tests that require should skip and run in scheduled run-heavy-tests workflows.
@@ -225,13 +225,6 @@ jobs:
     needs: test
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
-        with:
-          egress-policy: block
-          allowed-endpoints:
-            github.com:443
-
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -251,7 +244,7 @@ jobs:
           python scripts/build/check_slow_tests.py --reports-dir ./reports
 
   clean-install-test:
-    name: Clean Install Test
+    name: Clean install test (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -642,7 +635,6 @@ jobs:
         # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
         run: tox -e "$ISOLATED_TOX_ENVS"
 
-
   tox-isolated-evals:
     name: Isolated eval tests (tox)
     runs-on: ubuntu-latest-8-cores
@@ -698,6 +690,7 @@ jobs:
         run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
+    name: Report test status
     runs-on: ubuntu-latest
     needs:
       - set-pending-status
@@ -752,4 +745,3 @@ jobs:
             -f target_url="https://github.com/${REPO}/actions/runs/${RUN_ID}" \
             -f description="${STATUS_DESC}" \
             -f context="Tests (inspect-evals-actions)"
-
