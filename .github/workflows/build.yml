@@ -473,6 +473,7 @@ jobs:
         run: |
           uv run python - <<'PY'
           import os
+          import re
           from pathlib import Path
 
           # Read outputs (space/newline separated)
@@ -530,10 +531,20 @@ jobs:
               'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
           }
 
+          # Defense-in-depth: these names derive from PR-controlled changed-file
+          # paths and are written to $GITHUB_ENV and passed to the shell. Reject
+          # anything that isn't a plain eval directory name (also catches '..',
+          # which would otherwise resolve tests/.. to the whole repo).
+          safe_name = re.compile(r'^[A-Za-z0-9_-]+$')
+
           isolated_envs: list[str] = []
           root_paths: list[str] = []
           for p in sorted(found):
               eval_name = Path(p).name
+              if not safe_name.fullmatch(eval_name):
+                  raise ValueError(
+                      f'Refusing unsafe eval directory name from changed files: {eval_name!r}'
+                  )
               if eval_name in ISOLATED_EVALS:
                   isolated_envs.append(eval_name)
               else:
