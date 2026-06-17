@@ -17,6 +17,12 @@ run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1
 # }
 on:
   workflow_dispatch:
+    # Maintainer-only manual controls (workflow_dispatch requires repo write access).
+    # Useful for re-running the heavy suite against a specific commit and for
+    # re-auditing egress (`run_all_slow_tests` runs the full matrix). NOTE: `ref`
+    # runs an arbitrary inspect_evals ref *without* the "ok to test" label gate —
+    # acceptable because this path holds no secrets and runs under harden-runner
+    # (disable-sudo + egress allowlist).
     inputs:
       ref:
         description: "inspect_evals git ref/SHA to check out (blank = default branch)"
