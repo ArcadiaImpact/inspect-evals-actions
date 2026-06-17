@@ -26,4 +26,4 @@ repos:
         args:
           - --no-progress
           - --persona=auditor
-          - --min-severity=high
+          - --min-severity=low
