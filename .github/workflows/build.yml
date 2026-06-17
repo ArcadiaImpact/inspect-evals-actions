@@ -38,25 +38,16 @@ on:
         type: choice
         options: ["false", "true"]
         default: "false"
-  # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
-  # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
-  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution).
-  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate dataset secrets.
-  #
-  # Hardening landed since: dataset secrets removed from this path, Windows runners
-  # removed (their egress can't be filtered), and harden-runner (disable-sudo +
-  # egress block) added to every job that runs PR code.
-  #
-  # Do NOT re-enable until the remaining controls are live:
-  #   - the inspect_evals dispatcher only fires on an "ok to test" maintainer label,
-  #     auto-removed on each new push (so each commit is re-reviewed), and
-  #   - dataset tests skip cleanly when HF/Kaggle auth is absent, and
-  #   - the protected `fork-pr-tests` environment (required reviewers) exists.
-  # Until then, trusted runs can be started manually via workflow_dispatch.
-  #
-  # To re-enable, restore:
-  # repository_dispatch:
-  #   types: [build]
+  # Fork-PR heavy tests, dispatched from UKGovernmentBEIS/inspect_evals. This checks
+  # out and runs the PR head SHA (arbitrary code execution), so it is hardened:
+  #   - no dataset secrets on this path (auth-needing tests skip; they run in the
+  #     scheduled run-heavy-tests* workflows instead),
+  #   - Linux-only under harden-runner (disable-sudo + egress allowlist), and
+  #   - the inspect_evals dispatcher only fires this for a fork PR once a maintainer
+  #     applies the "ok to test" label, which is auto-revoked on each new commit.
+  # Incident-response runbook: UKGovernmentBEIS/inspect_evals/.github/security/.
+  repository_dispatch:
+    types: [build]
 
 concurrency:
   group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref || inputs.ref || github.run_id }}
