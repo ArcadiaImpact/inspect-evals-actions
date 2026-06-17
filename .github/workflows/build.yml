@@ -1,26 +1,12 @@
+# Heavy test jobs that require larger runners than the GitHub defaults
+#
+# Fast checks (linting, type checking, package build, etc.) run directly in the
+# inspect_evals repository.
+
 name: Tests
 run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1}', github.event.client_payload.pr_number, github.event.client_payload.pr_title) || 'Tests' }}
 
-on:
-  workflow_dispatch:
-  # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
-  # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
-  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution)
-  # while HF_ACCESS_TOKEN / KAGGLE_USERNAME / KAGGLE_KEY are present in the job env.
-  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate those secrets
-  # via the run logs. Do NOT re-enable until untrusted PR code can no longer run in
-  # a job that holds secrets (e.g. label/approval-gated trusted job, or secret-free
-  # fork runs). Until then, trusted runs can be started manually via workflow_dispatch.
-  #
-  # To re-enable after hardening, restore:
-  # repository_dispatch:
-  #   types: [build]
-
-concurrency:
-  group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref }}
-  cancel-in-progress: true
-
-# Payload expected from caller:
+# `github.event.client_payload` expected from caller:
 # {
 #   "ref": "<git sha to checkout>",
 #   "base_sha": "<base sha for PR comparison, empty for non-PRs>",
@@ -29,25 +15,72 @@ concurrency:
 #   "is_pr": "true/false",
 #   "source_repo": "UKGovernmentBEIS/inspect_evals"
 # }
-#
-# Fast checks (linting, type checking, package build, etc.) now run directly
-# in the inspect_evals repository. This workflow only handles heavy test jobs
-# that require larger runners.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "inspect_evals git ref/SHA to check out (blank = default branch)"
+        required: false
+        default: ""
+      base_sha:
+        description: "Base SHA for the targeted-slow-tests diff (blank = origin/main). Set an older commit to make slow tests actually run."
+        required: false
+        default: ""
+      is_pr:
+        description: "Set true to run the PR-only targeted-slow-tests job"
+        required: false
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+      run_all_slow_tests:
+        description: "Run ALL slow tests (ignore the changed-files diff). Implies is_pr. Slow + many dataset downloads."
+        required: false
+        type: choice
+        options: ["false", "true"]
+        default: "false"
+  # SECURITY KILL-SWITCH (incident 2026-06-09): the `repository_dispatch: [build]`
+  # trigger is DISABLED. This workflow checks out the dispatched PR head SHA from
+  # UKGovernmentBEIS/inspect_evals and runs pytest on it (arbitrary code execution).
+  # A malicious fork PR (inspect_evals#1774) abused this to exfiltrate dataset secrets.
+  #
+  # Hardening landed since: dataset secrets removed from this path, Windows runners
+  # removed (their egress can't be filtered), and harden-runner (disable-sudo +
+  # egress block) added to every job that runs PR code.
+  #
+  # Do NOT re-enable until the remaining controls are live:
+  #   - the inspect_evals dispatcher only fires on an "ok to test" maintainer label,
+  #     auto-removed on each new push (so each commit is re-reviewed), and
+  #   - dataset tests skip cleanly when HF/Kaggle auth is absent, and
+  #   - the protected `fork-pr-tests` environment (required reviewers) exists.
+  # Until then, trusted runs can be started manually via workflow_dispatch.
+  #
+  # To re-enable, restore:
+  # repository_dispatch:
+  #   types: [build]
+
+concurrency:
+  group: tests-pr-${{ github.event.client_payload.pr_number || github.event.client_payload.ref || inputs.ref || github.run_id }}
+  cancel-in-progress: true
 
 # zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
 permissions:
   contents: read
 
-env:
-  HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-  KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-  KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-
 jobs:
   set-pending-status:
+    name: Set pending check status on dispatching repo
     runs-on: ubuntu-latest
     steps:
       - name: Set pending commit status
+        # INSPECT_EVALS_CHECKS_TOKEN posts the "Tests (inspect-evals-actions)"
+        # commit status back onto the PR commit in the SOURCE repo
+        # (UKGovernmentBEIS/inspect_evals). This is a cross-repo write, so the
+        # built-in GITHUB_TOKEN (scoped to this repo) cannot do it.
+        # Required permission, least-privilege:
+        #   fine-grained PAT / GitHub App: "Commit statuses: Read and write"
+        #     on UKGovernmentBEIS/inspect_evals only (no code or other access)
+        #   classic PAT: repo:status scope (NOT full repo)
+        # Also used by the "Update commit status" step in the report-status job.
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
@@ -65,11 +98,12 @@ jobs:
             -f context="Tests (inspect-evals-actions)"
 
   test:
+    name: Fast tests (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        os: [ubuntu-latest-8-cores]
         python-version: ["3.11", "3.12", "3.13"]
     env:
       RUN_SLOW_TESTS: no
@@ -77,10 +111,47 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
+      # Defense-in-depth: disable sudo to limit scope of untrusted PR code
+      # and block egress to an allowlist. The fork-PR path is Linux-only because
+      # harden-runner can't enforce either on Windows.
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          disable-sudo: true
+          # Allowlist (host:port), enforced in block mode on Linux only:
+          #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
+          #                release-assets.githubusercontent.com
+          #   HuggingFace: huggingface.co, datasets-server.huggingface.co,
+          #                {cas-bridge,cas-server,transfer}.xethub.hf.co, us.aws.cdn.hf.co
+          #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
+          #     openaipublic.blob.core.windows.net — browse_comp, gpqa, healthbench, mgsm, simpleqa
+          #     storage.googleapis.com + yonatanbisk.com — piqa
+          #     s3.amazonaws.com — HF/`datasets` S3 backend (not an ASSETS direct_url)
+          allowed-endpoints: >
+            api.github.com:443
+            cas-bridge.xethub.hf.co:443
+            cas-server.xethub.hf.co:443
+            datasets-server.huggingface.co:443
+            files.pythonhosted.org:443
+            github.com:443
+            huggingface.co:443
+            openaipublic.blob.core.windows.net:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            releases.astral.sh:443
+            s3.amazonaws.com:443
+            storage.googleapis.com:443
+            transfer.xethub.hf.co:443
+            us.aws.cdn.hf.co:443
+            yonatanbisk.com:443
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -127,9 +198,10 @@ jobs:
           # failures in bfcl, healthbench, mmlu, and deps_utils.
           # Those are being fixed in https://github.com/UKGovernmentBEIS/inspect_evals/pull/1751.
           # This step will be re-enabled once that PR merges.
-          echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
+          echo "Doctests temporarily disabled — see inspect_evals PR #1751"
 
       - name: Test with pytest
+        # No HF/Kaggle secrets on the fork-PR path: tests that require should skip and run in scheduled run-heavy-tests workflows.
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
@@ -148,11 +220,11 @@ jobs:
           path: pytest-report.jsonl
 
   slow-test-check:
+    name: Check slow tests are all marked
     runs-on: ubuntu-latest
     needs: test
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -172,20 +244,41 @@ jobs:
           python scripts/build/check_slow_tests.py --reports-dir ./reports
 
   clean-install-test:
+    name: Clean install test (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
     env:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
+      # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
+      # This job's egress is small and stable (packages + GitHub, no dataset
+      # downloads), so it uses block mode with a tiny allowlist.
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          disable-sudo: true
+          egress-policy: block
+          # Allowlist (host:port), block mode on Linux only. Tiny, stable surface
+          # (no datasets — this job only runs `inspect eval make_me_pay --limit=0`):
+          #   tooling: releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:  github.com, api.github.com, raw.githubusercontent.com
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            releases.astral.sh:443
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -255,22 +348,83 @@ jobs:
 
   targeted-slow-tests:
     name: Slow Tests relevant to PR
-    if: github.event.client_payload.is_pr == 'true'
+    if: ${{ github.event.client_payload.is_pr == 'true' || inputs.is_pr == 'true' || inputs.run_all_slow_tests == 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        os: [ubuntu-latest-8-cores]
     env:
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
       UV_PYTHON: "3.12"
 
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      # Defense-in-depth: harden-runner's disable-sudo takes effect at job start
+      # so is incompatible with jlumbroso/free-disk-space, which requires sudo,
+      # and has hence been removed as it's not necessary with the larger runners.
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          disable-sudo: true
+          # Allowlist (host:port), enforced in block mode on Linux only:
+          #   tooling:     releases.astral.sh (uv), pypi.org, files.pythonhosted.org
+          #   GitHub:      github.com, api.github.com, raw.githubusercontent.com,
+          #                release-assets.githubusercontent.com, github-cloud.githubusercontent.com
+          #   HuggingFace: huggingface.co, datasets-server.huggingface.co,
+          #                {cas-server,transfer}.xethub.hf.co, us.aws.cdn.hf.co (Xet/LFS/CDN)
+          #   Kaggle:      www.kaggle.com — mle_bench, mlrc_bench
+          #   Sandbox build (any Docker-based eval): {auth,registry-1}.docker.io +
+          #                production.cloudfront.docker.com (image pulls);
+          #                {archive,security}.ubuntu.com:80 (apt); conda.anaconda.org
+          #                (conda envs, e.g. mle_bench/mlrc_bench)
+          #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
+          #     *.blob.core.windows.net — openaipublic (browse_comp, gpqa, healthbench,
+          #       mgsm, simpleqa) + HF Xet's rotating Azure content shards
+          #     storage.googleapis.com — piqa
+          #     qasper-dataset.s3.us-west-2.amazonaws.com — abstention_bench
+          #     drive.google.com + *.googleusercontent.com — abstention_bench, scicode, sciknoweval
+          #     s3.amazonaws.com — HF/`datasets` S3 backend (not an ASSETS direct_url)
+          # NOTE: *.googleusercontent.com and *.blob.core.windows.net are leading-"*."
+          # wildcards for Google Drive download shards and HF Xet Azure content hosts,
+          # which rotate per request and can't be pinned. A mid-host wildcard
+          # (doc-*-*-docs.googleusercontent.com) was tried and DROPPED by harden-runner;
+          # if these leading wildcards also drop on the next run, this job must use audit.
+          allowed-endpoints: >
+            api.github.com:443
+            archive.ubuntu.com:80
+            auth.docker.io:443
+            cas-bridge.xethub.hf.co:443
+            cas-server.xethub.hf.co:443
+            conda.anaconda.org:443
+            datasets-server.huggingface.co:443
+            *.googleusercontent.com:443
+            drive.google.com:443
+            files.pythonhosted.org:443
+            github-cloud.githubusercontent.com:443
+            github.com:443
+            huggingface.co:443
+            *.blob.core.windows.net:443
+            production.cloudfront.docker.com:443
+            pypi.org:443
+            qasper-dataset.s3.us-west-2.amazonaws.com:443
+            raw.githubusercontent.com:443
+            registry-1.docker.io:443
+            release-assets.githubusercontent.com:443
+            releases.astral.sh:443
+            s3.amazonaws.com:443
+            security.ubuntu.com:80
+            storage.googleapis.com:443
+            transfer.xethub.hf.co:443
+            us.aws.cdn.hf.co:443
+            www.kaggle.com:443
+
+      - name: Checkout inspect_evals repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -278,7 +432,7 @@ jobs:
         id: base
         shell: bash
         env:
-          CLIENT_BASE_SHA: ${{ github.event.client_payload.base_sha }}
+          CLIENT_BASE_SHA: ${{ github.event.client_payload.base_sha || inputs.base_sha }}
         run: |
           # Compute merge-base so the diff only reflects the PR's own
           # changes, not unrelated work merged into main since the branch point.
@@ -315,9 +469,11 @@ jobs:
         env:
           EVAL_SRC: ${{ steps.changed.outputs.eval_src_all_changed_files }}
           EVAL_TESTS: ${{ steps.changed.outputs.eval_tests_all_changed_files }}
+          RUN_ALL_SLOW: ${{ inputs.run_all_slow_tests }}
         run: |
           uv run python - <<'PY'
           import os
+          import re
           from pathlib import Path
 
           # Read outputs (space/newline separated)
@@ -341,35 +497,54 @@ jobs:
               if has_tests(p):
                   found.add(str(p))
 
-          # From src changes -> tests/<eval>/
-          for f in src_files:
-              p = Path(f)
-              # Skip README.md files
-              if p.name.lower() == 'readme.md':
-                  continue
-              parts = p.parts
-              if len(parts) >= 3 and parts[0] == 'src' and parts[1] == 'inspect_evals':
-                  maybe_add(parts[2])
+          run_all = os.environ.get('RUN_ALL_SLOW', '') == 'true'
 
-          # From tests changes -> tests/<eval>/
-          for f in test_files:
-              p = Path(f)
-              # Skip README.md files
-              if p.name.lower() == 'readme.md':
-                  continue
-              parts = p.parts
-              if len(parts) >= 2 and parts[0] == 'tests':
-                  maybe_add(parts[1])
+          if run_all:
+              # Audit/full mode: enumerate every tests/<eval> dir and ignore the
+              # changed-files diff, so ALL slow tests are selected to run.
+              for child in sorted(Path('tests').iterdir()):
+                  if child.is_dir() and has_tests(child):
+                      found.add(str(child))
+          else:
+              # From src changes -> tests/<eval>/
+              for f in src_files:
+                  p = Path(f)
+                  # Skip README.md files
+                  if p.name.lower() == 'readme.md':
+                      continue
+                  parts = p.parts
+                  if len(parts) >= 3 and parts[0] == 'src' and parts[1] == 'inspect_evals':
+                      maybe_add(parts[2])
+
+              # From tests changes -> tests/<eval>/
+              for f in test_files:
+                  p = Path(f)
+                  # Skip README.md files
+                  if p.name.lower() == 'readme.md':
+                      continue
+                  parts = p.parts
+                  if len(parts) >= 2 and parts[0] == 'tests':
+                      maybe_add(parts[1])
 
           ISOLATED_EVALS = {
               'kernelbench', 'novelty_bench', 'livebench',
               'mle_bench', 'cve_bench', 'bold', 'abstention_bench',
           }
 
+          # Defense-in-depth: these names derive from PR-controlled changed-file
+          # paths and are written to $GITHUB_ENV and passed to the shell. Reject
+          # anything that isn't a plain eval directory name (also catches '..',
+          # which would otherwise resolve tests/.. to the whole repo).
+          safe_name = re.compile(r'^[A-Za-z0-9_-]+$')
+
           isolated_envs: list[str] = []
           root_paths: list[str] = []
           for p in sorted(found):
               eval_name = Path(p).name
+              if not safe_name.fullmatch(eval_name):
+                  raise ValueError(
+                      f'Refusing unsafe eval directory name from changed files: {eval_name!r}'
+                  )
               if eval_name in ISOLATED_EVALS:
                   isolated_envs.append(eval_name)
               else:
@@ -455,32 +630,20 @@ jobs:
           if not has_slow and not has_isolated_slow:
               print('No slow tests found in changed paths - skipping targeted runs.')
           PY
-
-      - name: Free disk space (before targeted run)
-        if: env.HAS_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
-        with:
-          tool-cache: false # keep python and tools installed by setup-uv/setup-python
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code "$TEST_PATHS"
 
-      - name: Install tox and tox-uv (for isolated eval slow tests)
-        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        run: pip install tox tox-uv
-
       - name: Run targeted isolated eval slow tests via tox
-        if: env.HAS_ISOLATED_SLOW_TESTS == 'true' && runner.os == 'Linux'
-        run: tox -e "$ISOLATED_TOX_ENVS"
-
+        if: env.HAS_ISOLATED_SLOW_TESTS == 'true'
+        # tox/tox-uv come from the locked dev group installed by "Install
+        # dependencies" above (uv sync), so the version is pinned via uv.lock and
+        # dependabot-managed — no separate unpinned `pip install` needed.
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
+        run: uv run --no-sync tox -e "$ISOLATED_TOX_ENVS"
 
   tox-isolated-evals:
     name: Isolated eval tests (tox)
@@ -488,10 +651,26 @@ jobs:
     env:
       UV_PYTHON: "3.12"
     steps:
+      # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
+      - name: Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          disable-sudo: true
+          allowed-endpoints: >
+            api.github.com:443
+            datasets-server.huggingface.co:443
+            files.pythonhosted.org:443
+            github.com:443
+            *.blob.core.windows.net:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            releases.astral.sh:443
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: UKGovernmentBEIS/inspect_evals
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ github.event.client_payload.ref || inputs.ref }}
           persist-credentials: false
 
       - name: Set up Python 3.12
@@ -501,9 +680,6 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-
-      - name: Install tox and tox-uv
-        run: pip install tox tox-uv
 
       - name: Cache uv downloads
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -515,10 +691,20 @@ jobs:
             ${{ runner.os }}-uv-3.12-isolated-
             ${{ runner.os }}-uv-3.12-
 
+      - name: Install tox (locked dev group; no project build)
+        # tox/tox-uv come from inspect_evals' locked dev group, so the version is
+        # pinned via uv.lock (and dependabot-managed) rather than an unpinned
+        # `pip install`. --no-install-project avoids building the untrusted PR
+        # package just to get the test runner.
+        run: uv sync --frozen --only-group dev --no-install-project
+
       - name: Run isolated eval tests via tox
-        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
+        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09): mle_bench's
+        # Kaggle tests skip themselves when KAGGLE_* is absent.
+        run: uv run --no-sync tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
+    name: Report test status
     runs-on: ubuntu-latest
     needs:
       - set-pending-status
@@ -554,6 +740,8 @@ jobs:
           fi
 
       - name: Update commit status
+        # INSPECT_EVALS_CHECKS_TOKEN: see the set-pending-status job for what this
+        # token is for and the least-privilege permissions it needs.
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_CHECKS_TOKEN }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
@@ -571,4 +759,3 @@ jobs:
             -f target_url="https://github.com/${REPO}/actions/runs/${RUN_ID}" \
             -f description="${STATUS_DESC}" \
             -f context="Tests (inspect-evals-actions)"
-

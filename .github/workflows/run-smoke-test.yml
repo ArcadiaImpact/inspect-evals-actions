@@ -78,6 +78,7 @@ jobs:
           path: smoke_output.log
 
   summarise-smoke:
+    name: Summarise smoke tests (Linux)
     needs: smoke-test
     runs-on: ubuntu-latest
 
@@ -155,4 +156,3 @@ jobs:
         if: ${{ always() && (steps.stale.conclusion == 'failure') }}
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
-
