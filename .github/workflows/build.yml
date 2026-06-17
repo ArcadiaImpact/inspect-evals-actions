@@ -17,10 +17,6 @@ run-name: ${{ github.event.client_payload.is_pr == 'true' && format('(#{0}) - {1
 # }
 on:
   workflow_dispatch:
-    # Manual trusted runs. These inputs let a maintainer drive the same jobs the
-    # (killswitched) repository_dispatch path would, e.g. to audit egress. Every
-    # consumer below reads `client_payload.X || inputs.X`, so repository_dispatch
-    # is unaffected (its `inputs` context is empty, so client_payload always wins).
     inputs:
       ref:
         description: "inspect_evals git ref/SHA to check out (blank = default branch)"
@@ -70,11 +66,6 @@ concurrency:
 permissions:
   contents: read
 
-# NOTE (incident 2026-06-09 follow-up): this fork-PR test path carries NO dataset
-# credentials. HF_ACCESS_TOKEN / KAGGLE_USERNAME / KAGGLE_KEY were removed entirely
-# so untrusted PR code can never exfiltrate them (the incident's target). Tests that
-# require auth skip themselves when the tokens are absent; auth-needing dataset tests
-# run only in the scheduled run-heavy-tests* workflows on trusted (merged) code.
 
 jobs:
   set-pending-status:
@@ -120,10 +111,9 @@ jobs:
       UV_PYTHON: ${{ matrix.python-version }}
 
     steps:
-      # Defense-in-depth (incident 2026-06-09): disable sudo so untrusted PR code
-      # can't dump the runner's process memory, and block egress to an allowlist so
-      # it can't POST data out. The fork-PR path is Linux-only (Windows removed
-      # because harden-runner can't filter its egress), so both are enforced.
+      # Defense-in-depth: disable sudo to limit scope of untrusted PR code
+      # and block egress to an allowlist. The fork-PR path is Linux-only because
+      # harden-runner can't enforce either on Windows.
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
@@ -211,9 +201,7 @@ jobs:
           echo "Doctests temporarily disabled — see inspect_evals PR #1751" 
 
       - name: Test with pytest
-        # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09): tests
-        # that require auth skip themselves when the tokens are absent. Dataset
-        # tests needing auth run only in the scheduled run-heavy-tests workflows.
+        # No HF/Kaggle secrets on the fork-PR path: tests that require should skip and run in scheduled run-heavy-tests workflows.
         shell: bash
         run: |
           uv run pytest -n 2 -rA --color=yes --cov=inspect_evals --durations=50 --report-log=pytest-report.jsonl \
@@ -379,11 +367,9 @@ jobs:
       UV_PYTHON: "3.12"
 
     steps:
-      # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
-      # harden-runner's `pre` step runs before all main steps, so disable-sudo
-      # takes effect at job start — it is incompatible with any step that needs
-      # sudo (e.g. jlumbroso/free-disk-space, which was removed when this job
-      # moved to larger runners that no longer need disk cleanup).
+      # Defense-in-depth: harden-runner's disable-sudo takes effect at job start
+      # so is incompatible with jlumbroso/free-disk-space, which requires sudo,
+      # and has hence been removed as it's not necessary with the larger runners.
       - name: Harden runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
