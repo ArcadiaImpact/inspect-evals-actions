@@ -626,14 +626,13 @@ jobs:
         run: |
           uv run pytest -n 2 -rA --color=yes --durations=50 --suppress-no-test-exit-code "$TEST_PATHS"
 
-      - name: Install tox and tox-uv (for isolated eval slow tests)
-        if: env.HAS_ISOLATED_SLOW_TESTS == 'true'
-        run: pip install tox tox-uv
-
       - name: Run targeted isolated eval slow tests via tox
         if: env.HAS_ISOLATED_SLOW_TESTS == 'true'
+        # tox/tox-uv come from the locked dev group installed by "Install
+        # dependencies" above (uv sync), so the version is pinned via uv.lock and
+        # dependabot-managed — no separate unpinned `pip install` needed.
         # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
-        run: tox -e "$ISOLATED_TOX_ENVS"
+        run: uv run --no-sync tox -e "$ISOLATED_TOX_ENVS"
 
   tox-isolated-evals:
     name: Isolated eval tests (tox)
@@ -671,9 +670,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
-      - name: Install tox and tox-uv
-        run: pip install tox tox-uv
-
       - name: Cache uv downloads
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -684,10 +680,17 @@ jobs:
             ${{ runner.os }}-uv-3.12-isolated-
             ${{ runner.os }}-uv-3.12-
 
+      - name: Install tox (locked dev group; no project build)
+        # tox/tox-uv come from inspect_evals' locked dev group, so the version is
+        # pinned via uv.lock (and dependabot-managed) rather than an unpinned
+        # `pip install`. --no-install-project avoids building the untrusted PR
+        # package just to get the test runner.
+        run: uv sync --frozen --only-group dev --no-install-project
+
       - name: Run isolated eval tests via tox
         # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09): mle_bench's
         # Kaggle tests skip themselves when KAGGLE_* is absent.
-        run: tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
+        run: uv run --no-sync tox -e kernelbench,novelty_bench,livebench,mle_bench,cve_bench,bold,abstention_bench
 
   report-status:
     name: Report test status
