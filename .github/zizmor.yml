@@ -29,6 +29,7 @@ rules:
   secrets-outside-env:
     ignore:
       - build.yml
+      - run-compat-matrix.yml
       - run-heavy-tests.yml
       - run-heavy-tests-windows.yml
       - run-smoke-test.yml

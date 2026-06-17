@@ -1,0 +1,164 @@
+---
+name: Compatibility Matrix
+
+# Continuous cross-platform / cross-version safety net.
+#
+# PR test runs are now Linux-only (and label-gated), and the run-heavy-tests*
+# scheduled workflows only exercise Python 3.11. That leaves OS x Python
+# compatibility — notably Windows x {3.12, 3.13} — and the clean-install smoke
+# with no scheduled coverage. This workflow runs the CHEAP test tiers (clean
+# install + the non-slow suite) across the full [linux, windows] x [3.11, 3.12,
+# 3.13] matrix nightly. Slow + dataset-download coverage stays in run-heavy-tests*.
+#
+# No HF/Kaggle secrets: dataset-download tests are disabled here, so the matrix
+# stays fast/reliable and needs no auth.
+
+on:
+  workflow_dispatch:
+    inputs:
+      inspect_evals_ref:
+        description: "inspect_evals branch/tag/commit to checkout"
+        required: false
+        default: ""
+        type: string
+  schedule:
+    - cron: "0 5 * * *" # nightly at 05:00 UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+# zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
+permissions:
+  contents: read
+
+jobs:
+  clean-install:
+    name: Clean install (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ inputs.inspect_evals_ref || '' }}
+          persist-credentials: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Install dependencies (locked, no extras)
+        run: uv sync --frozen
+
+      - name: Registry import smoke test
+        # Mirrors the old clean-install-test: a minimal install must import the
+        # package and load the eval registry on this OS / Python version.
+        shell: bash
+        run: |
+          set +e  # capture output, don't exit on the command's own status
+          output=$(uv run inspect eval inspect_evals/make_me_pay --limit=0 2>&1)
+          exit_code=$?
+          echo "$output"
+          if echo "$output" | grep -q -E 'Unexpected exception loading entrypoints|No module named|ImportError|ModuleNotFoundError'; then
+            echo "::error::Found import errors in the output."
+            exit 1
+          fi
+          if echo "$output" | grep -q 'No inspect tasks were found'; then
+            echo "::error::No inspect tasks were found — possible install problem."
+            exit 1
+          fi
+          if [ $exit_code -ne 0 ]; then
+            echo "::error::Command exited with code $exit_code."
+            exit $exit_code
+          fi
+          echo "✓ Registry import check passed"
+
+  tests:
+    name: Non-slow tests (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest-8-cores, windows-latest-8-cores]
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      RUN_SLOW_TESTS: no
+      RUN_DATASET_DOWNLOAD_TESTS: no # Note: dataset-download tests are disabled to keep the matrix fast and reliable
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ inputs.inspect_evals_ref || '' }}
+          persist-credentials: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Cache uv downloads
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ runner.os == 'Windows' && '~\AppData\Local\uv\cache' || '~/.cache/uv' }}
+          key: ${{ matrix.os }}-uv-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ matrix.os }}-uv-${{ matrix.python-version }}-
+            ${{ matrix.os }}-uv-
+
+      - name: Install dependencies for python < 3.12
+        if: ${{ matrix.python-version < '3.12' }}
+        run: uv sync --frozen --group dev --group test_py311_or_lower --group test
+
+      - name: Install dependencies for python >= 3.12
+        if: ${{ matrix.python-version >= '3.12' }}
+        run: uv sync --frozen --group dev --group test_py312_or_higher --group test
+
+      - name: Run non-slow tests
+        # Isolated evals (own dependency sets, run via tox elsewhere) are excluded,
+        # matching the old `test` job. Slow + dataset tests are disabled via env.
+        shell: bash
+        run: |
+          uv run pytest -n 2 -rA --color=yes --durations=20 \
+            --ignore=tests/kernelbench \
+            --ignore=tests/novelty_bench \
+            --ignore=tests/livebench \
+            --ignore=tests/mle_bench \
+            --ignore=tests/cve_bench \
+            --ignore=tests/bold \
+            --ignore=tests/abstention_bench
+
+  notify:
+    name: Notify Slack on scheduled failure
+    needs: [clean-install, tests]
+    if: ${{ always() && github.event_name == 'schedule' && (needs.clean-install.result == 'failure' || needs.tests.result == 'failure') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post failure to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${SLACK_WEBHOOK_URL}" ]; then
+            echo "SLACK_WEBHOOK_URL not set; skipping notification."
+            exit 0
+          fi
+          payload=$(jq -n --arg url "$RUN_URL" \
+            '{text: ("⚠️ Compatibility Matrix failed — <" + $url + "|View run details>")}')
+          curl -sS -X POST -H 'Content-type: application/json' -d "$payload" "$SLACK_WEBHOOK_URL"
