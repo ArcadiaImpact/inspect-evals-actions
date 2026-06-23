@@ -71,8 +71,19 @@ fi
 
 echo "$summary"
 
-# Unexpected errors implies a failure
+# Unexpected errors implies a failure. The summary above goes to stdout, which
+# the workflow redirects into a file for Slack, so it never reaches the Actions
+# step log. Re-emit it to stderr (plus a pointer to where the real error details
+# live) so the failing step is self-explanatory without digging into the green
+# "Smoke test" job.
 if [ "$n_unexpected" -gt 0 ]; then
+	{
+		echo "$summary"
+		echo
+		echo "For full error details (stack traces, etc.), open the 'Smoke test'"
+		echo "job for this run and inspect its logs. That job stays green even when"
+		echo "individual evals error, so the failures only surface here."
+	} >&2
 	exit 1
 fi
 
