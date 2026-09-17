@@ -2,7 +2,7 @@ name: Register Lint
 
 on:
   schedule:
-    - cron: "17 5 * * *"
+    - cron: "17 5 * * *"  # Run daily at 05:17 UTC
   push:
     branches: [main]
     paths:
