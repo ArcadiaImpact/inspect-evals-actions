@@ -13,6 +13,11 @@ dev = [
     "actionlint-py==1.7.12.24",  # third-party Python wrapper around the upstream Go binary
     "zizmor==1.24.1",  # security-focused GitHub Actions linter
 ]
+register-lint = [
+    "inspect-evals-lint==0.1.1",
+    "pyyaml==6.0.3",
+    "pytest==8.4.2",
+]
 
 [tool.uv]
 # Treat this as a virtual project: there is nothing to build or install.
