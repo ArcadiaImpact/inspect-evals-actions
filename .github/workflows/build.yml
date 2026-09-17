@@ -263,13 +263,18 @@ jobs:
           # Allowlist (host:port), block mode on Linux only. Tiny, stable surface
           # (no datasets — this job only runs `inspect eval make_me_pay --limit=0`):
           #   tooling: releases.astral.sh (uv), pypi.org, files.pythonhosted.org
-          #   GitHub:  github.com, api.github.com, raw.githubusercontent.com
+          #   GitHub:  github.com, api.github.com, raw.githubusercontent.com,
+          #            release-assets.githubusercontent.com (setup-uv falls back to
+          #            GitHub Releases when a new uv is advertised before the Astral
+          #            mirror serves it; blocking it failed this job, see
+          #            UKGovernmentBEIS/inspect_evals#2307)
           allowed-endpoints: >
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
             raw.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
             releases.astral.sh:443
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
