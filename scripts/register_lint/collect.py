@@ -205,13 +205,23 @@ def derive_layouts(root: Path, task_paths: list[str]) -> list[EvalLayout]:
 # ── Lint ────────────────────────────────────────────────────────────────────
 
 
+def linter_version() -> str:
+    """The version of the installed inspect-evals-lint, from the package itself.
+
+    Both the document header and each entry record this, and the publisher
+    rejects a document where they differ, so there must be exactly one source.
+    """
+    import inspect_evals_lint
+
+    return inspect_evals_lint.__version__
+
+
 def lint_layouts(root: Path, layouts: list[EvalLayout]) -> tuple[dict[str, Any], str]:
     """Run inspect-evals-lint over each layout; returns its JSON document and the linter version."""
     # Imported here so the register/layout helpers stay usable (and testable)
     # without the linter installed.
     from dataclasses import replace
 
-    import inspect_evals_lint
     from inspect_evals_lint import PRESETS, lint_evaluation
     from inspect_evals_lint.output import reports_to_dict
 
@@ -223,7 +233,7 @@ def lint_layouts(root: Path, layouts: list[EvalLayout]) -> tuple[dict[str, Any],
             import_prefix=layout.import_prefix,
         )
         reports.append(lint_evaluation(root, layout.eval_name, config))
-    return reports_to_dict(reports, root), inspect_evals_lint.__version__
+    return reports_to_dict(reports, root), linter_version()
 
 
 # ── Per-entry driver ────────────────────────────────────────────────────────
@@ -317,8 +327,6 @@ def main(argv: list[str] | None = None) -> int:
             if args.clone_dir is None:
                 shutil.rmtree(clone_root / entry.id, ignore_errors=True)
 
-    from importlib.metadata import version
-
     _write_json(
         args.output_dir / "results.json",
         {
@@ -329,7 +337,7 @@ def main(argv: list[str] | None = None) -> int:
             },
             "runner_commit": args.runner_commit,
             "lint": {
-                "version": version("inspect-evals-lint"),
+                "version": linter_version(),
                 "preset": "register",
                 "policy": POLICY,
             },
