@@ -1,6 +1,8 @@
 """Validate the artifact boundary and the installed linter integration."""
 
 import json
+import re
+import tomllib
 from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import patch
@@ -13,6 +15,7 @@ from scripts.register_lint.collect import (
     clone_at_commit,
     derive_layouts,
     lint_layouts,
+    linter_version,
 )
 from scripts.register_lint.publish import publish, validate_document
 from scripts.register_lint.report import POLICY, REGISTRY_URL, EntryResult, summarise
@@ -194,6 +197,23 @@ def test_git_configuration_disables_hooks_symlinks_and_other_protocols(tmp_path)
     )
 
 
+def pinned_linter_version() -> str:
+    """The ``inspect-evals-lint==X`` pin in this repository's register-lint dependency group."""
+    pyproject = tomllib.loads(
+        (Path(__file__).parents[1] / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    for requirement in pyproject["dependency-groups"]["register-lint"]:
+        match = re.fullmatch(r"inspect-evals-lint==(\S+)", requirement)
+        if match:
+            return match.group(1)
+    raise AssertionError("inspect-evals-lint is not pinned in the register-lint group")
+
+
+def test_installed_linter_is_the_pinned_one():
+    """The workflow installs from the lock, so the linter it runs is the pinned release."""
+    assert linter_version() == pinned_linter_version()
+
+
 def test_installed_linter_reads_source_without_importing_it(tmp_path):
     package = tmp_path / "src/alpha"
     package.mkdir(parents=True)
@@ -202,9 +222,23 @@ def test_installed_linter_reads_source_without_importing_it(tmp_path):
     doc, version = lint_layouts(
         tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"])
     )
-    assert version == "0.1.1"
+    assert version == linter_version()
     assert summarise(doc)["applicable"] > 0
     assert doc["evaluations"][0]["results"]
+
+
+def test_lint_documents_may_carry_fields_this_repo_does_not_know(artifact, tmp_path):
+    """A linter release may add fields (0.2.0 adds ``kind`` and a ``helpers`` list); only what is read is validated."""
+    directory, doc = artifact
+    lint = doc["entries"][0]["lint"]
+    lint["evaluations"][0]["kind"] = "eval"
+    lint["helpers"] = [{"name": "utils", "kind": "helper", "results": []}]
+    lint["helpers_total"] = 1
+    lint["evaluations"][0]["results"][0]["future_field"] = "ignored"
+    (directory / "results.json").write_text(json.dumps(doc))
+    publish(directory, tmp_path / "out", "https://example.test")
+    published = json.loads((tmp_path / "out/results/alpha.json").read_text())
+    assert published["score"] == doc["entries"][0]["score"]
 
 
 def test_publisher_has_no_upstream_checkout_or_cross_repo_token():
