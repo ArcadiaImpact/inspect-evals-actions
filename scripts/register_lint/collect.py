@@ -222,21 +222,31 @@ def lint_layouts(root: Path, layouts: list[EvalLayout]) -> tuple[dict[str, Any],
     # without the linter installed.
     from dataclasses import replace
 
-    from inspect_evals_lint import PRESETS, lint_evaluation
-    from inspect_evals_lint.output import reports_to_dict
+    from inspect_evals_lint import PRESETS, RunReport, lint_package
 
-    reports = []
+    packages = []
     for layout in layouts:
         config = replace(
             PRESETS["register"],
             source_root=layout.source_root,
             import_prefix=layout.import_prefix,
         )
-        reports.append(lint_evaluation(root, layout.eval_name, config))
-    return reports_to_dict(reports, root), linter_version()
+        packages.append(lint_package(root, layout.eval_name, config))
+    document = RunReport(root=root, packages=packages).to_dict()
+    # The clone lives in a temporary directory; its path says nothing about the entry.
+    document.pop("root", None)
+    return document, linter_version()
 
 
 # ── Per-entry driver ────────────────────────────────────────────────────────
+
+
+def describe_error(error: BaseException, clone_dir: Path) -> str:
+    """``TypeName: message`` with the temporary clone path replaced, so the record names the repository, not the runner's disk."""
+    text = f"{type(error).__name__}: {error}"
+    for prefix in {str(clone_dir), str(clone_dir.resolve())}:
+        text = text.replace(prefix, "<repository>")
+    return text
 
 
 def check_entry(
@@ -264,7 +274,9 @@ def check_entry(
     try:
         result.lint, result.lint_version = lint_layouts(clone_dir, layouts)
     except Exception as e:  # a linter crash on one repo must not sink the run
-        result.error = f"{type(e).__name__}: {e}"
+        # Includes the linter's ConfigError for a repository whose suppression
+        # comments use syntax the pinned release no longer accepts.
+        result.error = describe_error(e, clone_dir)
         return result
     result.score = summarise(result.lint)
     result.status = "linted"

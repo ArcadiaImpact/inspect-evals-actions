@@ -153,17 +153,25 @@ class TestDeriveLayouts:
 
 
 def lint_doc(*results: tuple[str, str, str]) -> dict:
-    """A minimal inspect-evals-lint JSON document: (check, category, status) triples."""
+    """A minimal inspect-evals-lint document: (rule, category, status) triples.
+
+    ``pass`` and ``skip`` are outcomes; ``fail``, ``warn`` and ``suppressed`` are
+    diagnostics, the way the linter reports them.
+    """
+    items = [
+        {"rule": r, "code": "IEXX000", "category": cat, "status": s, "message": ""}
+        for r, cat, s in results
+    ]
     return {
-        "evaluations": [
+        "schema_version": 1,
+        "packages": [
             {
                 "name": "x",
-                "results": [
-                    {"check": c, "category": cat, "status": s, "message": ""}
-                    for c, cat, s in results
-                ],
+                "kind": "eval",
+                "outcomes": [i for i in items if i["status"] in ("pass", "skip")],
+                "diagnostics": [i for i in items if i["status"] not in ("pass", "skip")],
             }
-        ]
+        ],
     }
 
 
@@ -194,8 +202,24 @@ class TestSummarise:
         }
         assert "code_quality" not in score["by_category"]
 
+    def test_a_rule_with_several_findings_counts_once_at_its_worst_status(self):
+        score = summarise(
+            lint_doc(
+                ("sample_ids", "best_practices", "fail"),
+                ("sample_ids", "best_practices", "fail"),
+                ("sample_ids", "best_practices", "suppressed"),
+                ("readme", "file_structure", "warn"),
+                ("readme", "file_structure", "skip"),
+                ("e2e_test", "tests", "suppressed"),
+                ("e2e_test", "tests", "suppressed"),
+            )
+        )
+        assert score["applicable"] == 3
+        assert score["passing"] == 1  # readme: warn wins over its skip
+        assert score["fail"] == 1 and score["suppressed"] == 1 and score["skip"] == 0
+
     def test_empty_document(self):
-        score = summarise({"evaluations": []})
+        score = summarise({"packages": []})
         assert score["applicable"] == 0
         assert score["score"] is None
         assert score["by_category"] == {}
