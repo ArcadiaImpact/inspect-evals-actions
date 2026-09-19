@@ -1,0 +1,280 @@
+{
+  "id": "chipbench_refmodel",
+  "repository_url": "https://github.com/Plswearpants/Inspect-Eval-ChipBench",
+  "commit": "8a60e2e8914139c1e73fe62ae8018dc240605ff3",
+  "task_paths": [
+    "src/chipbench/chipbench.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-19T05:24:19+00:00",
+  "error": null,
+  "lint_version": "0.2.1",
+  "layouts": [
+    {
+      "eval_name": "chipbench",
+      "source_root": "src",
+      "import_prefix": ""
+    }
+  ],
+  "score": {
+    "pass": 15,
+    "fail": 0,
+    "warn": 0,
+    "skip": 5,
+    "suppressed": 2,
+    "applicable": 17,
+    "passing": 15,
+    "score": 0.8824,
+    "by_category": {
+      "best_practices": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 4,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 2,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 1,
+        "applicable": 3,
+        "passing": 2,
+        "score": 0.6667
+      },
+      "file_structure": {
+        "pass": 6,
+        "fail": 0,
+        "warn": 0,
+        "skip": 0,
+        "suppressed": 0,
+        "applicable": 6,
+        "passing": 6,
+        "score": 1.0
+      },
+      "tests": {
+        "pass": 3,
+        "fail": 0,
+        "warn": 0,
+        "skip": 3,
+        "suppressed": 1,
+        "applicable": 4,
+        "passing": 3,
+        "score": 0.75
+      }
+    }
+  },
+  "lint": {
+    "version": "0.2.1",
+    "root": "/tmp/register-lint-jywiuggu/chipbench_refmodel",
+    "passed": true,
+    "evaluations_passed": 1,
+    "evaluations_total": 1,
+    "helpers_passed": 0,
+    "helpers_total": 0,
+    "summary": {
+      "pass": 15,
+      "fail": 0,
+      "warn": 0,
+      "skip": 5,
+      "suppressed": 2
+    },
+    "evaluations": [
+      {
+        "name": "chipbench",
+        "kind": "eval",
+        "passed": true,
+        "summary": {
+          "pass": 15,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 2
+        },
+        "results": [
+          {
+            "check": "eval_location",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/chipbench",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "main_file",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "chipbench.py has 3 @task function(s): ['chipbench_verilog_gen', 'chipbench_debug', 'chipbench_refmodel']",
+            "file": "src/chipbench/chipbench.py",
+            "line": null
+          },
+          {
+            "check": "init_exports",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "__init__.py exports all 3 task function(s)",
+            "file": "src/chipbench/__init__.py",
+            "line": null
+          },
+          {
+            "check": "readme",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists",
+            "file": "src/chipbench/README.md",
+            "line": null
+          },
+          {
+            "check": "private_api_imports",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "score_constants",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "unscored_reason",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "get_model_location",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer decorated functions",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "model_role_resolution",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sample_ids",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 3 Sample() calls include id parameter",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "task_overridable_defaults",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sandbox_image_pinning",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 0 registry image reference(s) in 1 compose file(s) are pinned",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "registry",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Evaluation registered in pyproject.toml under [project.entry-points.inspect_ai]",
+            "file": "pyproject.toml",
+            "line": null
+          },
+          {
+            "check": "eval_yaml",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "eval.yaml has all required fields",
+            "file": "src/chipbench/eval.yaml",
+            "line": null
+          },
+          {
+            "check": "external_dependencies",
+            "category": "code_quality",
+            "status": "suppressed",
+            "message": "[suppressed] External imports may need pyproject.toml optional-dependencies: ['utils (package: utils)']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_exist",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests/chipbench",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "e2e_test",
+            "category": "tests",
+            "status": "pass",
+            "message": "E2E test with eval() and mockllm/model found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_init",
+            "category": "tests",
+            "status": "suppressed",
+            "message": "[suppressed] Test directories missing __init__.py: ['chipbench']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "record_to_sample_test",
+            "category": "tests",
+            "status": "skip",
+            "message": "Evaluation does not use record_to_sample",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_solver_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom solvers found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_scorer_tests",
+            "category": "tests",
+            "status": "pass",
+            "message": "All 2 custom scorers appear tested",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_tool_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found",
+            "file": null,
+            "line": null
+          }
+        ]
+      }
+    ],
+    "helpers": []
+  }
+}

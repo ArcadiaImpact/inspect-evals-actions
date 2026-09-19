@@ -1,0 +1,15 @@
+{
+  "id": "manager_coercion_benchmark",
+  "repository_url": "https://github.com/CompassionML/manager-coercion-bench",
+  "commit": "48d6185a8fd1642cb6fb47fc6c30edcfdd31d8bb",
+  "task_paths": [
+    "manager_coercion.py"
+  ],
+  "status": "unsupported_layout",
+  "checked_at": "2026-09-19T05:24:32+00:00",
+  "error": "manager_coercion.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+  "lint_version": null,
+  "layouts": [],
+  "score": null,
+  "lint": null
+}

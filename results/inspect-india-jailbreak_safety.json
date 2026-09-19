@@ -1,0 +1,280 @@
+{
+  "id": "inspect-india-jailbreak_safety",
+  "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+  "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+  "task_paths": [
+    "india_evals/safeguards/task.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-19T05:24:27+00:00",
+  "error": null,
+  "lint_version": "0.2.1",
+  "layouts": [
+    {
+      "eval_name": "safeguards",
+      "source_root": "india_evals",
+      "import_prefix": "india_evals"
+    }
+  ],
+  "score": {
+    "pass": 8,
+    "fail": 5,
+    "warn": 0,
+    "skip": 9,
+    "suppressed": 0,
+    "applicable": 13,
+    "passing": 8,
+    "score": 0.6154,
+    "by_category": {
+      "best_practices": {
+        "pass": 2,
+        "fail": 1,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 2,
+        "score": 0.6667
+      },
+      "code_quality": {
+        "pass": 3,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 3,
+        "score": 1.0
+      },
+      "file_structure": {
+        "pass": 2,
+        "fail": 2,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 2,
+        "score": 0.5
+      },
+      "tests": {
+        "pass": 1,
+        "fail": 2,
+        "warn": 0,
+        "skip": 4,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 1,
+        "score": 0.3333
+      }
+    }
+  },
+  "lint": {
+    "version": "0.2.1",
+    "root": "/tmp/register-lint-jywiuggu/inspect-india-jailbreak_safety",
+    "passed": false,
+    "evaluations_passed": 0,
+    "evaluations_total": 1,
+    "helpers_passed": 0,
+    "helpers_total": 0,
+    "summary": {
+      "pass": 8,
+      "fail": 5,
+      "warn": 0,
+      "skip": 9,
+      "suppressed": 0
+    },
+    "evaluations": [
+      {
+        "name": "safeguards",
+        "kind": "eval",
+        "passed": false,
+        "summary": {
+          "pass": 8,
+          "fail": 5,
+          "warn": 0,
+          "skip": 9,
+          "suppressed": 0
+        },
+        "results": [
+          {
+            "check": "eval_location",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at india_evals/safeguards",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "main_file",
+            "category": "file_structure",
+            "status": "fail",
+            "message": "Missing main file: safeguards.py or tasks.py",
+            "file": "india_evals/safeguards/safeguards.py",
+            "line": null
+          },
+          {
+            "check": "init_exports",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "Main file safeguards.py not found, cannot check exports",
+            "file": "india_evals/safeguards/__init__.py",
+            "line": null
+          },
+          {
+            "check": "readme",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists",
+            "file": "README.md",
+            "line": null
+          },
+          {
+            "check": "private_api_imports",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "score_constants",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "unscored_reason",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "get_model_location",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer decorated functions",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "model_role_resolution",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sample_ids",
+            "category": "best_practices",
+            "status": "fail",
+            "message": "Sample() calls without id= parameter: [('task.py', 170), ('task.py', 199)]",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "task_overridable_defaults",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sandbox_image_pinning",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "registry",
+            "category": "file_structure",
+            "status": "fail",
+            "message": "Evaluation not registered. Add to pyproject.toml: [project.entry-points.inspect_ai]\nsafeguards = \"india_evals.safeguards\"",
+            "file": "pyproject.toml",
+            "line": null
+          },
+          {
+            "check": "eval_yaml",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "external_dependencies",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_exist",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "e2e_test",
+            "category": "tests",
+            "status": "fail",
+            "message": "No E2E test found (need test file with eval() call and mockllm/model)",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_init",
+            "category": "tests",
+            "status": "skip",
+            "message": "Tests live directly under the tests root; __init__.py files not required",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "record_to_sample_test",
+            "category": "tests",
+            "status": "skip",
+            "message": "Evaluation does not use record_to_sample",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_solver_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom solvers found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_scorer_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom scorers without apparent tests: ['refusal_scorer']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_tool_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found",
+            "file": null,
+            "line": null
+          }
+        ]
+      }
+    ],
+    "helpers": []
+  }
+}

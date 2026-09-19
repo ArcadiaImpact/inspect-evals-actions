@@ -1,0 +1,280 @@
+{
+  "id": "bixbench",
+  "repository_url": "https://github.com/concordia-ai/concordia_evals",
+  "commit": "e99597c8a5d68c85a5bbbb00020d7d1c813ad0e1",
+  "task_paths": [
+    "src/concordia_evals/bixbench/bixbench.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-19T05:24:16+00:00",
+  "error": null,
+  "lint_version": "0.2.1",
+  "layouts": [
+    {
+      "eval_name": "bixbench",
+      "source_root": "src/concordia_evals",
+      "import_prefix": "concordia_evals"
+    }
+  ],
+  "score": {
+    "pass": 12,
+    "fail": 5,
+    "warn": 0,
+    "skip": 5,
+    "suppressed": 0,
+    "applicable": 17,
+    "passing": 12,
+    "score": 0.7059,
+    "by_category": {
+      "best_practices": {
+        "pass": 3,
+        "fail": 0,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 3,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 3,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 3,
+        "score": 1.0
+      },
+      "file_structure": {
+        "pass": 4,
+        "fail": 1,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 4,
+        "score": 0.8
+      },
+      "tests": {
+        "pass": 2,
+        "fail": 4,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 6,
+        "passing": 2,
+        "score": 0.3333
+      }
+    }
+  },
+  "lint": {
+    "version": "0.2.1",
+    "root": "/tmp/register-lint-jywiuggu/bixbench",
+    "passed": false,
+    "evaluations_passed": 0,
+    "evaluations_total": 1,
+    "helpers_passed": 0,
+    "helpers_total": 0,
+    "summary": {
+      "pass": 12,
+      "fail": 5,
+      "warn": 0,
+      "skip": 5,
+      "suppressed": 0
+    },
+    "evaluations": [
+      {
+        "name": "bixbench",
+        "kind": "eval",
+        "passed": false,
+        "summary": {
+          "pass": 12,
+          "fail": 5,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0
+        },
+        "results": [
+          {
+            "check": "eval_location",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/concordia_evals/bixbench",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "main_file",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "bixbench.py has 1 @task function(s): ['bixbench']",
+            "file": "src/concordia_evals/bixbench/bixbench.py",
+            "line": null
+          },
+          {
+            "check": "init_exports",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "__init__.py exports all 1 task function(s)",
+            "file": "src/concordia_evals/bixbench/__init__.py",
+            "line": null
+          },
+          {
+            "check": "readme",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists",
+            "file": "src/concordia_evals/bixbench/README.md",
+            "line": null
+          },
+          {
+            "check": "private_api_imports",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "score_constants",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "unscored_reason",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "get_model_location",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer decorated functions",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "model_role_resolution",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sample_ids",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 Sample() calls include id parameter",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "task_overridable_defaults",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sandbox_image_pinning",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "registry",
+            "category": "file_structure",
+            "status": "fail",
+            "message": "Evaluation not registered. Add to pyproject.toml: [project.entry-points.inspect_ai]\nbixbench = \"concordia_evals.bixbench\"",
+            "file": "pyproject.toml",
+            "line": null
+          },
+          {
+            "check": "eval_yaml",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "external_dependencies",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_exist",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests/bixbench",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "e2e_test",
+            "category": "tests",
+            "status": "fail",
+            "message": "No E2E test found (need test file with eval() call and mockllm/model)",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_init",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory has __init__.py",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "record_to_sample_test",
+            "category": "tests",
+            "status": "skip",
+            "message": "Evaluation does not use record_to_sample",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_solver_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom solvers without apparent tests: ['_init_environment']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_scorer_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom scorers without apparent tests: ['bixbench_scorer']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_tool_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom tools without apparent tests: ['_edit_cell', '_view_notebook', '_list_workdir']",
+            "file": null,
+            "line": null
+          }
+        ]
+      }
+    ],
+    "helpers": []
+  }
+}

@@ -1,0 +1,280 @@
+{
+  "id": "deceptionbench",
+  "repository_url": "https://github.com/WatchTree-19/inspect-deceptionbench",
+  "commit": "8683bf5a480f938b812aa5078fb0ee7d12a74483",
+  "task_paths": [
+    "src/inspect_deceptionbench/deceptionbench.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-19T05:24:21+00:00",
+  "error": null,
+  "lint_version": "0.2.1",
+  "layouts": [
+    {
+      "eval_name": "inspect_deceptionbench",
+      "source_root": "src",
+      "import_prefix": ""
+    }
+  ],
+  "score": {
+    "pass": 12,
+    "fail": 4,
+    "warn": 0,
+    "skip": 6,
+    "suppressed": 0,
+    "applicable": 16,
+    "passing": 12,
+    "score": 0.75,
+    "by_category": {
+      "best_practices": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 4,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 3,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 3,
+        "score": 1.0
+      },
+      "file_structure": {
+        "pass": 3,
+        "fail": 1,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 3,
+        "score": 0.75
+      },
+      "tests": {
+        "pass": 2,
+        "fail": 3,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 2,
+        "score": 0.4
+      }
+    }
+  },
+  "lint": {
+    "version": "0.2.1",
+    "root": "/tmp/register-lint-jywiuggu/deceptionbench",
+    "passed": false,
+    "evaluations_passed": 0,
+    "evaluations_total": 1,
+    "helpers_passed": 0,
+    "helpers_total": 0,
+    "summary": {
+      "pass": 12,
+      "fail": 4,
+      "warn": 0,
+      "skip": 6,
+      "suppressed": 0
+    },
+    "evaluations": [
+      {
+        "name": "inspect_deceptionbench",
+        "kind": "eval",
+        "passed": false,
+        "summary": {
+          "pass": 12,
+          "fail": 4,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0
+        },
+        "results": [
+          {
+            "check": "eval_location",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/inspect_deceptionbench",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "main_file",
+            "category": "file_structure",
+            "status": "fail",
+            "message": "Missing main file: inspect_deceptionbench.py or tasks.py",
+            "file": "src/inspect_deceptionbench/inspect_deceptionbench.py",
+            "line": null
+          },
+          {
+            "check": "init_exports",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "Main file inspect_deceptionbench.py not found, cannot check exports",
+            "file": "src/inspect_deceptionbench/__init__.py",
+            "line": null
+          },
+          {
+            "check": "readme",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists",
+            "file": "README.md",
+            "line": null
+          },
+          {
+            "check": "private_api_imports",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "score_constants",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "unscored_reason",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "get_model_location",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer decorated functions",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "model_role_resolution",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 model role call(s) resolve deliberately",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sample_ids",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 Sample() calls include id parameter",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "task_overridable_defaults",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sandbox_image_pinning",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "registry",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Evaluation registered in pyproject.toml under [project.entry-points.inspect_ai]",
+            "file": "pyproject.toml",
+            "line": null
+          },
+          {
+            "check": "eval_yaml",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "external_dependencies",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_exist",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "e2e_test",
+            "category": "tests",
+            "status": "fail",
+            "message": "No E2E test found (need test file with eval() call and mockllm/model)",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_init",
+            "category": "tests",
+            "status": "skip",
+            "message": "Tests live directly under the tests root; __init__.py files not required",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "record_to_sample_test",
+            "category": "tests",
+            "status": "pass",
+            "message": "record_to_sample is tested",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_solver_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom solvers without apparent tests: ['deception_solver']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_scorer_tests",
+            "category": "tests",
+            "status": "fail",
+            "message": "Custom scorers without apparent tests: ['deception_scorer']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_tool_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found",
+            "file": null,
+            "line": null
+          }
+        ]
+      }
+    ],
+    "helpers": []
+  }
+}

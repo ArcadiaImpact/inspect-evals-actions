@@ -1,0 +1,15 @@
+{
+  "id": "arxivrollbench",
+  "repository_url": "https://github.com/liangzid/ArxivRoll",
+  "commit": "01ec6e132e1cccdc204bed8b20a8473bb82c3ca7",
+  "task_paths": [
+    "arxivrollbench_inspect.py"
+  ],
+  "status": "unsupported_layout",
+  "checked_at": "2026-09-19T05:24:15+00:00",
+  "error": "arxivrollbench_inspect.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+  "lint_version": null,
+  "layouts": [],
+  "score": null,
+  "lint": null
+}

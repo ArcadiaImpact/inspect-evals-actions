@@ -1,0 +1,280 @@
+{
+  "id": "lab_bench_2",
+  "repository_url": "https://github.com/Generality-Labs/lab-bench",
+  "commit": "081864af494b180ecf6aae3f7333e384c0d227af",
+  "task_paths": [
+    "src/lab_bench_2/lab_bench_2.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-19T05:24:30+00:00",
+  "error": null,
+  "lint_version": "0.2.1",
+  "layouts": [
+    {
+      "eval_name": "lab_bench_2",
+      "source_root": "src",
+      "import_prefix": ""
+    }
+  ],
+  "score": {
+    "pass": 17,
+    "fail": 1,
+    "warn": 1,
+    "skip": 1,
+    "suppressed": 2,
+    "applicable": 21,
+    "passing": 18,
+    "score": 0.8571,
+    "by_category": {
+      "best_practices": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 1,
+        "skip": 0,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 5,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 2,
+        "fail": 1,
+        "warn": 0,
+        "skip": 0,
+        "suppressed": 1,
+        "applicable": 4,
+        "passing": 2,
+        "score": 0.5
+      },
+      "file_structure": {
+        "pass": 6,
+        "fail": 0,
+        "warn": 0,
+        "skip": 0,
+        "suppressed": 0,
+        "applicable": 6,
+        "passing": 6,
+        "score": 1.0
+      },
+      "tests": {
+        "pass": 5,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 1,
+        "applicable": 6,
+        "passing": 5,
+        "score": 0.8333
+      }
+    }
+  },
+  "lint": {
+    "version": "0.2.1",
+    "root": "/tmp/register-lint-jywiuggu/lab_bench_2",
+    "passed": false,
+    "evaluations_passed": 0,
+    "evaluations_total": 1,
+    "helpers_passed": 0,
+    "helpers_total": 0,
+    "summary": {
+      "pass": 17,
+      "fail": 1,
+      "warn": 1,
+      "skip": 1,
+      "suppressed": 2
+    },
+    "evaluations": [
+      {
+        "name": "lab_bench_2",
+        "kind": "eval",
+        "passed": false,
+        "summary": {
+          "pass": 17,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 2
+        },
+        "results": [
+          {
+            "check": "eval_location",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/lab_bench_2",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "main_file",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "lab_bench_2.py has 1 @task function(s): ['lab_bench_2']",
+            "file": "src/lab_bench_2/lab_bench_2.py",
+            "line": null
+          },
+          {
+            "check": "init_exports",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "__init__.py exports all 1 task function(s)",
+            "file": "src/lab_bench_2/__init__.py",
+            "line": null
+          },
+          {
+            "check": "readme",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists",
+            "file": "src/lab_bench_2/README.md",
+            "line": null
+          },
+          {
+            "check": "private_api_imports",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "score_constants",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "unscored_reason",
+            "category": "code_quality",
+            "status": "fail",
+            "message": "Score.unscored() without reason=; pass reason= (e.g. 'grader_failed') so the sample records why it was left unscored",
+            "file": "src/lab_bench_2/scorers.py",
+            "line": 102
+          },
+          {
+            "check": "get_model_location",
+            "category": "best_practices",
+            "status": "warn",
+            "message": "get_model() called outside @solver/@scorer. Resolve models inside @solver/@scorer so tasks stay declarative. (call_grader_with_retry)",
+            "file": "src/lab_bench_2/scorers.py",
+            "line": 73
+          },
+          {
+            "check": "model_role_resolution",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 model role call(s) resolve deliberately",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sample_ids",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 Sample() calls include id parameter",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "task_overridable_defaults",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "sandbox_image_pinning",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 0 registry image reference(s) in 1 compose file(s) are pinned",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "registry",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Evaluation registered in pyproject.toml under [project.entry-points.inspect_ai]",
+            "file": "pyproject.toml",
+            "line": null
+          },
+          {
+            "check": "eval_yaml",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "eval.yaml has all required fields",
+            "file": "src/lab_bench_2/eval.yaml",
+            "line": null
+          },
+          {
+            "check": "external_dependencies",
+            "category": "code_quality",
+            "status": "suppressed",
+            "message": "[suppressed] External imports may need pyproject.toml optional-dependencies: ['PIL (package: pillow)', 'evals (package: evals)', 'pydantic (package: pydantic)', 'utils (package: utils)']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_exist",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests/lab_bench_2",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "e2e_test",
+            "category": "tests",
+            "status": "pass",
+            "message": "E2E test with eval() and mockllm/model found",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "tests_init",
+            "category": "tests",
+            "status": "suppressed",
+            "message": "[suppressed] Test directories missing __init__.py: ['lab_bench_2', 'solvers']",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "record_to_sample_test",
+            "category": "tests",
+            "status": "pass",
+            "message": "record_to_sample is tested",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_solver_tests",
+            "category": "tests",
+            "status": "pass",
+            "message": "All 5 custom solvers appear tested",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_scorer_tests",
+            "category": "tests",
+            "status": "pass",
+            "message": "All 6 custom scorers appear tested",
+            "file": null,
+            "line": null
+          },
+          {
+            "check": "custom_tool_tests",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found",
+            "file": null,
+            "line": null
+          }
+        ]
+      }
+    ],
+    "helpers": []
+  }
+}
