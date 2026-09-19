@@ -72,22 +72,31 @@ def validate_task_paths(value: Any) -> None:
 
 
 def validate_lint(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict) or not isinstance(value.get("evaluations"), list):
+    """Check the parts of an inspect-evals-lint document that the scores read.
+
+    Each package carries ``outcomes`` (a rule passed or did not apply) and
+    ``diagnostics`` (one per finding); both kinds name their rule, category and
+    status. Fields this repository does not read are not validated, so a linter
+    release may add some.
+    """
+    if not isinstance(value, dict) or not isinstance(value.get("packages"), list):
         raise ValueError("Expected a lint report")
-    for evaluation in value["evaluations"]:
-        if not isinstance(evaluation, dict) or not isinstance(
-            evaluation.get("results"), list
-        ):
-            raise ValueError("Expected check results")
-        for check in evaluation["results"]:
-            if (
-                not isinstance(check, dict)
-                or check.get("status") not in STATUS_KEYS
-                or check.get("category") not in CATEGORY_LABELS
-                or not isinstance(check.get("check"), str)
-                or not isinstance(check.get("message"), str)
-            ):
-                raise ValueError("Invalid check result")
+    for package in value["packages"]:
+        if not isinstance(package, dict):
+            raise ValueError("Expected a package report")
+        for key in ("outcomes", "diagnostics"):
+            items = package.get(key)
+            if not isinstance(items, list):
+                raise ValueError("Expected check results")
+            for item in items:
+                if (
+                    not isinstance(item, dict)
+                    or item.get("status") not in STATUS_KEYS
+                    or item.get("category") not in CATEGORY_LABELS
+                    or not isinstance(item.get("rule"), str)
+                    or not isinstance(item.get("message"), str)
+                ):
+                    raise ValueError("Invalid check result")
     return value
 
 

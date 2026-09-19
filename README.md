@@ -13,11 +13,11 @@ Evaluation tests are maintained in Inspect Evals. This repository contains the w
 
 ## Register lint service
 
-The [Register Lint workflow](.github/workflows/register-lint.yml) reads the register from `UKGovernmentBEIS/inspect_evals` daily at 05:17 UTC. It records the register commit, fetches each upstream repository at its registered commit, and runs `inspect-evals-lint==0.1.1` with the `register` preset. Changes to registrations appear after the next daily run. Maintainers can also run the workflow manually.
+The [Register Lint workflow](.github/workflows/register-lint.yml) reads the register from `UKGovernmentBEIS/inspect_evals` daily at 05:17 UTC. It records the register commit, fetches each upstream repository at its registered commit, and runs the pinned [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) release (`pyproject.toml`, `register-lint` group) with the `register` preset. Changes to registrations appear after the next daily run. Maintainers can also run the workflow manually.
 
 The collector reads source files without installing, importing or executing evaluation code. It accepts HTTPS GitHub repository URLs, disables Git hooks and symlinks, and has a read-only token. A separate job validates a single JSON artifact and generates the public files. That job checks out only the reviewed operations code on `main` and uses this repository's `GITHUB_TOKEN` to replace the `register-lint` results branch. It does not write to `inspect_evals` or any evaluation repository. PR runs execute the helper tests; they do not collect or publish results. Filtered manual runs retain an artifact but do not replace the public results.
 
-Results are informational. Counts are `passing / applicable`: `pass` and `warn` count as passing, `fail` and `suppressed` count against the total, and `skip` is excluded. Repository suppressions remain visible in the full report. Repositories whose task files are outside a Python package are reported as `unsupported_layout`; clone and linter errors have separate statuses.
+Results are informational. Counts are `passing / applicable` rules, one status per rule per package (the worst it reported, since a rule reports one finding per site): `pass` and `warn` count as passing, `fail` and `suppressed` count against the total, and `skip` is excluded. Repository suppressions remain visible in the full report. Repositories whose task files are outside a Python package are reported as `unsupported_layout`; clone and linter errors have separate statuses. A repository whose suppression comments use the `noautolint` syntax that inspect-evals-lint 0.3.0 removed is reported as `error` with the linter's message naming the replacement.
 
 ### Public files
 
