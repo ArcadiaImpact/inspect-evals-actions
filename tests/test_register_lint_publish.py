@@ -241,21 +241,29 @@ def test_installed_linter_reads_source_without_importing_it(tmp_path):
     assert "root" not in doc  # the clone's temporary path is not part of the record
 
 
-def test_legacy_suppression_syntax_is_an_error_naming_the_repository_not_the_disk(tmp_path):
-    """Upstream repositories pinned to an older linter may still carry .noautolint files."""
-    from inspect_evals_lint import ConfigError
-
+def test_legacy_suppression_syntax_is_linted_with_a_warning(tmp_path):
+    """Upstream repositories pinned to an older linter may still carry .noautolint files; since 0.4.1 they are linted."""
     package = tmp_path / "src/alpha"
     package.mkdir(parents=True)
     (package / "__init__.py").write_text("")
-    (package / "task.py").write_text("")
+    (package / "task.py").write_text("x = 1  # noautolint: readme\n")
     (package / ".noautolint").write_text("readme\n")
-    with pytest.raises(ConfigError, match="no longer read") as excinfo:
-        lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"]))
-    text = describe_error(excinfo.value, tmp_path)
-    assert text.startswith("ConfigError: <repository>/src/alpha/.noautolint")
-    assert str(tmp_path) not in text
-    assert "ignore[<rule>]" in text
+    doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"]))
+    warnings = [
+        d for d in doc["packages"][0]["diagnostics"] if d["rule"] == "suppression_syntax"
+    ]
+    assert [(w["status"], w["file"]) for w in warnings] == [
+        ("warn", "src/alpha/.noautolint"),
+        ("warn", "src/alpha/task.py"),
+    ]
+    score = summarise(doc)
+    assert score["by_category"]["code_quality"]["warn"] == 1  # one rule, counted once
+
+
+def test_linter_errors_name_the_repository_not_the_disk(tmp_path):
+    error = RuntimeError(f"{tmp_path}/src/alpha/x.py: boom")
+    text = describe_error(error, tmp_path)
+    assert text == "RuntimeError: <repository>/src/alpha/x.py: boom"
 
 
 def test_lint_documents_may_carry_fields_this_repo_does_not_know(artifact, tmp_path):
