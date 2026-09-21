@@ -22,6 +22,8 @@ CATEGORY_LABELS = {
     "best_practices": "lint: best practices",
 }
 STATUS_KEYS = ("pass", "fail", "warn", "skip", "suppressed")
+RULE_STATUS_ORDER = ("fail", "warn", "pass", "suppressed", "skip")
+"""Worst first: a rule's status is the first of these it reported anywhere in a package."""
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # Same thresholds as inspect-evals-lint's own compliance summary.
@@ -44,17 +46,34 @@ class EntryResult:
     lint: dict[str, Any] | None = None
 
 
+def rule_statuses(package: dict[str, Any]) -> list[tuple[str, str, str]]:
+    """``(rule, category, status)`` once per rule that reported on a package.
+
+    inspect-evals-lint reports one ``outcome`` for a rule that passed or did not
+    apply and one ``diagnostic`` per site a rule found something at, so a rule
+    can appear several times. Scores count each rule once, at the worst status
+    it reported, which keeps ``passing / applicable`` a count of rules.
+    """
+    seen: dict[str, tuple[str, set[str]]] = {}
+    for item in (*package.get("outcomes", []), *package.get("diagnostics", [])):
+        rule = item.get("rule") or "<unknown>"
+        category, statuses = seen.setdefault(rule, (item.get("category") or "other", set()))
+        statuses.add(item["status"])
+    out: list[tuple[str, str, str]] = []
+    for rule, (category, statuses) in seen.items():
+        status = next((s for s in RULE_STATUS_ORDER if s in statuses), None)
+        if status is not None:
+            out.append((rule, category, status))
+    return out
+
+
 def summarise(lint_doc: dict[str, Any]) -> dict[str, Any]:
     """Score and per-category counts for one register entry's lint document."""
     overall = dict.fromkeys(STATUS_KEYS, 0)
     by_category: dict[str, dict[str, int]] = {}
-    for evaluation in lint_doc.get("evaluations", []):
-        for result in evaluation.get("results", []):
-            status = result["status"]
-            if status not in overall:
-                continue
+    for package in lint_doc.get("packages", []):
+        for _rule, category, status in rule_statuses(package):
             overall[status] += 1
-            category = result.get("category") or "other"
             counts = by_category.setdefault(category, dict.fromkeys(STATUS_KEYS, 0))
             counts[status] += 1
 

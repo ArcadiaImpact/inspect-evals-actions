@@ -14,6 +14,7 @@ from scripts.register_lint.collect import (
     CloneError,
     clone_at_commit,
     derive_layouts,
+    describe_error,
     lint_layouts,
     linter_version,
 )
@@ -26,25 +27,36 @@ SHA = "a" * 40
 @pytest.fixture
 def artifact(tmp_path):
     lint = {
-        "evaluations": [
+        "schema_version": 1,
+        "packages": [
             {
                 "name": "alpha",
-                "results": [
+                "kind": "eval",
+                "outcomes": [
                     {
-                        "check": "readme",
+                        "rule": "readme",
+                        "code": "IEFS006",
                         "category": "file_structure",
                         "status": "pass",
                         "message": "Found README",
-                    },
+                    }
+                ],
+                "diagnostics": [
                     {
-                        "check": "e2e_test",
+                        "rule": "e2e_test",
+                        "code": "IETS003",
                         "category": "tests",
+                        "severity": "error",
                         "status": "fail",
                         "message": "Missing test",
-                    },
+                        "file": "tests",
+                        "line": None,
+                        "column": None,
+                        "hint": None,
+                    }
                 ],
             }
-        ]
+        ],
     }
     result = EntryResult(
         id="alpha",
@@ -154,7 +166,7 @@ def test_inconsistent_counts_are_rejected(artifact):
 @pytest.mark.parametrize("category,status", [("extra", "pass"), ("tests", "unknown")])
 def test_unknown_checks_are_rejected(artifact, category, status):
     _, doc = artifact
-    check = doc["entries"][0]["lint"]["evaluations"][0]["results"][0]
+    check = doc["entries"][0]["lint"]["packages"][0]["outcomes"][0]
     check.update(category=category, status=status)
     with pytest.raises(ValueError, match="check result"):
         validate_document(doc)
@@ -224,17 +236,44 @@ def test_installed_linter_reads_source_without_importing_it(tmp_path):
     )
     assert version == linter_version()
     assert summarise(doc)["applicable"] > 0
-    assert doc["evaluations"][0]["results"]
+    assert doc["packages"][0]["kind"] == "eval"
+    assert doc["packages"][0]["outcomes"] or doc["packages"][0]["diagnostics"]
+    assert "root" not in doc  # the clone's temporary path is not part of the record
+
+
+def test_legacy_suppression_syntax_is_linted_with_a_warning(tmp_path):
+    """Upstream repositories pinned to an older linter may still carry .noautolint files; since 0.4.1 they are linted."""
+    package = tmp_path / "src/alpha"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "task.py").write_text("x = 1  # noautolint: readme\n")
+    (package / ".noautolint").write_text("readme\n")
+    doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"]))
+    warnings = [
+        d for d in doc["packages"][0]["diagnostics"] if d["rule"] == "suppression_syntax"
+    ]
+    assert [(w["status"], w["file"]) for w in warnings] == [
+        ("warn", "src/alpha/.noautolint"),
+        ("warn", "src/alpha/task.py"),
+    ]
+    score = summarise(doc)
+    assert score["by_category"]["code_quality"]["warn"] == 1  # one rule, counted once
+
+
+def test_linter_errors_name_the_repository_not_the_disk(tmp_path):
+    error = RuntimeError(f"{tmp_path}/src/alpha/x.py: boom")
+    text = describe_error(error, tmp_path)
+    assert text == "RuntimeError: <repository>/src/alpha/x.py: boom"
 
 
 def test_lint_documents_may_carry_fields_this_repo_does_not_know(artifact, tmp_path):
-    """A linter release may add fields (0.2.0 adds ``kind`` and a ``helpers`` list); only what is read is validated."""
+    """A linter release may add fields; only what is read is validated."""
     directory, doc = artifact
     lint = doc["entries"][0]["lint"]
-    lint["evaluations"][0]["kind"] = "eval"
-    lint["helpers"] = [{"name": "utils", "kind": "helper", "results": []}]
-    lint["helpers_total"] = 1
-    lint["evaluations"][0]["results"][0]["future_field"] = "ignored"
+    lint["future_total"] = 1
+    lint["packages"][0]["future_section"] = []
+    lint["packages"][0]["outcomes"][0]["future_field"] = "ignored"
+    lint["packages"][0]["diagnostics"][0]["end_line"] = 4
     (directory / "results.json").write_text(json.dumps(doc))
     publish(directory, tmp_path / "out", "https://example.test")
     published = json.loads((tmp_path / "out/results/alpha.json").read_text())
