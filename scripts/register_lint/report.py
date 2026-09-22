@@ -22,8 +22,12 @@ CATEGORY_LABELS = {
     "best_practices": "lint: best practices",
 }
 STATUS_KEYS = ("pass", "fail", "warn", "skip", "suppressed")
-RULE_STATUS_ORDER = ("fail", "warn", "pass", "suppressed", "skip")
-"""Worst first: a rule's status is the first of these it reported anywhere in a package."""
+RULE_STATUS_ORDER = ("fail", "warn", "suppressed", "pass", "skip")
+"""Worst first: a rule's status is the first of these it reported anywhere in a package.
+
+Suppressed ranks above pass because a suppressed finding counts against the
+total; the docs site's detail panel ranks the same way, so counts and panel agree.
+"""
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # Same thresholds as inspect-evals-lint's own compliance summary.

@@ -218,6 +218,14 @@ class TestSummarise:
         assert score["passing"] == 1  # readme: warn wins over its skip
         assert score["fail"] == 1 and score["suppressed"] == 1 and score["skip"] == 0
 
+    def test_a_suppressed_finding_outranks_a_pass_outcome(self):
+        score = summarise(
+            lint_doc(("sample_ids", "best_practices", "pass"), ("sample_ids", "best_practices", "suppressed"))
+        )
+        assert score["suppressed"] == 1
+        assert score["pass"] == 0
+        assert score["passing"] == 0
+
     def test_empty_document(self):
         score = summarise({"packages": []})
         assert score["applicable"] == 0
