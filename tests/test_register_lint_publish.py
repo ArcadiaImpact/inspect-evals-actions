@@ -16,7 +16,7 @@ from scripts.register_lint.collect import (
     clone_at_commit,
     derive_layouts,
     describe_error,
-    lint_layouts,
+    lint_task_paths,
     linter_version,
 )
 from scripts.register_lint.publish import publish, validate_document
@@ -238,9 +238,7 @@ def test_installed_linter_reads_source_without_importing_it(tmp_path):
     package.mkdir(parents=True)
     (package / "__init__.py").write_text("raise RuntimeError('must not execute')\n")
     (package / "task.py").write_text("raise RuntimeError('must not execute')\n")
-    doc, version = lint_layouts(
-        tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"])
-    )
+    doc, version = lint_task_paths(tmp_path, ["src/alpha/task.py"])
     assert version == linter_version()
     assert summarise(doc)["applicable"] > 0
     assert doc["packages"][0]["kind"] == "eval"
@@ -255,7 +253,7 @@ def test_legacy_suppression_syntax_is_linted_with_a_warning(tmp_path):
     (package / "__init__.py").write_text("")
     (package / "task.py").write_text("x = 1  # noautolint: readme\n")
     (package / ".noautolint").write_text("readme\n")
-    doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"]))
+    doc, _ = lint_task_paths(tmp_path, ["src/alpha/task.py"])
     warnings = [
         d
         for d in doc["packages"][0]["diagnostics"]
@@ -286,7 +284,7 @@ def test_linter_score_and_publisher_summary_agree(tmp_path):
         "from inspect_ai.dataset import Sample\nSample(input='x')\nSample(input='y')\n"
     )
     (package / ".noautolint").write_text("readme\n")
-    doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/alpha.py"]))
+    doc, _ = lint_task_paths(tmp_path, ["src/alpha/alpha.py"])
     assert doc["score"] == summarise(doc)
     assert doc["score"]["fail"] >= 1
     assert tuple(inspect_evals_lint.RULE_STATUS_ORDER) == RULE_STATUS_ORDER

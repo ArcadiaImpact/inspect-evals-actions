@@ -204,28 +204,19 @@ def linter_version() -> str:
     return inspect_evals_lint.__version__
 
 
-def lint_layouts(root: Path, layouts: list[EvalLayout]) -> tuple[dict[str, Any], str]:
-    """Run inspect-evals-lint over each layout; returns its JSON document and the linter version.
+def lint_task_paths(root: Path, task_paths: list[str]) -> tuple[dict[str, Any], str]:
+    """Run inspect-evals-lint over the packages holding the task files; returns its JSON document and the linter version.
 
-    The document carries the linter's own ``score`` (rules met out of rules
-    applicable, worst status per rule), which the publisher checks against its
-    stdlib-only recomputation.
+    The linter's ``register`` preset and layout rule apply, so the result is
+    the one ``inspect-evals-lint --preset register --task <path>`` gives. The
+    document carries the linter's own ``score``, which the publisher checks
+    against its stdlib-only recomputation.
     """
-    # Imported here so the register/layout helpers stay usable (and testable)
-    # without the linter installed.
-    from dataclasses import replace
+    # Imported here so the register helpers stay usable (and testable) without
+    # the linter installed.
+    from inspect_evals_lint import lint_task_files
 
-    from inspect_evals_lint import PRESETS, RunReport, lint_package
-
-    packages = []
-    for layout in layouts:
-        config = replace(
-            PRESETS["register"],
-            source_root=layout.source_root,
-            import_prefix=layout.import_prefix,
-        )
-        packages.append(lint_package(root, layout.eval_name, config))
-    document = RunReport(root=root, packages=packages).to_dict()
+    document = lint_task_files(root, task_paths).to_dict()
     # The clone lives in a temporary directory; its path says nothing about the entry.
     document.pop("root", None)
     return document, linter_version()
@@ -265,7 +256,7 @@ def check_entry(
         return result
     result.layouts = [asdict(layout) for layout in layouts]
     try:
-        result.lint, result.lint_version = lint_layouts(clone_dir, layouts)
+        result.lint, result.lint_version = lint_task_paths(clone_dir, entry.task_paths)
     except Exception as e:  # a linter crash on one repo must not sink the run
         # Includes the linter's ConfigError for a repository whose suppression
         # comments use syntax the pinned release no longer accepts.
