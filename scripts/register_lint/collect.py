@@ -41,7 +41,7 @@ class CloneError(RuntimeError):
 
 
 class LayoutError(RuntimeError):
-    pass
+    """A task file the linter cannot treat as an evaluation package (see ``derive_layouts``)."""
 
 
 @dataclass
@@ -164,42 +164,30 @@ def clone_at_commit(
 def derive_layouts(root: Path, task_paths: list[str]) -> list[EvalLayout]:
     """Map each task file to the package that inspect-evals-lint should treat as the evaluation.
 
-    The evaluation is the directory holding the task file. Its parent is the
-    source root, and any enclosing packages between the source root and the
-    repository root form the import prefix (``india_evals/safeguards/task.py``
-    lints ``safeguards`` under ``india_evals`` with prefix ``india_evals``).
+    The rule lives in the linter (``inspect_evals_lint.task_layouts``): the
+    evaluation is the directory holding the task file, its parent is the
+    source root, and enclosing packages form the import prefix. A bare module
+    or a missing file is a ``LayoutError`` with the linter's message, which the
+    published record carries verbatim.
     """
-    layouts: dict[str, EvalLayout] = {}
-    for task_path in task_paths:
-        task_file = (root / task_path).resolve()
-        if not task_file.is_relative_to(root.resolve()):
-            raise LayoutError(f"task_path escapes the repository: {task_path}")
-        if not task_file.is_file():
-            raise LayoutError(f"task_path not found at the pinned commit: {task_path}")
-        eval_dir = task_file.parent
-        if eval_dir == root.resolve() or not (eval_dir / "__init__.py").exists():
-            raise LayoutError(
-                f"{task_path} is not inside a package (no __init__.py next to it); "
-                "inspect-evals-lint checks one package per evaluation"
-            )
-        source_root = eval_dir.parent
-        prefix_parts: list[str] = []
-        package = source_root
-        while package != root.resolve() and (package / "__init__.py").exists():
-            prefix_parts.insert(0, package.name)
-            package = package.parent
-        key = str(eval_dir.relative_to(root.resolve()))
-        # Forward slashes keep the published JSON identical across runners.
-        relative_source_root = source_root.relative_to(root.resolve())
-        layouts.setdefault(
-            key,
-            EvalLayout(
-                eval_name=eval_dir.name,
-                source_root=relative_source_root.as_posix(),  # posix: noqa
-                import_prefix=".".join(prefix_parts),
-            ),
+    # Imported here so the register helpers stay usable without the linter installed.
+    from inspect_evals_lint import UnsupportedLayoutError, task_layouts
+
+    try:
+        layouts = task_layouts(root, task_paths)
+    except UnsupportedLayoutError as e:
+        message = str(e)
+        if "not found" in message:
+            message = message.replace("not found", "not found at the pinned commit")
+        raise LayoutError(message) from e
+    return [
+        EvalLayout(
+            eval_name=layout.eval_name,
+            source_root=layout.source_root,
+            import_prefix=layout.import_prefix,
         )
-    return list(layouts.values())
+        for layout in layouts
+    ]
 
 
 # ── Lint ────────────────────────────────────────────────────────────────────
@@ -217,7 +205,12 @@ def linter_version() -> str:
 
 
 def lint_layouts(root: Path, layouts: list[EvalLayout]) -> tuple[dict[str, Any], str]:
-    """Run inspect-evals-lint over each layout; returns its JSON document and the linter version."""
+    """Run inspect-evals-lint over each layout; returns its JSON document and the linter version.
+
+    The document carries the linter's own ``score`` (rules met out of rules
+    applicable, worst status per rule), which the publisher checks against its
+    stdlib-only recomputation.
+    """
     # Imported here so the register/layout helpers stay usable (and testable)
     # without the linter installed.
     from dataclasses import replace
@@ -278,7 +271,9 @@ def check_entry(
         # comments use syntax the pinned release no longer accepts.
         result.error = describe_error(e, clone_dir)
         return result
-    result.score = summarise(result.lint)
+    # The linter scores the document itself since 0.5.0; the publisher's
+    # stdlib-only summarise() must agree with it, and the publisher checks.
+    result.score = result.lint.get("score") or summarise(result.lint)
     result.status = "linted"
     return result
 

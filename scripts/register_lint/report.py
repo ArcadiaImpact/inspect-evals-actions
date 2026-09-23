@@ -25,8 +25,9 @@ STATUS_KEYS = ("pass", "fail", "warn", "skip", "suppressed")
 RULE_STATUS_ORDER = ("fail", "warn", "suppressed", "pass", "skip")
 """Worst first: a rule's status is the first of these it reported anywhere in a package.
 
-Suppressed ranks above pass because a suppressed finding counts against the
-total; the docs site's detail panel ranks the same way, so counts and panel agree.
+The same order as ``inspect_evals_lint.RULE_STATUS_ORDER``. The publisher runs
+with the standard library only, so it cannot import the linter; it recomputes
+the linter's ``score`` with this copy and rejects a document where they differ.
 """
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -61,7 +62,9 @@ def rule_statuses(package: dict[str, Any]) -> list[tuple[str, str, str]]:
     seen: dict[str, tuple[str, set[str]]] = {}
     for item in (*package.get("outcomes", []), *package.get("diagnostics", [])):
         rule = item.get("rule") or "<unknown>"
-        category, statuses = seen.setdefault(rule, (item.get("category") or "other", set()))
+        category, statuses = seen.setdefault(
+            rule, (item.get("category") or "other", set())
+        )
         statuses.add(item["status"])
     out: list[tuple[str, str, str]] = []
     for rule, (category, statuses) in seen.items():

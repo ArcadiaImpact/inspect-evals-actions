@@ -12,6 +12,7 @@ import yaml
 
 from scripts.register_lint.collect import (
     CloneError,
+    LayoutError,
     clone_at_commit,
     derive_layouts,
     describe_error,
@@ -19,7 +20,13 @@ from scripts.register_lint.collect import (
     linter_version,
 )
 from scripts.register_lint.publish import publish, validate_document
-from scripts.register_lint.report import POLICY, REGISTRY_URL, EntryResult, summarise
+from scripts.register_lint.report import (
+    POLICY,
+    REGISTRY_URL,
+    RULE_STATUS_ORDER,
+    EntryResult,
+    summarise,
+)
 
 SHA = "a" * 40
 
@@ -250,7 +257,9 @@ def test_legacy_suppression_syntax_is_linted_with_a_warning(tmp_path):
     (package / ".noautolint").write_text("readme\n")
     doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/task.py"]))
     warnings = [
-        d for d in doc["packages"][0]["diagnostics"] if d["rule"] == "suppression_syntax"
+        d
+        for d in doc["packages"][0]["diagnostics"]
+        if d["rule"] == "suppression_syntax"
     ]
     assert [(w["status"], w["file"]) for w in warnings] == [
         ("warn", "src/alpha/.noautolint"),
@@ -264,6 +273,31 @@ def test_linter_errors_name_the_repository_not_the_disk(tmp_path):
     error = RuntimeError(f"{tmp_path}/src/alpha/x.py: boom")
     text = describe_error(error, tmp_path)
     assert text == "RuntimeError: <repository>/src/alpha/x.py: boom"
+
+
+def test_linter_score_and_publisher_summary_agree(tmp_path):
+    """The record carries the linter's score; the stdlib-only publisher recomputes it and must match."""
+    import inspect_evals_lint
+
+    package = tmp_path / "src/alpha"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "alpha.py").write_text(
+        "from inspect_ai.dataset import Sample\nSample(input='x')\nSample(input='y')\n"
+    )
+    (package / ".noautolint").write_text("readme\n")
+    doc, _ = lint_layouts(tmp_path, derive_layouts(tmp_path, ["src/alpha/alpha.py"]))
+    assert doc["score"] == summarise(doc)
+    assert doc["score"]["fail"] >= 1
+    assert tuple(inspect_evals_lint.RULE_STATUS_ORDER) == RULE_STATUS_ORDER
+
+
+def test_layout_errors_carry_the_linter_message(tmp_path):
+    (tmp_path / "bare.py").write_text("")
+    with pytest.raises(LayoutError, match="not inside a package"):
+        derive_layouts(tmp_path, ["bare.py"])
+    with pytest.raises(LayoutError, match="not found at the pinned commit"):
+        derive_layouts(tmp_path, ["src/x/x.py"])
 
 
 def test_lint_documents_may_carry_fields_this_repo_does_not_know(artifact, tmp_path):
