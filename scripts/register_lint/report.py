@@ -31,7 +31,7 @@ the linter's ``score`` with this copy and rejects a document where they differ.
 """
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
-# Same thresholds as inspect-evals-lint's own compliance summary.
+# Badge colours: full marks bright green, then green, yellow and red at these ratios.
 SCORE_GREEN = 0.80
 SCORE_YELLOW = 0.50
 
