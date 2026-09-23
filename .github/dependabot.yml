@@ -1,0 +1,23 @@
+# Keeps the SHA-pinned actions in .github/workflows and the uv-managed linter
+# versions in pyproject.toml / uv.lock current. Mirrors the inspect_evals config.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Wait a week after a release before proposing it, so a compromised or
+    # quickly-yanked release has time to be caught upstream (zizmor dependabot-cooldown).
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
