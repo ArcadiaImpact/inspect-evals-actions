@@ -1,11 +1,11 @@
 # Inspect Evals Actions
 
-This repository hosts some of the **CI/CD workflows** for [Inspect Evals](https://github.com/UKGovernmentBEIS/inspect_evals/tree/main).  
+This repository hosts some of the **CI/CD workflows** for [Inspect Evals](https://github.com/UKGovernmentBEIS/inspect_evals/tree/main).
 
 It is designed to:
 
-- Run the main build and test pipelines in a controlled environment  
-- Provide faster or more stable runners than the upstream repo  
+- Run the main build and test pipelines in a controlled environment
+- Provide faster or more stable runners than the upstream repo
 
 Evaluation tests are maintained in Inspect Evals. This repository contains the workflow helpers and tests for those helpers.
 
@@ -13,7 +13,7 @@ Evaluation tests are maintained in Inspect Evals. This repository contains the w
 
 ## Register lint service
 
-The [Register Lint workflow](.github/workflows/register-lint.yml) reads the register from `UKGovernmentBEIS/inspect_evals` daily at 05:17 UTC. It records the register commit, fetches each upstream repository at its registered commit, and runs the pinned [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) release (`pyproject.toml`, `register-lint` group) with the `register` preset. Changes to registrations appear after the next daily run. Maintainers can also run the workflow manually.
+The [Register Lint workflow](.github/workflows/register-lint.yml) reads the register from `UKGovernmentBEIS/inspect_evals` daily at 05:17 UTC. It records the register commit, fetches each upstream repository at its registered commit, and runs the pinned [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) release (`pyproject.toml`, `register-lint` group) with its register configuration: the `single-eval` layout preset with `eval.yaml` optional, since the register entry holds the metadata. Changes to registrations appear after the next daily run. Maintainers can also run the workflow manually.
 
 The collector reads source files without installing, importing or executing evaluation code. It accepts HTTPS GitHub repository URLs, disables Git hooks and symlinks, and has a read-only token. A separate job validates a single JSON artifact and generates the public files. That job checks out only the reviewed operations code on `main` and uses this repository's `GITHUB_TOKEN` to replace the `register-lint` results branch. It does not write to `inspect_evals` or any evaluation repository. PR runs execute the helper tests; they do not collect or publish results. Filtered manual runs retain an artifact but do not replace the public results.
 

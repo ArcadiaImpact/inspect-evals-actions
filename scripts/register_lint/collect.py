@@ -207,10 +207,11 @@ def linter_version() -> str:
 def lint_task_paths(root: Path, task_paths: list[str]) -> tuple[dict[str, Any], str]:
     """Run inspect-evals-lint over the packages holding the task files; returns its JSON document and the linter version.
 
-    The linter's ``register`` preset and layout rule apply, so the result is
-    the one ``inspect-evals-lint --preset register --task <path>`` gives. The
-    document carries the linter's own ``score``, which the publisher checks
-    against its stdlib-only recomputation.
+    The linter's register configuration (its ``single-eval`` layout preset with
+    ``eval.yaml`` optional, since the register entry holds the metadata) and its
+    layout rule apply: ``lint_task_files`` uses that configuration when none is
+    passed. The document carries the linter's own ``score``, which the publisher
+    checks against its stdlib-only recomputation.
     """
     # Imported here so the register helpers stay usable (and testable) without
     # the linter installed.
