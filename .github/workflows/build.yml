@@ -382,8 +382,9 @@ jobs:
           #                ghcr.io + pkg-containers.githubusercontent.com (the
           #                ghcr.io/generality-labs/inspect-eval-* sandbox images the
           #                repo publishes and force_pull/force_build tests inspect);
-          #                download.pytorch.org (CPU torch index in ds1000's
-          #                docker-requirements.txt; without it pip falls back to the
+          #                download.pytorch.org + download-r2.pytorch.org (CPU torch
+          #                index in ds1000's docker-requirements.txt and the R2 host its
+          #                wheel links point at; without them pip falls back to the
           #                CUDA wheels on PyPI); {archive,security}.ubuntu.com:80 (apt);
           #                conda.anaconda.org (conda envs, e.g. mle_bench/mlrc_bench)
           #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
@@ -407,6 +408,7 @@ jobs:
             conda.anaconda.org:443
             datasets-server.huggingface.co:443
             download.pytorch.org:443
+            download-r2.pytorch.org:443
             *.googleusercontent.com:443
             drive.google.com:443
             files.pythonhosted.org:443
