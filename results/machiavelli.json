@@ -1,0 +1,15 @@
+{
+  "id": "machiavelli",
+  "repository_url": "https://github.com/Plyb/inspect-machiavelli",
+  "commit": "6c6149488e7d6ecc02df8ca0b14c7ba783f16715",
+  "task_paths": [
+    "src/machiavelli_task.py"
+  ],
+  "status": "unsupported_layout",
+  "checked_at": "2026-09-26T05:25:33+00:00",
+  "error": "src/machiavelli_task.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+  "lint_version": null,
+  "layouts": [],
+  "score": null,
+  "lint": null
+}

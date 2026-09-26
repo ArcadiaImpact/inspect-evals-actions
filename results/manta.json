@@ -1,0 +1,15 @@
+{
+  "id": "manta",
+  "repository_url": "https://github.com/Mycelium-tools/manta_benchmark",
+  "commit": "1100a0f88110abe98fc08f2f43ac3a822818d4d3",
+  "task_paths": [
+    "src/manta/manta_eval.py"
+  ],
+  "status": "clone_failed",
+  "checked_at": "2026-09-26T05:25:36+00:00",
+  "error": "git fetch failed: fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+  "lint_version": null,
+  "layouts": [],
+  "score": null,
+  "lint": null
+}

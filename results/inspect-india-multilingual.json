@@ -1,0 +1,437 @@
+{
+  "id": "inspect-india-multilingual",
+  "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+  "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+  "task_paths": [
+    "india_evals/multilingual/task.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-26T05:25:30+00:00",
+  "error": null,
+  "lint_version": "0.8.0",
+  "layouts": [
+    {
+      "eval_name": "multilingual",
+      "source_root": "india_evals",
+      "import_prefix": "india_evals"
+    }
+  ],
+  "score": {
+    "pass": 9,
+    "fail": 5,
+    "warn": 1,
+    "skip": 12,
+    "suppressed": 0,
+    "applicable": 15,
+    "passing": 10,
+    "score": 0.6667,
+    "by_category": {
+      "best_practices": {
+        "pass": 2,
+        "fail": 1,
+        "warn": 0,
+        "skip": 6,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 2,
+        "score": 0.6667
+      },
+      "code_quality": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 4,
+        "score": 1.0
+      },
+      "file_structure": {
+        "pass": 2,
+        "fail": 2,
+        "warn": 1,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 3,
+        "score": 0.6
+      },
+      "tests": {
+        "pass": 1,
+        "fail": 2,
+        "warn": 0,
+        "skip": 4,
+        "suppressed": 0,
+        "applicable": 3,
+        "passing": 1,
+        "score": 0.3333
+      }
+    }
+  },
+  "lint": {
+    "schema_version": 1,
+    "version": "0.8.0",
+    "passed": false,
+    "summary": {
+      "pass": 9,
+      "fail": 6,
+      "warn": 1,
+      "skip": 12,
+      "suppressed": 0
+    },
+    "score": {
+      "pass": 9,
+      "fail": 5,
+      "warn": 1,
+      "skip": 12,
+      "suppressed": 0,
+      "applicable": 15,
+      "passing": 10,
+      "score": 0.6667,
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    "packages": [
+      {
+        "name": "multilingual",
+        "kind": "eval",
+        "passed": false,
+        "skipped": null,
+        "summary": {
+          "pass": 9,
+          "fail": 6,
+          "warn": 1,
+          "skip": 12,
+          "suppressed": 0
+        },
+        "score": {
+          "pass": 9,
+          "fail": 5,
+          "warn": 1,
+          "skip": 12,
+          "suppressed": 0,
+          "applicable": 15,
+          "passing": 10,
+          "score": 0.6667,
+          "by_category": {
+            "best_practices": {
+              "pass": 2,
+              "fail": 1,
+              "warn": 0,
+              "skip": 6,
+              "suppressed": 0,
+              "applicable": 3,
+              "passing": 2,
+              "score": 0.6667
+            },
+            "code_quality": {
+              "pass": 4,
+              "fail": 0,
+              "warn": 0,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 4,
+              "passing": 4,
+              "score": 1.0
+            },
+            "file_structure": {
+              "pass": 2,
+              "fail": 2,
+              "warn": 1,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 5,
+              "passing": 3,
+              "score": 0.6
+            },
+            "tests": {
+              "pass": 1,
+              "fail": 2,
+              "warn": 0,
+              "skip": 4,
+              "suppressed": 0,
+              "applicable": 3,
+              "passing": 1,
+              "score": 0.3333
+            }
+          }
+        },
+        "outcomes": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at india_evals/multilingual"
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout"
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists"
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found"
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values"
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found"
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements"
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No suppression comments"
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests"
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "status": "skip",
+            "message": "Single-evaluation test layout (tests-layout = \"flat\"); __init__.py files not required"
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "status": "skip",
+            "message": "Evaluation does not use record_to_sample"
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom solvers and agents found"
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found"
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer/@agent decorated functions"
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found"
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters"
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found"
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No eval.yaml to read a GPU requirement from"
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No Dockerfile found"
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No filter_duplicate_ids() calls found"
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No drop_known_broken() calls found"
+          }
+        ],
+        "diagnostics": [
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in task.py rather than multilingual.py or tasks.py",
+            "file": "india_evals/multilingual/task.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to multilingual.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'multilingual'",
+            "file": "india_evals/multilingual/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .task import multilingual` and list it in __all__"
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "Evaluation not registered",
+            "file": "pyproject.toml",
+            "line": null,
+            "column": null,
+            "hint": "add to pyproject.toml: [project.entry-points.inspect_ai]\nmultilingual = \"india_evals.multilingual\""
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No E2E test found",
+            "file": "tests",
+            "line": null,
+            "column": null,
+            "hint": "add a test that calls eval() on the task with model='mockllm/model'"
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "@scorer mmlu_accuracy() is not mentioned by any test",
+            "file": "india_evals/multilingual/metrics.py",
+            "line": 24,
+            "column": 1,
+            "hint": "add a test that exercises mmlu_accuracy()"
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "@scorer mmlu_accuracy() is not mentioned by any test",
+            "file": "india_evals/multilingual/task.py",
+            "line": 81,
+            "column": 1,
+            "hint": "add a test that exercises mmlu_accuracy()"
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Sample() call without id=",
+            "file": "india_evals/multilingual/task.py",
+            "line": 131,
+            "column": 13,
+            "hint": "pass a stable id= so the sample survives shuffles and reruns"
+          }
+        ]
+      }
+    ]
+  }
+}

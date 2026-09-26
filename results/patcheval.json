@@ -1,0 +1,425 @@
+{
+  "id": "patcheval",
+  "repository_url": "https://github.com/bytedance/PatchEval",
+  "commit": "c8cc29e5609652c89b4987e1a466b1fb26f96426",
+  "task_paths": [
+    "src/patcheval_inspect/task.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-09-26T05:25:41+00:00",
+  "error": null,
+  "lint_version": "0.8.0",
+  "layouts": [
+    {
+      "eval_name": "patcheval_inspect",
+      "source_root": "src",
+      "import_prefix": ""
+    }
+  ],
+  "score": {
+    "pass": 12,
+    "fail": 5,
+    "warn": 1,
+    "skip": 9,
+    "suppressed": 0,
+    "applicable": 18,
+    "passing": 13,
+    "score": 0.7222,
+    "by_category": {
+      "best_practices": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 0,
+        "skip": 5,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 4,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 3,
+        "fail": 1,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 3,
+        "score": 0.75
+      },
+      "file_structure": {
+        "pass": 3,
+        "fail": 1,
+        "warn": 1,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 4,
+        "score": 0.8
+      },
+      "tests": {
+        "pass": 2,
+        "fail": 3,
+        "warn": 0,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 2,
+        "score": 0.4
+      }
+    }
+  },
+  "lint": {
+    "schema_version": 1,
+    "version": "0.8.0",
+    "passed": false,
+    "summary": {
+      "pass": 12,
+      "fail": 5,
+      "warn": 1,
+      "skip": 9,
+      "suppressed": 0
+    },
+    "score": {
+      "pass": 12,
+      "fail": 5,
+      "warn": 1,
+      "skip": 9,
+      "suppressed": 0,
+      "applicable": 18,
+      "passing": 13,
+      "score": 0.7222,
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 3,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 2,
+          "score": 0.4
+        }
+      }
+    },
+    "packages": [
+      {
+        "name": "patcheval_inspect",
+        "kind": "eval",
+        "passed": false,
+        "skipped": null,
+        "summary": {
+          "pass": 12,
+          "fail": 5,
+          "warn": 1,
+          "skip": 9,
+          "suppressed": 0
+        },
+        "score": {
+          "pass": 12,
+          "fail": 5,
+          "warn": 1,
+          "skip": 9,
+          "suppressed": 0,
+          "applicable": 18,
+          "passing": 13,
+          "score": 0.7222,
+          "by_category": {
+            "best_practices": {
+              "pass": 4,
+              "fail": 0,
+              "warn": 0,
+              "skip": 5,
+              "suppressed": 0,
+              "applicable": 4,
+              "passing": 4,
+              "score": 1.0
+            },
+            "code_quality": {
+              "pass": 3,
+              "fail": 1,
+              "warn": 0,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 4,
+              "passing": 3,
+              "score": 0.75
+            },
+            "file_structure": {
+              "pass": 3,
+              "fail": 1,
+              "warn": 1,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 5,
+              "passing": 4,
+              "score": 0.8
+            },
+            "tests": {
+              "pass": 2,
+              "fail": 3,
+              "warn": 0,
+              "skip": 2,
+              "suppressed": 0,
+              "applicable": 5,
+              "passing": 2,
+              "score": 0.4
+            }
+          }
+        },
+        "outcomes": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/patcheval_inspect"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "__init__.py exports all 1 task function(s)"
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout"
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists"
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found"
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found"
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements"
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No suppression comments"
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "status": "pass",
+            "message": "Test directory exists at tests"
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "status": "skip",
+            "message": "Single-evaluation test layout (tests-layout = \"flat\"); __init__.py files not required"
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "status": "pass",
+            "message": "record_to_sample is tested"
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom tools found"
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer/@agent decorated functions"
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found"
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 1 Sample() calls include id parameter"
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters"
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "All 2 registry image reference(s) in 1 compose file(s) are pinned"
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No eval.yaml to read a GPU requirement from"
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No Dockerfile found"
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No filter_duplicate_ids() calls found"
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No drop_known_broken() calls found"
+          }
+        ],
+        "diagnostics": [
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in task.py rather than patcheval_inspect.py or tasks.py",
+            "file": "src/patcheval_inspect/task.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to patcheval_inspect.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "Evaluation not registered",
+            "file": "pyproject.toml",
+            "line": null,
+            "column": null,
+            "hint": "add to pyproject.toml: [project.entry-points.inspect_ai]\npatcheval_inspect = \"patcheval_inspect\""
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Score(value='I') uses a string literal",
+            "file": "src/patcheval_inspect/scorer.py",
+            "line": 175,
+            "column": 20,
+            "hint": "use the CORRECT / INCORRECT constants from inspect_ai.scorer"
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No E2E test found",
+            "file": "tests",
+            "line": null,
+            "column": null,
+            "hint": "add a test that calls eval() on the task with model='mockllm/model'"
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "@solver hide_evaluator_assets_setup() is not mentioned by any test",
+            "file": "src/patcheval_inspect/solver.py",
+            "line": 38,
+            "column": 1,
+            "hint": "add a test that exercises hide_evaluator_assets_setup()"
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "@scorer patcheval_patch_scorer() is not mentioned by any test",
+            "file": "src/patcheval_inspect/scorer.py",
+            "line": 158,
+            "column": 1,
+            "hint": "add a test that exercises patcheval_patch_scorer()"
+          }
+        ]
+      }
+    ]
+  }
+}

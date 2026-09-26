@@ -1,0 +1,2463 @@
+{
+  "schema_version": 1,
+  "registry": {
+    "repository_url": "https://github.com/UKGovernmentBEIS/inspect_evals",
+    "commit": "8bae1f63fa0596e1c93005c4b1d290eda8128a8b"
+  },
+  "runner_commit": "6e4477760c0ec092d37bf90b4c6db5e299a7f24c",
+  "lint": {
+    "version": "0.8.0",
+    "preset": "register",
+    "policy": "register-v1"
+  },
+  "generated_at": "2026-09-26T05:25:47+00:00",
+  "entries": [
+    {
+      "id": "ahb",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/icaro-lab/ahb",
+      "commit": "4b7b631245fa300df98d2c310e83273ed0d4a207",
+      "task_paths": [
+        "src/ahb_inspect/tasks.py"
+      ],
+      "checked_at": "2026-09-26T05:25:12+00:00",
+      "score": {
+        "pass": 16,
+        "fail": 2,
+        "warn": 0,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 16,
+        "score": 0.8889
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "file_structure": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        }
+      }
+    },
+    {
+      "id": "alignment_faking",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/marliechorgan/alignment-faking-inspect",
+      "commit": "d102d213833b05c67464a44e28e9a414977f80e1",
+      "task_paths": [
+        "src/alignment_faking/alignment_faking.py"
+      ],
+      "checked_at": "2026-09-26T05:25:14+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 4,
+        "warn": 0,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 12,
+        "score": 0.75
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 3,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 1,
+          "score": 0.25
+        }
+      }
+    },
+    {
+      "id": "appworld",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/anirudhvenu/appworld-inspect",
+      "commit": "880fbc47e73270576137b928fdb1ecab61529da1",
+      "task_paths": [
+        "src/appworld_inspect/appworld_inspect.py"
+      ],
+      "checked_at": "2026-09-26T05:25:14+00:00",
+      "score": {
+        "pass": 19,
+        "fail": 0,
+        "warn": 1,
+        "skip": 7,
+        "suppressed": 0,
+        "applicable": 20,
+        "passing": 20,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "aratrust",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Raulster24/aratrust-inspect",
+      "commit": "e4b89df399057ca5ae8f8524418907c4868badcd",
+      "task_paths": [
+        "src/aratrust/aratrust.py"
+      ],
+      "checked_at": "2026-09-26T05:25:15+00:00",
+      "score": {
+        "pass": 16,
+        "fail": 0,
+        "warn": 0,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 16,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "arxivrollbench",
+      "status": "unsupported_layout",
+      "error": "arxivrollbench_inspect.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+      "repository_url": "https://github.com/liangzid/ArxivRoll",
+      "commit": "01ec6e132e1cccdc204bed8b20a8473bb82c3ca7",
+      "task_paths": [
+        "arxivrollbench_inspect.py"
+      ],
+      "checked_at": "2026-09-26T05:25:16+00:00",
+      "score": null,
+      "by_category": null
+    },
+    {
+      "id": "bixbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/concordia-ai/concordia_evals",
+      "commit": "e99597c8a5d68c85a5bbbb00020d7d1c813ad0e1",
+      "task_paths": [
+        "src/concordia_evals/bixbench/bixbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:16+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 5,
+        "warn": 1,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 13,
+        "score": 0.7222
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 4,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 1,
+          "score": 0.2
+        }
+      }
+    },
+    {
+      "id": "brokenmath",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Vedant-Agarwal/inspect-brokenmath",
+      "commit": "d37b80bb16c9d98df990a7edd92323a1d73822bb",
+      "task_paths": [
+        "src/brokenmath/brokenmath.py"
+      ],
+      "checked_at": "2026-09-26T05:25:17+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 3,
+        "warn": 0,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 17,
+        "passing": 14,
+        "score": 0.8235
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 3,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 1,
+          "score": 0.25
+        }
+      }
+    },
+    {
+      "id": "castle",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/AI-Sec-dev/inspect-eval-castle",
+      "commit": "dc4d5aa275120b6cc7943b54b67e2278c80f6f4c",
+      "task_paths": [
+        "src/castle/castle.py"
+      ],
+      "checked_at": "2026-09-26T05:25:18+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 3,
+        "warn": 0,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 17,
+        "passing": 14,
+        "score": 0.8235
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 3,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 1,
+          "score": 0.25
+        }
+      }
+    },
+    {
+      "id": "chipbench_debug",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Plswearpants/Inspect-Eval-ChipBench",
+      "commit": "8a60e2e8914139c1e73fe62ae8018dc240605ff3",
+      "task_paths": [
+        "src/chipbench/chipbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:19+00:00",
+      "score": {
+        "pass": 16,
+        "fail": 0,
+        "warn": 2,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 18,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "chipbench_refmodel",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Plswearpants/Inspect-Eval-ChipBench",
+      "commit": "8a60e2e8914139c1e73fe62ae8018dc240605ff3",
+      "task_paths": [
+        "src/chipbench/chipbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:20+00:00",
+      "score": {
+        "pass": 16,
+        "fail": 0,
+        "warn": 2,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 18,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "chipbench_verilog_gen",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Plswearpants/Inspect-Eval-ChipBench",
+      "commit": "8a60e2e8914139c1e73fe62ae8018dc240605ff3",
+      "task_paths": [
+        "src/chipbench/chipbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:21+00:00",
+      "score": {
+        "pass": 16,
+        "fail": 0,
+        "warn": 2,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 18,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "contractbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/SecurityLab-UCD/ContractBench-inspect",
+      "commit": "22d39108619433a9f7bc8eb3b410bbf384d67616",
+      "task_paths": [
+        "contractbench_inspect/contractbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:22+00:00",
+      "score": {
+        "pass": 11,
+        "fail": 4,
+        "warn": 1,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 12,
+        "score": 0.75
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 3,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 1,
+          "score": 0.25
+        }
+      }
+    },
+    {
+      "id": "deceptionbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/WatchTree-19/inspect-deceptionbench",
+      "commit": "8683bf5a480f938b812aa5078fb0ee7d12a74483",
+      "task_paths": [
+        "src/inspect_deceptionbench/deceptionbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:23+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 3,
+        "warn": 1,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 15,
+        "score": 0.8333
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 3,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 2,
+          "score": 0.4
+        }
+      }
+    },
+    {
+      "id": "do_not_answer",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/mkzung/inspect-evals-do-not-answer",
+      "commit": "b386689ab2d469ea1ff9eb423ac048549f7542c5",
+      "task_paths": [
+        "src/do_not_answer/do_not_answer.py"
+      ],
+      "checked_at": "2026-09-26T05:25:23+00:00",
+      "score": {
+        "pass": 17,
+        "fail": 2,
+        "warn": 0,
+        "skip": 8,
+        "suppressed": 0,
+        "applicable": 19,
+        "passing": 17,
+        "score": 0.8947
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 2,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        }
+      }
+    },
+    {
+      "id": "do_not_answer_adversarial",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/mkzung/inspect-evals-do-not-answer",
+      "commit": "b386689ab2d469ea1ff9eb423ac048549f7542c5",
+      "task_paths": [
+        "src/do_not_answer/adversarial.py"
+      ],
+      "checked_at": "2026-09-26T05:25:24+00:00",
+      "score": {
+        "pass": 17,
+        "fail": 2,
+        "warn": 0,
+        "skip": 8,
+        "suppressed": 0,
+        "applicable": 19,
+        "passing": 17,
+        "score": 0.8947
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 2,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        }
+      }
+    },
+    {
+      "id": "exploitbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/ChaoticCooties/exploitbench-eval",
+      "commit": "ccdd13a128cf4dd25c720e8bf1f13d2867b6ba23",
+      "task_paths": [
+        "src/exploitbench/exploitbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:24+00:00",
+      "score": {
+        "pass": 17,
+        "fail": 0,
+        "warn": 1,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 18,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "frames",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/sahil350/frames-eval",
+      "commit": "2fbb1a123431d559180547e325f0765d97ab2a39",
+      "task_paths": [
+        "src/frames_eval/frames.py",
+        "src/frames_eval/frames.py"
+      ],
+      "checked_at": "2026-09-26T05:25:25+00:00",
+      "score": {
+        "pass": 8,
+        "fail": 10,
+        "warn": 1,
+        "skip": 8,
+        "suppressed": 0,
+        "applicable": 19,
+        "passing": 9,
+        "score": 0.4737
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "id": "hangman-bench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MattFisher/hangman-bench",
+      "commit": "9f1f396e68191eb5ec99dbffbc6fea63609bd0b6",
+      "task_paths": [
+        "src/hangman_bench/hangman.py"
+      ],
+      "checked_at": "2026-09-26T05:25:26+00:00",
+      "score": {
+        "pass": 15,
+        "fail": 1,
+        "warn": 1,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 17,
+        "passing": 16,
+        "score": 0.9412
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        }
+      }
+    },
+    {
+      "id": "inspect-india-bharatbbq",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/bias/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:26+00:00",
+      "score": {
+        "pass": 9,
+        "fail": 4,
+        "warn": 1,
+        "skip": 13,
+        "suppressed": 0,
+        "applicable": 14,
+        "passing": 10,
+        "score": 0.7143
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 1,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 2,
+          "passing": 1,
+          "score": 0.5
+        }
+      }
+    },
+    {
+      "id": "inspect-india-cultural_knowledge",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/cultural_knowledge/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:27+00:00",
+      "score": {
+        "pass": 10,
+        "fail": 4,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 11,
+        "score": 0.7333
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        }
+      }
+    },
+    {
+      "id": "inspect-india-dpi_safety",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/dpi_safety/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:28+00:00",
+      "score": {
+        "pass": 9,
+        "fail": 5,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 10,
+        "score": 0.6667
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    {
+      "id": "inspect-india-jailbreak_safety",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/safeguards/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:29+00:00",
+      "score": {
+        "pass": 9,
+        "fail": 5,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 10,
+        "score": 0.6667
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    {
+      "id": "inspect-india-multilingual",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/multilingual/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:30+00:00",
+      "score": {
+        "pass": 9,
+        "fail": 5,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 10,
+        "score": 0.6667
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    {
+      "id": "inspect-india-multilingual_safety",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/MetaFazer/inspect-india-evals",
+      "commit": "9c2e0bd9d8089444751ede080367dcc4983b9dc2",
+      "task_paths": [
+        "india_evals/safeguards/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:31+00:00",
+      "score": {
+        "pass": 9,
+        "fail": 5,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 10,
+        "score": 0.6667
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    {
+      "id": "lab_bench_2",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Generality-Labs/lab-bench",
+      "commit": "081864af494b180ecf6aae3f7333e384c0d227af",
+      "task_paths": [
+        "src/lab_bench_2/lab_bench_2.py"
+      ],
+      "checked_at": "2026-09-26T05:25:32+00:00",
+      "score": {
+        "pass": 17,
+        "fail": 2,
+        "warn": 3,
+        "skip": 5,
+        "suppressed": 0,
+        "applicable": 22,
+        "passing": 20,
+        "score": 0.9091
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 2,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "machiavelli",
+      "status": "unsupported_layout",
+      "error": "src/machiavelli_task.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+      "repository_url": "https://github.com/Plyb/inspect-machiavelli",
+      "commit": "6c6149488e7d6ecc02df8ca0b14c7ba783f16715",
+      "task_paths": [
+        "src/machiavelli_task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:33+00:00",
+      "score": null,
+      "by_category": null
+    },
+    {
+      "id": "manager_coercion_benchmark",
+      "status": "unsupported_layout",
+      "error": "manager_coercion.py is not inside a package (no __init__.py next to it); inspect-evals-lint checks one package per evaluation",
+      "repository_url": "https://github.com/CompassionML/manager-coercion-bench",
+      "commit": "48d6185a8fd1642cb6fb47fc6c30edcfdd31d8bb",
+      "task_paths": [
+        "manager_coercion.py"
+      ],
+      "checked_at": "2026-09-26T05:25:34+00:00",
+      "score": null,
+      "by_category": null
+    },
+    {
+      "id": "manta",
+      "status": "clone_failed",
+      "error": "git fetch failed: fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+      "repository_url": "https://github.com/Mycelium-tools/manta_benchmark",
+      "commit": "1100a0f88110abe98fc08f2f43ac3a822818d4d3",
+      "task_paths": [
+        "src/manta/manta_eval.py"
+      ],
+      "checked_at": "2026-09-26T05:25:36+00:00",
+      "score": null,
+      "by_category": null
+    },
+    {
+      "id": "mcptox",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/stefanoamorelli/inspect-evals-mcptox",
+      "commit": "d45705b0a7ae6697c851e311187b06bf7488b13f",
+      "task_paths": [
+        "src/inspect_evals_mcptox/mcptox.py"
+      ],
+      "checked_at": "2026-09-26T05:25:36+00:00",
+      "score": {
+        "pass": 15,
+        "fail": 2,
+        "warn": 1,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 16,
+        "score": 0.8889
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "medcalc-bench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/azrabano23/medcalc-bench-inspect",
+      "commit": "e497f0e327b2e9245f3e832badb320ce84d6ddb5",
+      "task_paths": [
+        "src/medcalc_bench/medcalc_bench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:36+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 4,
+        "warn": 0,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 12,
+        "score": 0.75
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 3,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 1,
+          "score": 0.25
+        }
+      }
+    },
+    {
+      "id": "monitorbench-goal-sandbag-math",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/semsorock/inspect-evals-monitor-bench",
+      "commit": "e2e7b91a84d21e7cb374d59d49dbd25c3f40514f",
+      "task_paths": [
+        "src/monitor_bench/tasks/goal_sandbag_math/eval.py"
+      ],
+      "checked_at": "2026-09-26T05:25:37+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 2,
+        "warn": 1,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 17,
+        "passing": 15,
+        "score": 0.8824
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "monitorbench-steganography",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/semsorock/inspect-evals-monitor-bench",
+      "commit": "7ef6d47219bbcca636071d5becbd572f4a4497a9",
+      "task_paths": [
+        "src/monitor_bench/steganography.py"
+      ],
+      "checked_at": "2026-09-26T05:25:38+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 1,
+        "warn": 2,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 17,
+        "passing": 16,
+        "score": 0.9412
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 1,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "narcbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/shubhangithub/collusionguard",
+      "commit": "d1c33d1041c3efdcb3e7a6a131f2160e03dfaed2",
+      "task_paths": [
+        "src/collusionguard/inspect_task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:39+00:00",
+      "score": {
+        "pass": 11,
+        "fail": 3,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 12,
+        "score": 0.8
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 1,
+          "fail": 2,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 1,
+          "score": 0.3333
+        }
+      }
+    },
+    {
+      "id": "openbookqa",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Sammy-Dabbas/openbookqa-eval",
+      "commit": "52222db933d8ec8a3bbfbcd06cd065899c829680",
+      "task_paths": [
+        "src/openbookqa_eval/openbookqa.py"
+      ],
+      "checked_at": "2026-09-26T05:25:40+00:00",
+      "score": {
+        "pass": 14,
+        "fail": 0,
+        "warn": 1,
+        "skip": 12,
+        "suppressed": 0,
+        "applicable": 15,
+        "passing": 15,
+        "score": 1.0
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 4,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        }
+      }
+    },
+    {
+      "id": "or_bench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/haeliotang/inspect-evals-orbench",
+      "commit": "8757ec41608f3930e3c2bc4d5619d09a2381727a",
+      "task_paths": [
+        "src/or_bench/or_bench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:40+00:00",
+      "score": {
+        "pass": 15,
+        "fail": 3,
+        "warn": 0,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 15,
+        "score": 0.8333
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 2,
+          "score": 0.5
+        }
+      }
+    },
+    {
+      "id": "patcheval",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/bytedance/PatchEval",
+      "commit": "c8cc29e5609652c89b4987e1a466b1fb26f96426",
+      "task_paths": [
+        "src/patcheval_inspect/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:41+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 5,
+        "warn": 1,
+        "skip": 9,
+        "suppressed": 0,
+        "applicable": 18,
+        "passing": 13,
+        "score": 0.7222
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 3,
+          "warn": 0,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 2,
+          "score": 0.4
+        }
+      }
+    },
+    {
+      "id": "perspective_gap",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/WhymustIhaveaname/PerspectiveGap-inspect",
+      "commit": "9ebdf214922cf6d2f2306d03b9f3b4569e496703",
+      "task_paths": [
+        "src/perspective_gap_inspect/role_assignment.py"
+      ],
+      "checked_at": "2026-09-26T05:25:41+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 7,
+        "warn": 1,
+        "skip": 7,
+        "suppressed": 0,
+        "applicable": 20,
+        "passing": 13,
+        "score": 0.65
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 5,
+          "fail": 0,
+          "warn": 1,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 6,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "id": "pinchbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/zytoh0/pinch-wildclawbench-inspect",
+      "commit": "1acc83dbdc497d966d084d204adcbffe2d1d8aaa",
+      "task_paths": [
+        "src/pinchbench/pinchbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:42+00:00",
+      "score": {
+        "pass": 11,
+        "fail": 8,
+        "warn": 1,
+        "skip": 7,
+        "suppressed": 0,
+        "applicable": 20,
+        "passing": 12,
+        "score": 0.6
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "id": "salad-bench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/WatchTree-19/inspect-salad-bench",
+      "commit": "e85b9feb8d024890874694beb32e4bbf4564f169",
+      "task_paths": [
+        "src/inspect_salad_bench/salad_bench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:42+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 3,
+        "warn": 1,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 13,
+        "score": 0.8125
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 1,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 2,
+          "score": 0.6667
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 5,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 2,
+          "score": 0.5
+        }
+      }
+    },
+    {
+      "id": "sycobench-600",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/debu-sinha/sycobench-600",
+      "commit": "5219abda88de91300adcfefa37c3a824f0f103de",
+      "task_paths": [
+        "sycobench/inspect_task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:43+00:00",
+      "score": {
+        "pass": 12,
+        "fail": 3,
+        "warn": 1,
+        "skip": 11,
+        "suppressed": 0,
+        "applicable": 16,
+        "passing": 13,
+        "score": 0.8125
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 0,
+          "skip": 6,
+          "suppressed": 0,
+          "applicable": 3,
+          "passing": 3,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "tests": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 3,
+          "score": 0.75
+        }
+      }
+    },
+    {
+      "id": "tarantubench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/Trivulzianus/TarantuBench",
+      "commit": "7bc03a2e57fd68a238ae621eeb6ae856fea77682",
+      "task_paths": [
+        "src/tarantubench/task.py"
+      ],
+      "checked_at": "2026-09-26T05:25:45+00:00",
+      "score": {
+        "pass": 11,
+        "fail": 8,
+        "warn": 1,
+        "skip": 7,
+        "suppressed": 0,
+        "applicable": 20,
+        "passing": 12,
+        "score": 0.6
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 1,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "id": "wildclawbench",
+      "status": "linted",
+      "error": null,
+      "repository_url": "https://github.com/zytoh0/pinch-wildclawbench-inspect",
+      "commit": "1acc83dbdc497d966d084d204adcbffe2d1d8aaa",
+      "task_paths": [
+        "src/wildclawbench/wildclawbench.py"
+      ],
+      "checked_at": "2026-09-26T05:25:46+00:00",
+      "score": {
+        "pass": 11,
+        "fail": 8,
+        "warn": 1,
+        "skip": 7,
+        "suppressed": 0,
+        "applicable": 20,
+        "passing": 12,
+        "score": 0.6
+      },
+      "by_category": {
+        "best_practices": {
+          "pass": 3,
+          "fail": 0,
+          "warn": 1,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 4,
+          "fail": 1,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 4,
+          "score": 0.8
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    }
+  ]
+}
