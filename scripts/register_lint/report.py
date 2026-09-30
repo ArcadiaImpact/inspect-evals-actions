@@ -11,7 +11,19 @@ from pathlib import Path
 from typing import Any
 
 REGISTRY_URL = "https://github.com/UKGovernmentBEIS/inspect_evals"
-POLICY = "register-v1"
+POLICY_V1 = "register-v1"
+POLICY_V2 = "register-v2"
+POLICIES: dict[str, frozenset[int]] = {
+    POLICY_V1: frozenset({1, 2}),
+    POLICY_V2: frozenset({3}),
+}
+"""Scoring policy id to the inspect-evals-lint JSON schema versions scored under it.
+
+``register-v1`` counts suppressed rules against the total; ``register-v2``
+counts them as passing. The policy is part of the published contract: a
+consumer of ``summary.json`` branches on it rather than on the nested lint
+report versions, which only appear in ``results/<id>.json``.
+"""
 SCHEMA_VERSION = 1
 
 BADGE_LABEL = "inspect-evals lint"
@@ -29,12 +41,6 @@ RULE_STATUS_ORDER = ("fail", "warn", "suppressed", "pass", "skip")
 The same order as ``inspect_evals_lint.RULE_STATUS_ORDER``. The publisher runs
 with the standard library only, so it cannot import the linter; it recomputes
 the linter's ``score`` with this copy and rejects a document where they differ.
-"""
-SUPPRESSED_PASSES_FROM = 3
-"""The inspect-evals-lint JSON schema version from which a suppressed rule counts as passing.
-
-Earlier reports counted it against the total. The publisher follows the
-version each report declares, so it agrees with whichever linter produced it.
 """
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -92,7 +98,7 @@ def summarise(lint_doc: dict[str, Any]) -> dict[str, Any]:
             counts[status] += 1
 
     version = lint_doc.get("schema_version")
-    suppressed_passes = type(version) is int and version >= SUPPRESSED_PASSES_FROM
+    suppressed_passes = type(version) is int and version in POLICIES[POLICY_V2]
 
     def scored(counts: dict[str, int]) -> dict[str, Any]:
         applicable = (
@@ -207,16 +213,30 @@ def _table_cell(text: str) -> str:
     return html.escape(" ".join(text.split())).replace("|", "\\|")
 
 
+def policy_for(lint_schema_version: int) -> str:
+    """The scoring policy for reports in the given inspect-evals-lint JSON schema version."""
+    for policy, versions in POLICIES.items():
+        if lint_schema_version in versions:
+            return policy
+    raise ValueError(f"No scoring policy for lint schema version {lint_schema_version}")
+
+
+SUPPRESSED_RULE_TEXT = {
+    POLICY_V1: "Suppressed checks count against the total.",
+    POLICY_V2: "Suppressed checks count as passing.",
+}
+
+
 def render_summary_markdown(
-    results: list[EntryResult], badge_base_url: str | None
+    results: list[EntryResult], badge_base_url: str | None, policy: str = POLICY_V1
 ) -> str:
     lines = [
         "# Register lint results",
         "",
         "Static checks from [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) run against each register entry's upstream repository at its pinned commit. "
-        "Score is passing/applicable checks. Warnings pass, and skipped checks are not applicable. "
-        "Since inspect-evals-lint JSON schema 3, suppressed checks count as passing; earlier reports count them against the total. "
-        "Either way the number suppressed is shown beside the score.",
+        "Score is passing/applicable checks under the "
+        f"`{policy}` policy. Warnings pass, and skipped checks are not applicable. "
+        f"{SUPPRESSED_RULE_TEXT[policy]} The number suppressed is shown beside the score when any rule was suppressed.",
         "",
         "| Eval | Status | Score | Structure | Code quality | Tests | Best practices | Security | Commit |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -283,5 +303,8 @@ def write_outputs(
         },
     )
     (output_dir / "README.md").write_text(
-        render_summary_markdown(results, badge_base_url), encoding="utf-8"
+        render_summary_markdown(
+            results, badge_base_url, provenance.get("lint", {}).get("policy", POLICY_V1)
+        ),
+        encoding="utf-8",
     )

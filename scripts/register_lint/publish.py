@@ -16,7 +16,7 @@ from typing import Any
 from .report import (
     CATEGORY_LABELS,
     COMMIT_RE,
-    POLICY,
+    POLICIES,
     REGISTRY_URL,
     SCHEMA_VERSION,
     STATUS_KEYS,
@@ -81,6 +81,9 @@ def validate_lint(value: Any) -> dict[str, Any]:
     """
     if not isinstance(value, dict) or not isinstance(value.get("packages"), list):
         raise ValueError("Expected a lint report")
+    version = value.get("schema_version")
+    if type(version) is not int or not any(version in v for v in POLICIES.values()):
+        raise ValueError("Unsupported lint schema version")
     for package in value["packages"]:
         if not isinstance(package, dict):
             raise ValueError("Expected a package report")
@@ -128,7 +131,7 @@ def validate_document(doc: Any) -> tuple[list[EntryResult], dict[str, Any]]:
         not isinstance(policy, dict)
         or set(policy) != {"version", "preset", "policy"}
         or policy["preset"] != "register"
-        or policy["policy"] != POLICY
+        or policy["policy"] not in POLICIES
         or not isinstance(policy["version"], str)
         or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", policy["version"])
     ):
@@ -158,7 +161,10 @@ def validate_document(doc: Any) -> tuple[list[EntryResult], dict[str, Any]]:
             if entry["lint_version"] != policy["version"]:
                 raise ValueError("Inconsistent lint version")
             # Recompute the public counts from validated checks.
-            score = summarise(validate_lint(entry["lint"]))
+            lint = validate_lint(entry["lint"])
+            if lint["schema_version"] not in POLICIES[policy["policy"]]:
+                raise ValueError("Lint schema version does not match the policy")
+            score = summarise(lint)
             if score != entry["score"]:
                 raise ValueError("Inconsistent lint counts")
             entry = {**entry, "score": score}

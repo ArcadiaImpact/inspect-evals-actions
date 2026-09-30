@@ -14,6 +14,7 @@ from scripts.register_lint.report import (
     EntryResult,
     badge,
     badges_for,
+    policy_for,
     render_summary_markdown,
     summarise,
     write_outputs,
@@ -377,6 +378,18 @@ class TestSuppressedBesideTheScore:
                 schema_version=3,
             )
         )
-        text = render_summary_markdown([make_result(score=score)], None)
+        text = render_summary_markdown([make_result(score=score)], None, "register-v2")
         assert "| alpha | linted | 2/2 · 1 suppressed | 1/1 | - | 1/1 · 1 suppressed |" in text
-        assert "suppressed checks count as passing" in text
+        assert "Suppressed checks count as passing" in text
+
+    def test_summary_page_states_the_register_v1_rule(self):
+        text = render_summary_markdown([make_result()], None, "register-v1")
+        assert "Suppressed checks count against the total" in text
+
+    @pytest.mark.parametrize(("version", "policy"), [(1, "register-v1"), (2, "register-v1"), (3, "register-v2")])
+    def test_policy_for_lint_schema(self, version, policy):
+        assert policy_for(version) == policy
+
+    def test_policy_for_an_unknown_schema_is_an_error(self):
+        with pytest.raises(ValueError):
+            policy_for(4)
