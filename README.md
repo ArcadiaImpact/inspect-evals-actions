@@ -36,7 +36,7 @@ Replace `<id>` with the register directory name to embed a badge:
 
 Category badges use `file_structure.json`, `code_quality.json`, `tests.json`, `best_practices.json` and `security.json` in the same directory. Badges describe the last collected registered commit. The docs table also checks whether the registration has changed or the result is more than seven days old.
 
-The publisher accepts the `security` category introduced by inspect-evals-lint JSON schema version 2. Older reports without security checks remain supported and show `no checks` on that badge. Deploy this consumer update and the inspect_evals dashboard update before upgrading the linter pin. The register service's artifact and summary formats remain at version 1; the nested lint report has its own version.
+The pinned linter writes JSON schema version 2, which adds the `security` category. Older reports without security checks remain supported and show `no checks` on that badge. The register service's artifact and summary formats remain at version 1; the nested lint report has its own version.
 
 ### Local validation
 
