@@ -11,7 +11,19 @@ from pathlib import Path
 from typing import Any
 
 REGISTRY_URL = "https://github.com/UKGovernmentBEIS/inspect_evals"
-POLICY = "register-v1"
+POLICY_V1 = "register-v1"
+POLICY_V2 = "register-v2"
+POLICIES: dict[str, frozenset[int]] = {
+    POLICY_V1: frozenset({1, 2}),
+    POLICY_V2: frozenset({3}),
+}
+"""Scoring policy id to the inspect-evals-lint JSON schema versions scored under it.
+
+``register-v1`` counts suppressed rules against the total; ``register-v2``
+counts them as passing. The policy is part of the published contract: a
+consumer of ``summary.json`` branches on it rather than on the nested lint
+report versions, which only appear in ``results/<id>.json``.
+"""
 SCHEMA_VERSION = 1
 
 BADGE_LABEL = "inspect-evals lint"
@@ -85,11 +97,16 @@ def summarise(lint_doc: dict[str, Any]) -> dict[str, Any]:
             counts = by_category.setdefault(category, dict.fromkeys(STATUS_KEYS, 0))
             counts[status] += 1
 
+    version = lint_doc.get("schema_version")
+    suppressed_passes = type(version) is int and version in POLICIES[POLICY_V2]
+
     def scored(counts: dict[str, int]) -> dict[str, Any]:
         applicable = (
             counts["pass"] + counts["fail"] + counts["warn"] + counts["suppressed"]
         )
         passing = counts["pass"] + counts["warn"]
+        if suppressed_passes:
+            passing += counts["suppressed"]
         return {
             **counts,
             "applicable": applicable,
@@ -138,9 +155,17 @@ def badge(
     return {
         "schemaVersion": 1,
         "label": label,
-        "message": f"{score['passing']}/{score['applicable']}",
+        "message": score_text(score),
         "color": color,
     }
+
+
+def score_text(score: dict[str, Any]) -> str:
+    """``16/17``, or ``16/17 · 2 suppressed`` when rules were suppressed."""
+    text = f"{score['passing']}/{score['applicable']}"
+    if score.get("suppressed"):
+        text += f" · {score['suppressed']} suppressed"
+    return text
 
 
 UNAVAILABLE_MESSAGES = {
@@ -188,28 +213,40 @@ def _table_cell(text: str) -> str:
     return html.escape(" ".join(text.split())).replace("|", "\\|")
 
 
+def policy_for(lint_schema_version: int) -> str:
+    """The scoring policy for reports in the given inspect-evals-lint JSON schema version."""
+    for policy, versions in POLICIES.items():
+        if lint_schema_version in versions:
+            return policy
+    raise ValueError(f"No scoring policy for lint schema version {lint_schema_version}")
+
+
+SUPPRESSED_RULE_TEXT = {
+    POLICY_V1: "Suppressed checks count against the total.",
+    POLICY_V2: "Suppressed checks count as passing.",
+}
+
+
 def render_summary_markdown(
-    results: list[EntryResult], badge_base_url: str | None
+    results: list[EntryResult], badge_base_url: str | None, policy: str = POLICY_V1
 ) -> str:
     lines = [
         "# Register lint results",
         "",
         "Static checks from [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) run against each register entry's upstream repository at its pinned commit. "
-        "Score is passing/applicable checks; warnings pass, suppressed checks do not, skipped checks are not applicable.",
+        "Score is passing/applicable checks under the "
+        f"`{policy}` policy. Warnings pass, and skipped checks are not applicable. "
+        f"{SUPPRESSED_RULE_TEXT[policy]} The number suppressed is shown beside the score when any rule was suppressed.",
         "",
         "| Eval | Status | Score | Structure | Code quality | Tests | Best practices | Security | Commit |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in sorted(results, key=lambda r: r.id):
         if r.status == "linted" and r.score:
-            cells = [f"{r.score['passing']}/{r.score['applicable']}"]
+            cells = [score_text(r.score)]
             for category in CATEGORY_LABELS:
                 c = r.score["by_category"].get(category)
-                cells.append(
-                    f"{c['passing']}/{c['applicable']}"
-                    if c and c["applicable"]
-                    else "-"
-                )
+                cells.append(score_text(c) if c and c["applicable"] else "-")
             status = "linted"
         else:
             cells = ["-"] * (1 + len(CATEGORY_LABELS))
@@ -266,5 +303,8 @@ def write_outputs(
         },
     )
     (output_dir / "README.md").write_text(
-        render_summary_markdown(results, badge_base_url), encoding="utf-8"
+        render_summary_markdown(
+            results, badge_base_url, provenance.get("lint", {}).get("policy", POLICY_V1)
+        ),
+        encoding="utf-8",
     )

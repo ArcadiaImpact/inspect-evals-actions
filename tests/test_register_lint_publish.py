@@ -20,8 +20,10 @@ from scripts.register_lint.collect import (
     linter_version,
 )
 from scripts.register_lint.publish import publish, validate_document
+from scripts.register_lint.collect import lint_policy
 from scripts.register_lint.report import (
-    POLICY,
+    POLICY_V1,
+    POLICY_V2,
     REGISTRY_URL,
     RULE_STATUS_ORDER,
     EntryResult,
@@ -80,7 +82,7 @@ def artifact(tmp_path):
         "schema_version": 1,
         "registry": {"repository_url": REGISTRY_URL, "commit": SHA},
         "runner_commit": SHA,
-        "lint": {"version": "0.1.1", "preset": "register", "policy": POLICY},
+        "lint": {"version": "0.1.1", "preset": "register", "policy": POLICY_V1},
         "generated_at": "2026-09-17T00:00:00+00:00",
         "entries": [asdict(result)],
     }
@@ -141,6 +143,38 @@ def test_publication_accepts_security_reports_and_publishes_badge(artifact, tmp_
         "| alpha | linted | 1/2 | 1/1 | - | - | - | 0/1 |"
         in (output / "README.md").read_text()
     )
+
+
+def test_publication_counts_suppressed_as_passing_for_lint_schema_3(artifact, tmp_path):
+    directory, doc = artifact
+    doc["lint"]["policy"] = POLICY_V2
+    entry = doc["entries"][0]
+    entry["lint"]["schema_version"] = 3
+    entry["lint"]["packages"][0]["diagnostics"][0].update(
+        severity="error", status="suppressed"
+    )
+    entry["score"] = summarise(entry["lint"])
+    assert (entry["score"]["passing"], entry["score"]["applicable"]) == (2, 2)
+    (directory / "results.json").write_text(json.dumps(doc))
+    output = tmp_path / "public"
+    publish(directory, output, "https://example.com/results")
+    badge = json.loads((output / "badges/alpha/lint.json").read_text())
+    assert badge["message"] == "2/2 · 1 suppressed"
+    assert badge["color"] == "brightgreen"
+
+
+def test_publication_rejects_a_schema_3_score_that_counts_suppressed_against(
+    artifact, tmp_path
+):
+    directory, doc = artifact
+    entry = doc["entries"][0]
+    entry["lint"]["packages"][0]["diagnostics"][0].update(status="suppressed")
+    entry["score"] = summarise(entry["lint"])  # schema 1: suppressed counts against
+    entry["lint"]["schema_version"] = 3
+    doc["lint"]["policy"] = POLICY_V2
+    (directory / "results.json").write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="Inconsistent lint counts"):
+        publish(directory, tmp_path / "public", "https://example.com/results")
 
 
 @pytest.mark.parametrize(
@@ -312,10 +346,22 @@ def test_linter_score_and_publisher_summary_agree(tmp_path):
     (package / "alpha.py").write_text(
         "from inspect_ai.dataset import Sample\nSample(input='x')\nSample(input='y')\n"
     )
-    (package / ".noautolint").write_text("readme\n")
+    (package / "suppressed.py").write_text(
+        "from inspect_ai.dataset import Sample\n"
+        "Sample(input='z')  # inspect-evals-lint: ignore[sample_ids] -- fixture\n"
+    )
+    (package / "private.py").write_text(
+        "from inspect_ai.model._model import x  # inspect-evals-lint: ignore[private_api_imports] -- fixture\n"
+    )
     doc, _ = lint_task_paths(tmp_path, ["src/alpha/alpha.py"])
     assert doc["score"] == summarise(doc)
     assert doc["score"]["fail"] >= 1
+    assert doc["score"]["suppressed"] >= 1
+    counted = doc["score"]["pass"] + doc["score"]["warn"]
+    if doc["schema_version"] >= 3:
+        counted += doc["score"]["suppressed"]
+    assert doc["score"]["passing"] == counted
+    assert lint_policy() == (POLICY_V2 if doc["schema_version"] >= 3 else POLICY_V1)
     assert tuple(inspect_evals_lint.RULE_STATUS_ORDER) == RULE_STATUS_ORDER
 
 
@@ -359,3 +405,51 @@ def test_publisher_has_no_upstream_checkout_or_cross_repo_token():
     assert "repository" not in checkouts[0]["with"]
     assert checkouts[0]["with"]["persist-credentials"] is False
     assert "secrets." not in json.dumps(workflow)
+
+
+@pytest.mark.parametrize("version", [None, True, "3", 3.0, 0, 4])
+def test_unsupported_lint_schema_versions_are_rejected(artifact, tmp_path, version):
+    directory, doc = artifact
+    lint = doc["entries"][0]["lint"]
+    if version is None:
+        del lint["schema_version"]
+    else:
+        lint["schema_version"] = version
+    (directory / "results.json").write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="Unsupported lint schema version"):
+        publish(directory, tmp_path / "public", "https://example.com/results")
+
+
+@pytest.mark.parametrize(
+    ("policy", "version"), [(POLICY_V1, 3), (POLICY_V2, 2), (POLICY_V2, 1)]
+)
+def test_the_policy_must_match_every_report_s_schema(artifact, tmp_path, policy, version):
+    directory, doc = artifact
+    doc["lint"]["policy"] = policy
+    entry = doc["entries"][0]
+    entry["lint"]["schema_version"] = version
+    entry["score"] = summarise(entry["lint"])
+    (directory / "results.json").write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="does not match the policy"):
+        publish(directory, tmp_path / "public", "https://example.com/results")
+
+
+def test_an_unknown_policy_is_rejected(artifact, tmp_path):
+    directory, doc = artifact
+    doc["lint"]["policy"] = "register-v9"
+    (directory / "results.json").write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="Invalid lint policy"):
+        publish(directory, tmp_path / "public", "https://example.com/results")
+
+
+def test_summary_json_and_page_carry_the_policy_in_effect(artifact, tmp_path):
+    directory, doc = artifact
+    doc["lint"]["policy"] = POLICY_V2
+    entry = doc["entries"][0]
+    entry["lint"]["schema_version"] = 3
+    entry["score"] = summarise(entry["lint"])
+    (directory / "results.json").write_text(json.dumps(doc))
+    output = tmp_path / "public"
+    publish(directory, output, "https://example.com/results")
+    assert json.loads((output / "summary.json").read_text())["lint"]["policy"] == POLICY_V2
+    assert "Suppressed checks count as passing" in (output / "README.md").read_text()

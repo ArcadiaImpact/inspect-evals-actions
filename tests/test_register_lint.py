@@ -14,6 +14,7 @@ from scripts.register_lint.report import (
     EntryResult,
     badge,
     badges_for,
+    policy_for,
     render_summary_markdown,
     summarise,
     write_outputs,
@@ -152,7 +153,7 @@ class TestDeriveLayouts:
             derive_layouts(tmp_path, ["../etc/passwd"])
 
 
-def lint_doc(*results: tuple[str, str, str]) -> dict:
+def lint_doc(*results: tuple[str, str, str], schema_version: int = 1) -> dict:
     """A minimal inspect-evals-lint document: (rule, category, status) triples.
 
     ``pass`` and ``skip`` are outcomes; ``fail``, ``warn`` and ``suppressed`` are
@@ -163,7 +164,7 @@ def lint_doc(*results: tuple[str, str, str]) -> dict:
         for r, cat, s in results
     ]
     return {
-        "schema_version": 1,
+        "schema_version": schema_version,
         "packages": [
             {
                 "name": "x",
@@ -226,6 +227,22 @@ class TestSummarise:
         assert score["pass"] == 0
         assert score["passing"] == 0
 
+    @pytest.mark.parametrize(("version", "passing"), [(1, 1), (2, 1), (3, 3)])
+    def test_suppressed_counts_as_passing_from_lint_schema_3(self, version, passing):
+        score = summarise(
+            lint_doc(
+                ("readme", "file_structure", "pass"),
+                ("sample_ids", "best_practices", "suppressed"),
+                ("e2e_test", "tests", "suppressed"),
+                ("main_file", "file_structure", "fail"),
+                schema_version=version,
+            )
+        )
+        assert score["suppressed"] == 2
+        assert score["applicable"] == 4
+        assert score["passing"] == passing
+        assert score["by_category"]["tests"]["passing"] == (1 if version >= 3 else 0)
+
     def test_empty_document(self):
         score = summarise({"packages": []})
         assert score["applicable"] == 0
@@ -271,6 +288,7 @@ def make_result(status: str = "linted", **kwargs) -> EntryResult:
                 ("readme", "file_structure", "pass"), ("e2e_test", "tests", "fail")
             )
         )
+    score = kwargs.get("score", score)
     return EntryResult(
         id=kwargs.get("id", "alpha"),
         repository_url="https://github.com/o/r",
@@ -342,3 +360,36 @@ class TestOutputs:
             "clone_failed: git fetch failed: remote: Repository not found. fatal: repository &#x27;x\\|y&#x27; not found"
             in row
         )
+
+
+class TestSuppressedBesideTheScore:
+    def test_badge_names_the_suppressed_rules(self):
+        doc = badge("l", {"passing": 16, "applicable": 17, "suppressed": 2})
+        assert doc["message"] == "16/17 · 2 suppressed"
+
+    def test_badge_without_suppressions_is_unchanged(self):
+        assert badge("l", {"passing": 1, "applicable": 2, "suppressed": 0})["message"] == "1/2"
+
+    def test_summary_table_shows_the_suppressed_count(self):
+        score = summarise(
+            lint_doc(
+                ("readme", "file_structure", "pass"),
+                ("e2e_test", "tests", "suppressed"),
+                schema_version=3,
+            )
+        )
+        text = render_summary_markdown([make_result(score=score)], None, "register-v2")
+        assert "| alpha | linted | 2/2 · 1 suppressed | 1/1 | - | 1/1 · 1 suppressed |" in text
+        assert "Suppressed checks count as passing" in text
+
+    def test_summary_page_states_the_register_v1_rule(self):
+        text = render_summary_markdown([make_result()], None, "register-v1")
+        assert "Suppressed checks count against the total" in text
+
+    @pytest.mark.parametrize(("version", "policy"), [(1, "register-v1"), (2, "register-v1"), (3, "register-v2")])
+    def test_policy_for_lint_schema(self, version, policy):
+        assert policy_for(version) == policy
+
+    def test_policy_for_an_unknown_schema_is_an_error(self):
+        with pytest.raises(ValueError):
+            policy_for(4)

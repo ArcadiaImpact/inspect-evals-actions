@@ -25,7 +25,8 @@ import yaml
 from .publish import validate_id, validate_repository_url
 from .report import (
     COMMIT_RE,
-    POLICY,
+    policy_for,
+    score_text,
     REGISTRY_URL,
     SCHEMA_VERSION,
     EntryResult,
@@ -204,6 +205,13 @@ def linter_version() -> str:
     return inspect_evals_lint.__version__
 
 
+def lint_policy() -> str:
+    """The scoring policy for the installed linter, from the JSON schema version it writes."""
+    from inspect_evals_lint.render import SCHEMA_VERSION as LINT_SCHEMA_VERSION
+
+    return policy_for(LINT_SCHEMA_VERSION)
+
+
 def lint_task_paths(root: Path, task_paths: list[str]) -> tuple[dict[str, Any], str]:
     """Run inspect-evals-lint over the packages holding the task files; returns its JSON document and the linter version.
 
@@ -318,7 +326,7 @@ def main(argv: list[str] | None = None) -> int:
         for entry in entries:
             result = check_entry(entry, clone_root / entry.id, args.timeout)
             if result.status == "linted" and result.score:
-                note = f"{result.score['passing']}/{result.score['applicable']}"
+                note = score_text(result.score)
             else:
                 note = f"{result.status}: {result.error}"
             print(f"  {entry.id}: {note}", file=sys.stderr)
@@ -338,7 +346,7 @@ def main(argv: list[str] | None = None) -> int:
             "lint": {
                 "version": linter_version(),
                 "preset": "register",
-                "policy": POLICY,
+                "policy": lint_policy(),
             },
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "entries": [asdict(result) for result in results],
