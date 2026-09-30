@@ -293,10 +293,12 @@ class TestOutputs:
             "badges/alpha/code_quality.json",
             "badges/alpha/tests.json",
             "badges/alpha/best_practices.json",
+            "badges/alpha/security.json",
         }
         assert docs["badges/alpha/lint.json"]["message"] == "1/2"
         assert docs["badges/alpha/tests.json"]["color"] == "red"
         assert docs["badges/alpha/code_quality.json"]["message"] == "no checks"
+        assert docs["badges/alpha/security.json"]["message"] == "no checks"
 
     def test_badges_for_failed_entry(self):
         docs = badges_for(make_result("clone_failed", error="boom"))
@@ -320,7 +322,7 @@ class TestOutputs:
         assert "by_category" not in summary["entries"][0]["score"]
         assert summary["entries"][1]["status"] == "unsupported_layout"
         readme = (out / "README.md").read_text()
-        assert "| alpha | linted | 1/2 | 1/1 | - | 0/1 | - |" in readme
+        assert "| alpha | linted | 1/2 | 1/1 | - | 0/1 | - | - |" in readme
         assert "| beta | unsupported_layout: bare module |" in readme
         assert "https://example.com/register-lint/badges/<id>/lint.json" in readme
 
@@ -334,8 +336,8 @@ class TestOutputs:
         row = next(line for line in text.splitlines() if line.startswith("| alpha |"))
         assert "\n" not in row
         assert (
-            row.replace("\\|", "").count("|") == 9
-        )  # 8 columns, escaped pipe excluded
+            row.replace("\\|", "").count("|") == 10
+        )  # 9 columns, escaped pipe excluded
         assert (
             "clone_failed: git fetch failed: remote: Repository not found. fatal: repository &#x27;x\\|y&#x27; not found"
             in row

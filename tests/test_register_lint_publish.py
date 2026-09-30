@@ -105,6 +105,7 @@ def test_publication_generates_only_known_paths(artifact, tmp_path):
         "badges/alpha/code_quality.json",
         "badges/alpha/tests.json",
         "badges/alpha/best_practices.json",
+        "badges/alpha/security.json",
     }
     summary = json.loads((output / "summary.json").read_text())
     assert summary["registry"] == doc["registry"]
@@ -112,6 +113,34 @@ def test_publication_generates_only_known_paths(artifact, tmp_path):
     assert summary["entries"][0]["task_paths"] == ["src/alpha/task.py"]
     assert summary["entries"][0]["checked_at"] == doc["entries"][0]["checked_at"]
     assert summary["entries"][0]["score"]["passing"] == 1
+
+
+def test_publication_accepts_security_reports_and_publishes_badge(artifact, tmp_path):
+    directory, doc = artifact
+    entry = doc["entries"][0]
+    entry["lint"]["schema_version"] = 2
+    finding = entry["lint"]["packages"][0]["diagnostics"][0]
+    finding.update(
+        rule="sandbox_privileges",
+        code="IESC001",
+        category="security",
+        message="Service 'default' privileged: runs with elevated container privileges",
+        file="src/alpha/compose.yaml",
+    )
+    entry["score"] = summarise(entry["lint"])
+    (directory / "results.json").write_text(json.dumps(doc))
+    output = tmp_path / "public"
+    publish(directory, output, "https://example.com/results")
+    badge = json.loads((output / "badges/alpha/security.json").read_text())
+    assert badge["label"] == "lint: security"
+    assert badge["message"] == "0/1"
+    assert badge["color"] == "red"
+    summary = json.loads((output / "summary.json").read_text())
+    assert summary["entries"][0]["by_category"]["security"]["fail"] == 1
+    assert (
+        "| alpha | linted | 1/2 | 1/1 | - | - | - | 0/1 |"
+        in (output / "README.md").read_text()
+    )
 
 
 @pytest.mark.parametrize(

@@ -20,6 +20,7 @@ CATEGORY_LABELS = {
     "code_quality": "lint: code quality",
     "tests": "lint: tests",
     "best_practices": "lint: best practices",
+    "security": "lint: security",
 }
 STATUS_KEYS = ("pass", "fail", "warn", "skip", "suppressed")
 RULE_STATUS_ORDER = ("fail", "warn", "suppressed", "pass", "skip")
@@ -196,8 +197,8 @@ def render_summary_markdown(
         "Static checks from [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) run against each register entry's upstream repository at its pinned commit. "
         "Score is passing/applicable checks; warnings pass, suppressed checks do not, skipped checks are not applicable.",
         "",
-        "| Eval | Status | Score | Structure | Code quality | Tests | Best practices | Commit |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Eval | Status | Score | Structure | Code quality | Tests | Best practices | Security | Commit |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in sorted(results, key=lambda r: r.id):
         if r.status == "linted" and r.score:
@@ -211,7 +212,7 @@ def render_summary_markdown(
                 )
             status = "linted"
         else:
-            cells = ["-"] * 5
+            cells = ["-"] * (1 + len(CATEGORY_LABELS))
             status = f"{r.status}: {_table_cell(r.error)}" if r.error else r.status
         commit = f"[`{r.commit[:7]}`]({r.repository_url}/tree/{r.commit})"
         lines.append(f"| {r.id} | {status} | " + " | ".join(cells) + f" | {commit} |")
@@ -220,7 +221,7 @@ def render_summary_markdown(
             "",
             "## Embedding a badge",
             "",
-            "Replace `<id>` with the register entry id; `lint.json` may be swapped for `file_structure.json`, `code_quality.json`, `tests.json` or `best_practices.json`.",
+            "Replace `<id>` with the register entry id; `lint.json` may be swapped for `file_structure.json`, `code_quality.json`, `tests.json`, `best_practices.json` or `security.json`.",
             "",
             "```markdown",
             f"![inspect-evals lint](https://img.shields.io/endpoint?url={badge_base_url}/badges/<id>/lint.json)",
