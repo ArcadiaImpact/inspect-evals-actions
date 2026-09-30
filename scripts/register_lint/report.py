@@ -30,6 +30,12 @@ The same order as ``inspect_evals_lint.RULE_STATUS_ORDER``. The publisher runs
 with the standard library only, so it cannot import the linter; it recomputes
 the linter's ``score`` with this copy and rejects a document where they differ.
 """
+SUPPRESSED_PASSES_FROM = 3
+"""The inspect-evals-lint JSON schema version from which a suppressed rule counts as passing.
+
+Earlier reports counted it against the total. The publisher follows the
+version each report declares, so it agrees with whichever linter produced it.
+"""
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # Badge colours: full marks bright green, then green, yellow and red at these ratios.
@@ -85,11 +91,16 @@ def summarise(lint_doc: dict[str, Any]) -> dict[str, Any]:
             counts = by_category.setdefault(category, dict.fromkeys(STATUS_KEYS, 0))
             counts[status] += 1
 
+    version = lint_doc.get("schema_version")
+    suppressed_passes = type(version) is int and version >= SUPPRESSED_PASSES_FROM
+
     def scored(counts: dict[str, int]) -> dict[str, Any]:
         applicable = (
             counts["pass"] + counts["fail"] + counts["warn"] + counts["suppressed"]
         )
         passing = counts["pass"] + counts["warn"]
+        if suppressed_passes:
+            passing += counts["suppressed"]
         return {
             **counts,
             "applicable": applicable,
@@ -138,9 +149,17 @@ def badge(
     return {
         "schemaVersion": 1,
         "label": label,
-        "message": f"{score['passing']}/{score['applicable']}",
+        "message": score_text(score),
         "color": color,
     }
+
+
+def score_text(score: dict[str, Any]) -> str:
+    """``16/17``, or ``16/17 · 2 suppressed`` when rules were suppressed."""
+    text = f"{score['passing']}/{score['applicable']}"
+    if score.get("suppressed"):
+        text += f" · {score['suppressed']} suppressed"
+    return text
 
 
 UNAVAILABLE_MESSAGES = {
@@ -195,21 +214,19 @@ def render_summary_markdown(
         "# Register lint results",
         "",
         "Static checks from [inspect-evals-lint](https://github.com/Generality-Labs/inspect-evals-lint) run against each register entry's upstream repository at its pinned commit. "
-        "Score is passing/applicable checks; warnings pass, suppressed checks do not, skipped checks are not applicable.",
+        "Score is passing/applicable checks. Warnings pass, and skipped checks are not applicable. "
+        "Since inspect-evals-lint JSON schema 3, suppressed checks count as passing; earlier reports count them against the total. "
+        "Either way the number suppressed is shown beside the score.",
         "",
         "| Eval | Status | Score | Structure | Code quality | Tests | Best practices | Security | Commit |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in sorted(results, key=lambda r: r.id):
         if r.status == "linted" and r.score:
-            cells = [f"{r.score['passing']}/{r.score['applicable']}"]
+            cells = [score_text(r.score)]
             for category in CATEGORY_LABELS:
                 c = r.score["by_category"].get(category)
-                cells.append(
-                    f"{c['passing']}/{c['applicable']}"
-                    if c and c["applicable"]
-                    else "-"
-                )
+                cells.append(score_text(c) if c and c["applicable"] else "-")
             status = "linted"
         else:
             cells = ["-"] * (1 + len(CATEGORY_LABELS))

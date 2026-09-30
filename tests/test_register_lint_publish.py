@@ -143,6 +143,36 @@ def test_publication_accepts_security_reports_and_publishes_badge(artifact, tmp_
     )
 
 
+def test_publication_counts_suppressed_as_passing_for_lint_schema_3(artifact, tmp_path):
+    directory, doc = artifact
+    entry = doc["entries"][0]
+    entry["lint"]["schema_version"] = 3
+    entry["lint"]["packages"][0]["diagnostics"][0].update(
+        severity="error", status="suppressed"
+    )
+    entry["score"] = summarise(entry["lint"])
+    assert (entry["score"]["passing"], entry["score"]["applicable"]) == (2, 2)
+    (directory / "results.json").write_text(json.dumps(doc))
+    output = tmp_path / "public"
+    publish(directory, output, "https://example.com/results")
+    badge = json.loads((output / "badges/alpha/lint.json").read_text())
+    assert badge["message"] == "2/2 · 1 suppressed"
+    assert badge["color"] == "brightgreen"
+
+
+def test_publication_rejects_a_schema_3_score_that_counts_suppressed_against(
+    artifact, tmp_path
+):
+    directory, doc = artifact
+    entry = doc["entries"][0]
+    entry["lint"]["packages"][0]["diagnostics"][0].update(status="suppressed")
+    entry["score"] = summarise(entry["lint"])  # schema 1: suppressed counts against
+    entry["lint"]["schema_version"] = 3
+    (directory / "results.json").write_text(json.dumps(doc))
+    with pytest.raises(ValueError):
+        publish(directory, tmp_path / "public", "https://example.com/results")
+
+
 @pytest.mark.parametrize(
     "filename", ["README.md", ".github/workflows/attack.yml", ".git/config"]
 )
