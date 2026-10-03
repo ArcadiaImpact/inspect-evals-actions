@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "label": "lint: tests",
+  "message": "0/7",
+  "color": "red"
+}
