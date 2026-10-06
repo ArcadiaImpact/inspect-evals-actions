@@ -141,17 +141,29 @@ jobs:
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
 
-      - name: Set up Python for CI triage
-        if: ${{ always() && github.event_name == 'schedule' && (steps.summary.conclusion == 'failure' || steps.stale.conclusion == 'failure') }}
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.11"
-
       - name: Triage failed scheduled smoke test
         if: ${{ always() && github.event_name == 'schedule' && (steps.summary.conclusion == 'failure' || steps.stale.conclusion == 'failure') }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
           CI_TRIAGE_DISPATCH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
           CHECK_RESULTS: summary=${{ steps.summary.conclusion }},stale=${{ steps.stale.conclusion }}
         shell: bash
-        run: python scripts/dispatch_ci_triage.py "Smoke tests (Windows)" "Summarise smoke tests (Windows)"
+        run: |
+          set -euo pipefail
+          if [[ -z "$CI_TRIAGE_DISPATCH_TOKEN" ]]; then
+            echo "CI_TRIAGE_DISPATCH_TOKEN is required" >&2
+            exit 1
+          fi
+          JOB_URL=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name == "Summarise smoke tests (Windows)") | .html_url')
+          if [[ -z "$JOB_URL" ]]; then
+            echo "Could not find the smoke summary job URL" >&2
+            exit 1
+          fi
+          GH_TOKEN="$CI_TRIAGE_DISPATCH_TOKEN" gh api -X POST \
+            repos/Generality-Labs/bienehito-experimental/dispatches \
+            -f event_type=ci-failure-triage \
+            -f "client_payload[suite]=Smoke tests (Windows)" \
+            -f "client_payload[job_url]=$JOB_URL" \
+            -f "client_payload[failure_kind]=$CHECK_RESULTS" \
+            -f "client_payload[message]=Triage following failing test $JOB_URL"

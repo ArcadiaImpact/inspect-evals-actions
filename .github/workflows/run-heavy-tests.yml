@@ -387,18 +387,29 @@ jobs:
             '{"event_type": "heavy-test-failure", "client_payload": $payload}' | \
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
 
-      - name: Checkout CI triage dispatcher
-        if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: .ci-triage
-          persist-credentials: false
-
       - name: Triage failed scheduled heavy test
         if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
           CI_TRIAGE_DISPATCH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
           CHECK_RESULTS: tests=${{ steps.tests.outcome }},slow_check=${{ steps.slow_check.outcome }},docker_check=${{ steps.docker_check.outcome }}
-        run: python .ci-triage/scripts/dispatch_ci_triage.py "Heavy tests (Linux)" "Heavy tests (full suite)"
+        run: |
+          set -euo pipefail
+          if [[ -z "$CI_TRIAGE_DISPATCH_TOKEN" ]]; then
+            echo "CI_TRIAGE_DISPATCH_TOKEN is required" >&2
+            exit 1
+          fi
+          JOB_URL=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name == "Heavy tests (full suite)") | .html_url')
+          if [[ -z "$JOB_URL" ]]; then
+            echo "Could not find the heavy test job URL" >&2
+            exit 1
+          fi
+          GH_TOKEN="$CI_TRIAGE_DISPATCH_TOKEN" gh api -X POST \
+            repos/Generality-Labs/bienehito-experimental/dispatches \
+            -f event_type=ci-failure-triage \
+            -f "client_payload[suite]=Heavy tests (Linux)" \
+            -f "client_payload[job_url]=$JOB_URL" \
+            -f "client_payload[failure_kind]=$CHECK_RESULTS" \
+            -f "client_payload[message]=Triage following failing test $JOB_URL"
 
