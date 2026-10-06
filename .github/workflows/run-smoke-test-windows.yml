@@ -153,6 +153,5 @@ jobs:
           fi
           gh api -X POST \
             repos/Generality-Labs/bienehito-experimental/dispatches \
-            -f event_type=ci-failure-triage \
-            -f "client_payload[run_id]=$GITHUB_RUN_ID" \
-            -f "client_payload[job_name]=Summarise smoke tests (Windows)"
+            -f event_type=triage \
+            -f "client_payload[prompt]=Triage failing CI job 'Summarise smoke tests (Windows)' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
