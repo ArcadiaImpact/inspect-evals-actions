@@ -19,6 +19,7 @@ concurrency:
 # zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
 permissions:
   contents: read
+  actions: read # Read this run's jobs to link triage to the exact failed CI job.
 
 env:
   HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
@@ -156,3 +157,17 @@ jobs:
         if: ${{ always() && (steps.stale.conclusion == 'failure') }}
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
+
+      - name: Set up Python for CI triage
+        if: ${{ always() && github.event_name == 'schedule' && (steps.summary.conclusion == 'failure' || steps.stale.conclusion == 'failure') }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Triage failed scheduled smoke test
+        if: ${{ always() && github.event_name == 'schedule' && (steps.summary.conclusion == 'failure' || steps.stale.conclusion == 'failure') }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_TRIAGE_DISPATCH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
+          CHECK_RESULTS: summary=${{ steps.summary.conclusion }},stale=${{ steps.stale.conclusion }}
+        run: python scripts/dispatch_ci_triage.py "Smoke tests (Linux)" "Summarise smoke tests (Linux)"

@@ -19,6 +19,7 @@ concurrency:
 # zizmor: excessive-permissions (https://docs.zizmor.sh/audits/#excessive-permissions)
 permissions:
   contents: read
+  actions: read # Read this run's jobs to link triage to the exact failed CI job.
 
 env:
     HF_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
@@ -385,4 +386,19 @@ jobs:
           jq -n --argjson payload "$(cat dispatch_payload.json)" \
             '{"event_type": "heavy-test-failure", "client_payload": $payload}' | \
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
+
+      - name: Checkout CI triage dispatcher
+        if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: .ci-triage
+          persist-credentials: false
+
+      - name: Triage failed scheduled heavy test
+        if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_TRIAGE_DISPATCH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
+          CHECK_RESULTS: tests=${{ steps.tests.outcome }},slow_check=${{ steps.slow_check.outcome }},docker_check=${{ steps.docker_check.outcome }}
+        run: python .ci-triage/scripts/dispatch_ci_triage.py "Heavy tests (Linux)" "Heavy tests (full suite)"
 
