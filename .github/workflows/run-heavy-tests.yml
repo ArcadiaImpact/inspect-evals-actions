@@ -386,3 +386,18 @@ jobs:
             '{"event_type": "heavy-test-failure", "client_payload": $payload}' | \
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
 
+      - name: Triage failed scheduled heavy test
+        if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        env:
+          GH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "CI_TRIAGE_DISPATCH_TOKEN is required" >&2
+            exit 1
+          fi
+          gh api -X POST \
+            repos/Generality-Labs/bienehito-experimental/dispatches \
+            -f event_type=triage \
+            -f "client_payload[prompt]=Triage failing CI job 'Heavy tests (full suite)' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
+
