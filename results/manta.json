@@ -1,0 +1,876 @@
+{
+  "id": "manta",
+  "repository_url": "https://github.com/Mycelium-tools/manta_benchmark",
+  "commit": "1100a0f88110abe98fc08f2f43ac3a822818d4d3",
+  "task_paths": [
+    "src/manta/manta_eval.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-10-10T05:28:04+00:00",
+  "error": null,
+  "lint_version": "0.9.0",
+  "layouts": [
+    {
+      "eval_name": "manta",
+      "source_root": "src",
+      "import_prefix": ""
+    }
+  ],
+  "score": {
+    "pass": 3,
+    "fail": 19,
+    "warn": 1,
+    "skip": 5,
+    "suppressed": 0,
+    "applicable": 23,
+    "passing": 4,
+    "score": 0.1739,
+    "by_category": {
+      "best_practices": {
+        "pass": 0,
+        "fail": 6,
+        "warn": 0,
+        "skip": 3,
+        "suppressed": 0,
+        "applicable": 6,
+        "passing": 0,
+        "score": 0.0
+      },
+      "code_quality": {
+        "pass": 1,
+        "fail": 4,
+        "warn": 0,
+        "skip": 0,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 1,
+        "score": 0.2
+      },
+      "file_structure": {
+        "pass": 2,
+        "fail": 2,
+        "warn": 1,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 5,
+        "passing": 3,
+        "score": 0.6
+      },
+      "security": {
+        "pass": 0,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 0,
+        "passing": 0,
+        "score": null
+      },
+      "tests": {
+        "pass": 0,
+        "fail": 7,
+        "warn": 0,
+        "skip": 0,
+        "suppressed": 0,
+        "applicable": 7,
+        "passing": 0,
+        "score": 0.0
+      }
+    }
+  },
+  "lint": {
+    "schema_version": 2,
+    "version": "0.9.0",
+    "passed": false,
+    "summary": {
+      "pass": 3,
+      "fail": 25,
+      "warn": 1,
+      "skip": 9,
+      "suppressed": 0
+    },
+    "score": {
+      "pass": 3,
+      "fail": 19,
+      "warn": 1,
+      "skip": 5,
+      "suppressed": 0,
+      "applicable": 23,
+      "passing": 4,
+      "score": 0.1739,
+      "by_category": {
+        "best_practices": {
+          "pass": 0,
+          "fail": 6,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 0,
+          "score": 0.0
+        },
+        "code_quality": {
+          "pass": 1,
+          "fail": 4,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 1,
+          "score": 0.2
+        },
+        "file_structure": {
+          "pass": 2,
+          "fail": 2,
+          "warn": 1,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 5,
+          "passing": 3,
+          "score": 0.6
+        },
+        "security": {
+          "pass": 0,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 0,
+          "passing": 0,
+          "score": null
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 0,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    "packages": [
+      {
+        "name": "manta",
+        "kind": "eval",
+        "passed": false,
+        "skipped": null,
+        "summary": {
+          "pass": 3,
+          "fail": 25,
+          "warn": 1,
+          "skip": 9,
+          "suppressed": 0
+        },
+        "score": {
+          "pass": 3,
+          "fail": 19,
+          "warn": 1,
+          "skip": 5,
+          "suppressed": 0,
+          "applicable": 23,
+          "passing": 4,
+          "score": 0.1739,
+          "by_category": {
+            "best_practices": {
+              "pass": 0,
+              "fail": 6,
+              "warn": 0,
+              "skip": 3,
+              "suppressed": 0,
+              "applicable": 6,
+              "passing": 0,
+              "score": 0.0
+            },
+            "code_quality": {
+              "pass": 1,
+              "fail": 4,
+              "warn": 0,
+              "skip": 0,
+              "suppressed": 0,
+              "applicable": 5,
+              "passing": 1,
+              "score": 0.2
+            },
+            "file_structure": {
+              "pass": 2,
+              "fail": 2,
+              "warn": 1,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 5,
+              "passing": 3,
+              "score": 0.6
+            },
+            "security": {
+              "pass": 0,
+              "fail": 0,
+              "warn": 0,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 0,
+              "passing": 0,
+              "score": null
+            },
+            "tests": {
+              "pass": 0,
+              "fail": 7,
+              "warn": 0,
+              "skip": 0,
+              "suppressed": 0,
+              "applicable": 7,
+              "passing": 0,
+              "score": 0.0
+            }
+          }
+        },
+        "rules": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "status": "warn",
+            "diagnostics": [
+              0
+            ]
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "status": "fail",
+            "diagnostics": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "status": "fail",
+            "diagnostics": [
+              7
+            ]
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "status": "fail",
+            "diagnostics": [
+              8
+            ]
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "status": "fail",
+            "diagnostics": [
+              9
+            ]
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "fail",
+            "diagnostics": [
+              10
+            ]
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "status": "fail",
+            "diagnostics": [
+              11,
+              12
+            ]
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              13
+            ]
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              14
+            ]
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              15
+            ]
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              16
+            ]
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              17
+            ]
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              18
+            ]
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              19
+            ]
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              20
+            ]
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              21
+            ]
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              22
+            ]
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              23
+            ]
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              24
+            ]
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "fail",
+            "diagnostics": [
+              25
+            ]
+          },
+          {
+            "rule": "sandbox_privileges",
+            "code": "IESC001",
+            "category": "security",
+            "status": "skip",
+            "diagnostics": []
+          }
+        ],
+        "outcomes": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/manta"
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout"
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists"
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found"
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No suppression comments"
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found"
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found"
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No eval.yaml to read a GPU requirement from"
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No Dockerfile found"
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No filter_duplicate_ids() calls found"
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No drop_known_broken() calls found"
+          },
+          {
+            "rule": "sandbox_privileges",
+            "code": "IESC001",
+            "category": "security",
+            "status": "skip",
+            "message": "No compose files found"
+          }
+        ],
+        "diagnostics": [
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in manta_eval.py rather than manta.py or tasks.py",
+            "file": "src/manta/manta_eval.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to manta.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_test5'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_test5` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_5turn'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_5turn` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_10turn'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_10turn` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_10turn_persistent'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_10turn_persistent` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_10turn_test3'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_10turn_test3` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'manta_agentic_5turn'",
+            "file": "src/manta/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .manta_eval import manta_agentic_5turn` and list it in __all__"
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "Evaluation not registered",
+            "file": "pyproject.toml",
+            "line": null,
+            "column": null,
+            "hint": "add to pyproject.toml: [project.entry-points.inspect_ai]\nmanta = \"manta\""
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "severity": "error",
+            "status": "fail",
+            "message": "Import 'dotenv' (package: dotenv) is not declared in pyproject.toml",
+            "file": "src/manta/manta_eval.py",
+            "line": 51,
+            "column": 1,
+            "hint": "add it to [project].dependencies, or to an optional-dependencies extra if only some configurations need it"
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "Missing test directory: tests/manta (or test files directly under tests/)",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/manta",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "severity": "error",
+            "status": "fail",
+            "message": "Could not parse file: invalid non-printable character U+FEFF (<unknown>, line 1)",
+            "file": "src/manta/manta_scorer.py",
+            "line": 1,
+            "column": null,
+            "hint": null
+          }
+        ]
+      }
+    ]
+  }
+}
