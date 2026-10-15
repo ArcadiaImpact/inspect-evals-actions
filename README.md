@@ -9,6 +9,12 @@ It is designed to:
 
 Evaluation tests are maintained in Inspect Evals. This repository contains the workflow helpers and tests for those helpers.
 
+## Nightly CI failure triage
+
+Scheduled Linux and Windows smoke and heavy-test failures dispatch a `triage` event to [`Generality-Labs/bienehito-experimental`](https://github.com/Generality-Labs/bienehito-experimental). The event carries a generic `prompt` naming the failing job and workflow run URL. That repository's agentic workflow finds the job and then updates or creates a tracking issue. Existing Slack and `inspect_evals` failure notifications continue to run.
+
+Maintainers must add the `CI_TRIAGE_DISPATCH_TOKEN` Actions secret to this repository. It should be a fine-grained personal access token limited to `Generality-Labs/bienehito-experimental` with **Contents: read and write**, so the workflow can send `repository_dispatch` to that private repository. The receiving `triage` workflow must be on its default branch. Manual test runs do not send triage events.
+
 ---
 
 ## Register lint service

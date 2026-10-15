@@ -156,3 +156,18 @@ jobs:
         if: ${{ always() && (steps.stale.conclusion == 'failure') }}
         run: |
           ./scripts/send_to_slack.sh stale_skips.txt "$SLACK_WEBHOOK_URL"
+
+      - name: Triage failed scheduled smoke test
+        if: ${{ always() && github.event_name == 'schedule' && (steps.summary.conclusion == 'failure' || steps.stale.conclusion == 'failure') }}
+        env:
+          GH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "CI_TRIAGE_DISPATCH_TOKEN is required" >&2
+            exit 1
+          fi
+          gh api -X POST \
+            repos/Generality-Labs/bienehito-experimental/dispatches \
+            -f event_type=triage \
+            -f "client_payload[prompt]=Triage failing CI job 'Summarise smoke tests (Linux)' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
