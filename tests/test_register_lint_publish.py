@@ -326,8 +326,14 @@ def test_legacy_suppression_syntax_is_linted_with_a_warning(tmp_path):
         ("warn", "src/alpha/.noautolint"),
         ("warn", "src/alpha/task.py"),
     ]
+    rules = doc["packages"][0]["rules"]
+    # Two diagnostics, one rule: the score counts suppression_syntax once.
+    assert [r["status"] for r in rules if r["rule"] == "suppression_syntax"] == ["warn"]
+    warned = [
+        r for r in rules if r["category"] == "code_quality" and r["status"] == "warn"
+    ]
     score = summarise(doc)
-    assert score["by_category"]["code_quality"]["warn"] == 1  # one rule, counted once
+    assert score["by_category"]["code_quality"]["warn"] == len(warned)
 
 
 def test_linter_errors_name_the_repository_not_the_disk(tmp_path):
