@@ -242,4 +242,4 @@ jobs:
           gh api -X POST \
             repos/Generality-Labs/bienehito-experimental/dispatches \
             -f event_type=triage \
-            -f "client_payload[prompt]=Triage failing CI job 'Heavy tests (full suite) - Windows' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
+            -f "client_payload[prompt]=Triage failing nightly CI job 'Heavy tests (full suite) - Windows' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
