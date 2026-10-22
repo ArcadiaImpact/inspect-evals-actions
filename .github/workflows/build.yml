@@ -387,6 +387,10 @@ jobs:
           #                wheel links point at; without them pip falls back to the
           #                CUDA wheels on PyPI); {archive,security}.ubuntu.com:80 (apt);
           #                conda.anaconda.org (conda envs, e.g. mle_bench/mlrc_bench)
+          #   SWE-Lancer monolith (ic_swe setup_expensify.yml): nodejs.org and
+          #     iojs.org (nvm's node and io.js mirrors), registry.npmjs.org
+          #     (npm install). The runner does not install Node. The container
+          #     reads the Expensify .nvmrc already in the image.
           #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
           #     *.blob.core.windows.net — openaipublic (browse_comp, gpqa, healthbench,
           #       mgsm, simpleqa) + HF Xet's rotating Azure content shards
@@ -416,13 +420,16 @@ jobs:
             github-cloud.githubusercontent.com:443
             github.com:443
             huggingface.co:443
+            iojs.org:443
             *.blob.core.windows.net:443
+            nodejs.org:443
             pkg-containers.githubusercontent.com:443
             production.cloudfront.docker.com:443
             pypi.org:443
             qasper-dataset.s3.us-west-2.amazonaws.com:443
             raw.githubusercontent.com:443
             registry-1.docker.io:443
+            registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             releases.astral.sh:443
             s3.amazonaws.com:443
