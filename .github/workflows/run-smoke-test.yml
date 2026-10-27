@@ -119,6 +119,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_AUTOMATIC_FIX_TOKEN }}
         run: |
+          set -euo pipefail
+          # Denied Hugging Face access needs the terms accepted, not a code fix.
+          # Dispatch only when some task has an unexpected error.
+          if ! grep -q "is not considered" smoke_output.log; then
+            echo "No unexpected errors; skipping fix dispatch"
+            exit 0
+          fi
+
           # Extract failing task names from the log. Descriptor format
           # emitted by tools/run_evals.py is:
           #   "eval N (EVAL_ID) task M of K (TASK_NAME)"
