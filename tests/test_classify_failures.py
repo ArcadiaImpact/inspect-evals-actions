@@ -49,14 +49,44 @@ def test_plain_failure_is_other() -> None:
     ]
 
 
-def test_passed_and_setup_reports_ignored() -> None:
+def test_passed_and_skipped_reports_ignored() -> None:
     lines = [
         _report("t::passed", outcome="passed"),
-        _report("t::setup", when="setup"),
-        _report("t::teardown", when="teardown"),
-        json.dumps({"$report_type": "CollectReport", "nodeid": "t", "outcome": "failed"}),
+        _report("t::setup_ok", when="setup", outcome="passed"),
+        _report("t::skipped", when="setup", outcome="skipped"),
+        json.dumps({"$report_type": "CollectReport", "nodeid": "t", "outcome": "passed"}),
+        json.dumps({"$report_type": "SomethingElse", "nodeid": "t", "outcome": "failed"}),
     ]
     assert classify(lines) == {"access_denied": [], "other_failures": []}
+
+
+def test_failed_setup_and_teardown_are_other() -> None:
+    lines = [
+        _report("t::setup", when="setup", longrepr={"reprcrash": {"message": "fixture"}}),
+        _report("t::teardown", when="teardown", longrepr="td"),
+    ]
+    assert classify(lines)["other_failures"] == [
+        {"node_id": "t::setup", "error_summary": "fixture"},
+        {"node_id": "t::teardown", "error_summary": "td"},
+    ]
+
+
+def test_failed_collect_report_is_other() -> None:
+    line = json.dumps(
+        {"$report_type": "CollectReport", "nodeid": "tests/bad.py", "outcome": "failed", "longrepr": "ImportError"}
+    )
+    assert classify([line]) == {
+        "access_denied": [],
+        "other_failures": [{"node_id": "tests/bad.py", "error_summary": "ImportError"}],
+    }
+
+
+def test_tagged_call_failure_still_access_denied() -> None:
+    line = _report("t::g", when="call", user_properties=[["hf_access_denied", "o/n"]])
+    assert classify([line]) == {
+        "access_denied": [{"node_id": "t::g", "repo_id": "o/n"}],
+        "other_failures": [],
+    }
 
 
 def test_malformed_lines_ignored() -> None:

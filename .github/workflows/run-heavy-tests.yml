@@ -182,7 +182,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: inspect-evals-actions
-          sparse-checkout: scripts/heavy
+          sparse-checkout: scripts/heavy/
+          sparse-checkout-cone-mode: false
           persist-credentials: false
 
       - name: Classify failures (Hugging Face access denied vs other)
@@ -428,7 +429,7 @@ jobs:
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
 
       - name: Triage failed scheduled heavy test
-        if: ${{ always() && github.event_name == 'schedule' && ((steps.tests.outcome == 'failure' && steps.classify.outputs.other_count != '0') || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        if: ${{ always() && github.event_name == 'schedule' && ((steps.tests.outcome == 'failure' && (steps.classify.outputs.other_count != '0' || steps.classify.outputs.access_denied_count == '0')) || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
         env:
           GH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
         run: |

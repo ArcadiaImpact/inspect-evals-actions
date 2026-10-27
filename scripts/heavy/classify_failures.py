@@ -19,7 +19,7 @@ SUMMARY_LIMIT = 500
 def _error_summary(report: dict[str, Any]) -> str:
     longrepr = report.get("longrepr") or ""
     if isinstance(longrepr, dict):
-        longrepr = longrepr.get("reprcrash", {}).get("message", "")
+        longrepr = (longrepr.get("reprcrash") or {}).get("message", "")
     return str(longrepr)[:SUMMARY_LIMIT]
 
 
@@ -41,8 +41,7 @@ def classify(lines: Iterable[str]) -> dict[str, list[dict[str, str]]]:
         if not isinstance(report, dict):
             continue
         if (
-            report.get("$report_type") != "TestReport"
-            or report.get("when") != "call"
+            report.get("$report_type") not in ("TestReport", "CollectReport")
             or report.get("outcome") != "failed"
         ):
             continue
