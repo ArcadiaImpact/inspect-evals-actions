@@ -31,6 +31,12 @@ a_priori_expected=$(grep "Skipping eval" "$log_file" | sed -nE "$extract_task_na
 timeouts=$(grep "Timed out:" "$log_file" | sed -nE "$extract_task_name" || true)
 unexpected_errors=$(grep "is not considered" "$log_file" | sed -nE "$extract_task_name" || true)
 
+# Emitted by tools/run_evals.py when REQUIRE_HF_ACCESS=1 and a dataset denies access:
+#   "Hugging Face access denied on <descriptor>: dataset REPO_ID (accept the terms at URL)"
+# or "...: dataset unknown" when the repo id could not be parsed. The line sits
+# inside a logging line, so match the substring.
+access_denied_lines=$(grep "Hugging Face access denied on" "$log_file" || true)
+
 n_total=$(echo "$total" | grep -c . || true)
 n_total=${n_total:-0}
 n_success=$(echo "$successes" | grep -c . || true)
@@ -45,6 +51,8 @@ n_timeouts=$(echo "$timeouts" | grep -c . || true)
 n_timeouts=${n_timeouts:-0}
 n_unexpected=$(echo "$unexpected_errors" | grep -c . || true)
 n_unexpected=${n_unexpected:-0}
+n_access_denied=$(echo "$access_denied_lines" | grep -c . || true)
+n_access_denied=${n_access_denied:-0}
 
 summary=$(
 	cat <<EOF
@@ -56,6 +64,7 @@ summary=$(
     - Expected skips: $n_skipped
     - Timeouts: $n_timeouts
     - Unexpected errors: $n_unexpected
+    - Hugging Face access denied: $n_access_denied
 EOF
 )
 
@@ -69,10 +78,25 @@ if [ "$n_unexpected" -gt 0 ]; then
 	summary+="$bullet_list"
 fi
 
-echo "$summary"
+if [ "$n_access_denied" -gt 0 ]; then
+	access_list=""
+	while IFS= read -r line; do
+		task=$(echo "$line" | sed -nE "$extract_task_name")
+		repo_id=$(echo "$line" | sed -nE 's/.*: dataset ([^ ]+).*/\1/p')
+		if [ -n "$repo_id" ] && [ "$repo_id" != "unknown" ]; then
+			access_list+=$'- '"$task"$': https://huggingface.co/datasets/'"$repo_id"$'\n'
+		else
+			access_list+=$'- '"$task"$': dataset unknown\n'
+		fi
+	done <<<"$access_denied_lines"
 
-# Unexpected errors implies a failure
-if [ "$n_unexpected" -gt 0 ]; then
-	exit 1
+	summary+=$'\n\n*Hugging Face access denied (accept the terms; no code fix):*\n'
+	summary+="$access_list"
 fi
 
+echo "$summary"
+
+# Unexpected errors or denied dataset access imply a failure
+if [ "$n_unexpected" -gt 0 ] || [ "$n_access_denied" -gt 0 ]; then
+	exit 1
+fi
