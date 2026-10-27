@@ -401,3 +401,87 @@ jobs:
             -f event_type=triage \
             -f "client_payload[prompt]=Triage failing nightly CI job 'Heavy tests (full suite)' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
 
+  isolated-heavy-tests:
+    # The isolated evals (packages/<eval>/ in inspect_evals) have dependencies
+    # that conflict with the root environment, so heavy-tests ignores them and
+    # they run here in their own tox envs. build.yml runs these envs on every PR
+    # but without slow tests, dataset downloads or secrets.
+    name: Heavy tests (isolated evals)
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 180
+    env:
+      RUN_SLOW_TESTS: yes
+      RUN_DATASET_DOWNLOAD_TESTS: yes
+      # cve_bench requires Python >= 3.12.
+      UV_PYTHON: "3.12"
+    steps:
+      - name: Checkout inspect_evals repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: UKGovernmentBEIS/inspect_evals
+          ref: ${{ inputs.inspect_evals_ref || '' }}
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      - name: Cache uv downloads
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.12-isolated-${{ hashFiles('packages/*/uv.lock', 'packages/*/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.12-isolated-
+            ${{ runner.os }}-uv-3.12-
+
+      - name: Install tox (locked dev group; no project build)
+        run: uv sync --frozen --only-group dev --no-install-project
+
+      - name: Run isolated eval tests via tox
+        id: tests
+        # One tox call per env so the failed envs can be listed in the Slack message.
+        # tox.ini passes RUN_SLOW_TESTS, RUN_DATASET_DOWNLOAD_TESTS, HF_TOKEN and
+        # KAGGLE_* through to each env.
+        run: |
+          failed=()
+          for env in kernelbench novelty_bench livebench mle_bench cve_bench bold abstention_bench; do
+            uv run --no-sync tox -e "$env" || failed+=("$env")
+          done
+          echo "failed_envs=${failed[*]}" >> "$GITHUB_OUTPUT"
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "Failed tox envs: ${failed[*]}" >&2
+            exit 1
+          fi
+
+      - name: Notify Slack on scheduled failure
+        if: ${{ always() && steps.tests.outcome == 'failure' && github.event_name == 'schedule' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          FAILED_ENVS: ${{ steps.tests.outputs.failed_envs }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          payload=$(jq -n --arg envs "$FAILED_ENVS" --arg url "$RUN_URL" \
+            '{text: ("⚠️ Heavy Tests (isolated evals) failed: " + $envs + " - <" + $url + "|View run details>")}')
+          curl -sS -X POST -H 'Content-type: application/json' -d "$payload" "$SLACK_WEBHOOK_URL"
+
+      - name: Triage failed scheduled heavy test
+        if: ${{ always() && steps.tests.outcome == 'failure' && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "CI_TRIAGE_DISPATCH_TOKEN is required" >&2
+            exit 1
+          fi
+          gh api -X POST \
+            repos/Generality-Labs/bienehito-experimental/dispatches \
+            -f event_type=triage \
+            -f "client_payload[prompt]=Triage failing nightly CI job 'Heavy tests (isolated evals)' in https://github.com/ArcadiaImpact/inspect-evals-actions/actions/runs/$GITHUB_RUN_ID"
+
