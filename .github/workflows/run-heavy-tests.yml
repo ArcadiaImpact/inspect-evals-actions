@@ -454,6 +454,9 @@ jobs:
     env:
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
+      # Fail, rather than skip, tests that the CI HF_TOKEN cannot access
+      # (pytest-inspect-evals strict mode). tox.ini passes it to each env.
+      REQUIRE_HF_ACCESS: "1"
       # cve_bench requires Python >= 3.12.
       UV_PYTHON: "3.12"
     steps:
