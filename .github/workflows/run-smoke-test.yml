@@ -119,7 +119,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.INSPECT_EVALS_AUTOMATIC_FIX_TOKEN }}
         run: |
-          set -euo pipefail
+          # No pipefail: head -10 closes the pipe early and would SIGPIPE grep on large logs.
+          set -eu
           # Denied Hugging Face access needs the terms accepted, not a code fix.
           # Dispatch only when some task has an unexpected error.
           if ! grep -q "is not considered" smoke_output.log; then
