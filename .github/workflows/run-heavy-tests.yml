@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest-16-cores
     timeout-minutes: 180
     env:
+      REQUIRE_HF_ACCESS: "1"
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
       TRACE_DOCKER_BUILDS: yes
@@ -176,6 +177,49 @@ jobs:
               print('All Docker-using tests are correctly marked with @pytest.mark.docker.')
           PY
 
+      - name: Checkout inspect-evals-actions scripts
+        if: always()
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: inspect-evals-actions
+          sparse-checkout: scripts/heavy
+          persist-credentials: false
+
+      - name: Classify failures (Hugging Face access denied vs other)
+        id: classify
+        if: always()
+        shell: python
+        run: |
+          import json
+          import os
+          import subprocess
+          import sys
+          import uuid
+
+          result = subprocess.run(
+              [
+                  sys.executable,
+                  "inspect-evals-actions/scripts/heavy/classify_failures.py",
+                  "pytest-report.jsonl",
+              ],
+              check=True,
+              capture_output=True,
+              text=True,
+          )
+          classified = json.loads(result.stdout)
+          denied = classified["access_denied"]
+          lines = "\n".join(
+              f"{d['repo_id']} https://huggingface.co/datasets/{d['repo_id']}"
+              if d["repo_id"]
+              else f"unknown ({d['node_id']})"
+              for d in denied
+          )
+          delimiter = f"EOF_{uuid.uuid4().hex}"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"access_denied_count={len(denied)}\n")
+              out.write(f"other_count={len(classified['other_failures'])}\n")
+              out.write(f"access_denied_lines<<{delimiter}\n{lines}\n{delimiter}\n")
+
       - name: Upload timing reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -192,6 +236,8 @@ jobs:
         if: ${{ always() && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') && github.event_name == 'schedule' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          ACCESS_DENIED_COUNT: ${{ steps.classify.outputs.access_denied_count }}
+          ACCESS_DENIED_LINES: ${{ steps.classify.outputs.access_denied_lines }}
         run: |
           python3 <<'PY' > slack_payload.json
           import json
@@ -201,7 +247,7 @@ jobs:
           # Parse test failures from pytest report
           failures_by_folder = defaultdict(list)
           total_failures = 0
-          
+
           try:
               with open('pytest-report.jsonl', 'r') as f:
                   for line in f:
@@ -251,6 +297,11 @@ jobs:
               lines.append(f"*Unmarked slow tests:* {unmarked_slow}")
           if unmarked_docker:
               lines.append(f"*Unmarked docker tests:* {unmarked_docker}")
+          access_denied_count = int(os.environ.get('ACCESS_DENIED_COUNT') or 0)
+          if access_denied_count:
+              lines.append("*Hugging Face access denied (accept the terms; no code fix):*")
+              for entry in os.environ.get('ACCESS_DENIED_LINES', '').splitlines():
+                  lines.append(f"  • {entry}")
           if not lines:
               lines.append("_Check run logs for details_")
 
@@ -279,10 +330,10 @@ jobs:
                   }
               ]
           }
-          
+
           print(json.dumps(payload))
           PY
-          
+
           curl -X POST -H 'Content-type: application/json' \
             -d @slack_payload.json \
             "$SLACK_WEBHOOK_URL"
@@ -296,34 +347,24 @@ jobs:
           import json
           import math
           import os
+          import subprocess
           import sys
 
           run_id = os.environ["GITHUB_RUN_ID"]
           run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{run_id}"
 
-          # --- Parse test failures from pytest-report.jsonl ---
-          test_failures = []
-          try:
-              with open("pytest-report.jsonl", "r") as f:
-                  for line in f:
-                      try:
-                          obj = json.loads(line)
-                      except Exception:
-                          continue
-                      if obj.get("$report_type") != "TestReport":
-                          continue
-                      if obj.get("when") != "call":
-                          continue
-                      if obj.get("outcome") == "failed":
-                          longrepr = obj.get("longrepr", "")
-                          if isinstance(longrepr, dict):
-                              longrepr = longrepr.get("reprcrash", {}).get("message", "")
-                          test_failures.append({
-                              "node_id": obj.get("nodeid", "unknown"),
-                              "error_summary": str(longrepr)[:500],
-                          })
-          except FileNotFoundError:
-              pass
+          # --- Test failures that are not Hugging Face access denials ---
+          result = subprocess.run(
+              [
+                  sys.executable,
+                  "inspect-evals-actions/scripts/heavy/classify_failures.py",
+                  "pytest-report.jsonl",
+              ],
+              check=True,
+              capture_output=True,
+              text=True,
+          )
+          test_failures = json.loads(result.stdout)["other_failures"]
 
           # --- Parse unmarked slow tests (format: "45.20s\tnodeid") ---
           slow_tests = []
@@ -387,7 +428,7 @@ jobs:
             gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
 
       - name: Triage failed scheduled heavy test
-        if: ${{ always() && github.event_name == 'schedule' && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
+        if: ${{ always() && github.event_name == 'schedule' && ((steps.tests.outcome == 'failure' && steps.classify.outputs.other_count != '0') || steps.slow_check.outcome == 'failure' || steps.docker_check.outcome == 'failure') }}
         env:
           GH_TOKEN: ${{ secrets.CI_TRIAGE_DISPATCH_TOKEN }}
         run: |
