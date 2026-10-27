@@ -8,6 +8,8 @@ on:
     paths:
       - scripts/register_lint/**
       - tests/test_register_lint*.py
+      - scripts/heavy/**
+      - tests/test_classify_failures.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
@@ -15,6 +17,8 @@ on:
     paths:
       - scripts/register_lint/**
       - tests/test_register_lint*.py
+      - scripts/heavy/**
+      - tests/test_classify_failures.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
