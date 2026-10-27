@@ -56,15 +56,18 @@ def test_access_denied_not_unexpected(tmp_path: Path) -> None:
     assert "Unexpected errors: 0" in result.stdout
 
 
-def test_unknown_dataset_is_listed_without_url(tmp_path: Path) -> None:
+@pytest.mark.parametrize("eol", ["\n", "\r\n"], ids=["lf", "crlf"])
+def test_unknown_dataset_is_listed_without_url(tmp_path: Path, eol: str) -> None:
     line = (
         "Hugging Face access denied on eval 2 (beta) task 1 of 1 (beta_task): "
         "dataset unknown"
     )
-    result = run_script(tmp_path, "Testing eval 2 (beta) task 1 of 1 (beta_task)\n" + line + "\n")
+    log = "Testing eval 2 (beta) task 1 of 1 (beta_task)" + eol + line + eol
+    result = run_script(tmp_path, log)
     assert result.returncode == 1
     assert "Hugging Face access denied: 1" in result.stdout
     assert "beta_task" in result.stdout
+    assert "huggingface.co" not in result.stdout
 
 
 def test_clean_log_passes(tmp_path: Path) -> None:

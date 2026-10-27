@@ -81,6 +81,7 @@ fi
 if [ "$n_access_denied" -gt 0 ]; then
 	access_list=""
 	while IFS= read -r line; do
+		line=${line%$'\r'}
 		task=$(echo "$line" | sed -nE "$extract_task_name")
 		repo_id=$(echo "$line" | sed -nE 's/.*: dataset ([^ ]+).*/\1/p')
 		if [ -n "$repo_id" ] && [ "$repo_id" != "unknown" ]; then
