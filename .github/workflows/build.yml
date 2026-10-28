@@ -112,7 +112,7 @@ jobs:
       # and block egress to an allowlist. The fork-PR path is Linux-only because
       # harden-runner can't enforce either on Windows.
       - name: Harden runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: block
           disable-sudo: true
@@ -256,7 +256,7 @@ jobs:
       # This job's egress is small and stable (packages + GitHub, no dataset
       # downloads), so it uses block mode with a tiny allowlist.
       - name: Harden runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           disable-sudo: true
           egress-policy: block
@@ -366,7 +366,7 @@ jobs:
       # so is incompatible with jlumbroso/free-disk-space, which requires sudo,
       # and has hence been removed as it's not necessary with the larger runners.
       - name: Harden runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: block
           disable-sudo: true
@@ -677,7 +677,7 @@ jobs:
     steps:
       # Defense-in-depth (incident 2026-06-09): see the test job for rationale.
       - name: Harden runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: block
           disable-sudo: true
