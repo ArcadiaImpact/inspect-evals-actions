@@ -12,6 +12,7 @@ on:
       - tests/test_classify_failures.py
       - scripts/smoke/**
       - tests/test_summarise_smoke_test_log.py
+      - tests/test_annotate_smoke_log.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
@@ -23,6 +24,7 @@ on:
       - tests/test_classify_failures.py
       - scripts/smoke/**
       - tests/test_summarise_smoke_test_log.py
+      - tests/test_annotate_smoke_log.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
