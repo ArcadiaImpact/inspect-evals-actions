@@ -150,6 +150,15 @@ jobs:
               }
             }' | gh api repos/UKGovernmentBEIS/inspect_evals/dispatches --input -
 
+      - name: Annotate run
+        # One error or warning per failing task on the run page, plus a
+        # job summary table. The summary step above decides pass or fail.
+        if: always()
+        run: |
+          python3 scripts/smoke/annotate_smoke_log.py \
+            smoke_output.log \
+            "Smoke Test Summary (Ubuntu)"
+
       - name: Find stale skips
         id: stale
         if: always()
