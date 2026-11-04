@@ -5,9 +5,13 @@ Tests at or above the report threshold and below the fail threshold are
 warnings. Tests at or above the fail threshold fail the check. Each test gets a
 ::warning or ::error workflow command, and a markdown table goes to
 $GITHUB_STEP_SUMMARY when it is set.
+
+Exit codes: 0 when no test reaches the fail threshold, 1 when one does, and 2
+when there is no report to read (for example because the test step never ran).
 """
 
 import argparse
+import html
 import json
 import math
 import os
@@ -59,7 +63,7 @@ def collect(
             obj = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if obj.get("$report_type") != "TestReport":
+        if not isinstance(obj, dict) or obj.get("$report_type") != "TestReport":
             continue
         if obj.get("when") != "call" or obj.get("outcome") == "skipped":
             continue
@@ -98,6 +102,18 @@ def annotations(slow_tests: SlowTests) -> list[str]:
     return lines
 
 
+def _summary_code(text: str) -> str:
+    """Format a node ID for a markdown table cell.
+
+    Parametrize IDs can contain backticks and pipes, which would end an inline
+    code span or split the cell, so use an HTML code element instead. Line
+    breaks are written as \\n so the row stays on one line.
+    """
+    escaped = html.escape(text).replace("|", "&#124;")
+    escaped = escaped.replace("\r", "\\r").replace("\n", "\\n")
+    return f"<code>{escaped}</code>"
+
+
 def step_summary(slow_tests: SlowTests, title: str) -> str:
     parts = [f"## {title}", ""]
     if not slow_tests.durations:
@@ -114,8 +130,13 @@ def step_summary(slow_tests: SlowTests, title: str) -> str:
         "| Result | Duration | Test |",
         "| --- | --- | --- |",
     ]
-    parts += [f"| Fail | {dur:.2f}s | `{nodeid}` |" for nodeid, dur in slow_tests.failures]
-    parts += [f"| Warning | {dur:.2f}s | `{nodeid}` |" for nodeid, dur in slow_tests.warnings]
+    parts += [
+        f"| Fail | {dur:.2f}s | {_summary_code(nodeid)} |" for nodeid, dur in slow_tests.failures
+    ]
+    parts += [
+        f"| Warning | {dur:.2f}s | {_summary_code(nodeid)} |"
+        for nodeid, dur in slow_tests.warnings
+    ]
     return "\n".join(parts) + "\n"
 
 
@@ -154,11 +175,19 @@ def main(argv: list[str] | None = None) -> int:
         report_threshold=_threshold("SLOW_TEST_REPORT_THRESHOLD", DEFAULT_REPORT_THRESHOLD),
         fail_threshold=_threshold("SLOW_TEST_FAIL_THRESHOLD", DEFAULT_FAIL_THRESHOLD),
     )
-    reports = sorted(args.reports_dir.glob("*.jsonl")) if args.reports_dir else args.report
+    # download-artifact puts each artifact in its own subdirectory, so search recursively.
+    reports = sorted(args.reports_dir.rglob("*.jsonl")) if args.reports_dir else args.report
+    missing = [report for report in reports if not report.is_file()]
+    if missing or not reports:
+        names = ", ".join(str(report) for report in missing) or f"*.jsonl under {args.reports_dir}"
+        message = f"No pytest report to check: {names} not found."
+        print(f"::error title={_escape_property('Slow test check')}::{_escape(message)}")
+        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary_path:
+            with open(summary_path, "a", encoding="utf-8") as summary:
+                summary.write(f"## {args.title}\n\n{message}\n")
+        return 2
     for report in reports:
-        if not report.exists():
-            print(f"Warning: {report} not found, skipping")
-            continue
         with open(report, encoding="utf-8") as f:
             collect(f, slow_tests, args.skip_marked_slow, args.include_huggingface)
 

@@ -1,6 +1,8 @@
 """Slow-test check over pytest report logs."""
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -99,8 +101,8 @@ def test_annotations_use_error_for_failures_and_warning_for_the_band() -> None:
 def test_step_summary_lists_both_bands() -> None:
     slow_tests = _collect([_report("tests/a.py::warn", 11.9), _report("tests/a.py::fail", 20.5)])
     summary = step_summary(slow_tests, "Heavy tests")
-    assert "| Fail | 20.50s | `tests/a.py::fail` |" in summary
-    assert "| Warning | 11.90s | `tests/a.py::warn` |" in summary
+    assert "| Fail | 20.50s | <code>tests/a.py::fail</code> |" in summary
+    assert "| Warning | 11.90s | <code>tests/a.py::warn</code> |" in summary
 
 
 def test_step_summary_when_nothing_is_slow() -> None:
@@ -148,3 +150,93 @@ def test_main_defaults_match_the_pr_check(monkeypatch: pytest.MonkeyPatch, tmp_p
     report = tmp_path / "pytest-report.jsonl"
     report.write_text(_report("tests/a.py::t", 59.0) + "\n")
     assert main(["--report", str(report)]) == 0
+
+
+def test_main_fails_at_the_default_fail_threshold(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    for name in ("SLOW_TEST_REPORT_THRESHOLD", "SLOW_TEST_FAIL_THRESHOLD", "GITHUB_STEP_SUMMARY"):
+        monkeypatch.delenv(name, raising=False)
+    report = tmp_path / "pytest-report.jsonl"
+    report.write_text(_report("tests/a.py::t", 60.0) + "\n")
+    assert main(["--report", str(report)]) == 1
+
+
+def test_reports_dir_is_searched_recursively(thresholds: Path, tmp_path: Path) -> None:
+    # download-artifact without a name puts each artifact in its own subdirectory.
+    nested = tmp_path / "reports" / "pytest-report-ubuntu-py3.11"
+    nested.mkdir(parents=True)
+    (nested / "pytest-report.jsonl").write_text(_report("tests/a.py::fail", 30.0) + "\n")
+    assert main(["--reports-dir", str(tmp_path / "reports")]) == 1
+
+
+def test_repeated_report_options_are_all_read(thresholds: Path, tmp_path: Path) -> None:
+    first, second = tmp_path / "one.jsonl", tmp_path / "two.jsonl"
+    first.write_text(_report("tests/a.py::warn", 11.0) + "\n")
+    second.write_text(_report("tests/a.py::fail", 21.0) + "\n")
+    warn_out = tmp_path / "warn.txt"
+    assert main(["--report", str(first), "--report", str(second), "--warn-output", str(warn_out)]) == 1
+    assert warn_out.read_text() == "11.00s\ttests/a.py::warn\n"
+
+
+def test_missing_report_is_an_error(
+    thresholds: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # The old inline heavy check crashed here, which kept Slack and triage firing
+    # when the test step never wrote a report.
+    fail_out = tmp_path / "fail.txt"
+    code = main(["--report", str(tmp_path / "missing.jsonl"), "--fail-output", str(fail_out)])
+    assert code == 2
+    assert "::error title=Slow test check::No pytest report to check" in capsys.readouterr().out
+    assert "No pytest report to check" in thresholds.read_text()
+    assert not fail_out.exists()
+
+
+def test_empty_reports_dir_is_an_error(thresholds: Path, tmp_path: Path) -> None:
+    (tmp_path / "reports").mkdir()
+    assert main(["--reports-dir", str(tmp_path / "reports")]) == 2
+
+
+def test_null_keywords_and_non_object_lines_are_tolerated() -> None:
+    line = json.dumps(
+        {
+            "$report_type": "TestReport",
+            "nodeid": "tests/a.py::t",
+            "when": "call",
+            "outcome": "passed",
+            "duration": 12.0,
+            "keywords": None,
+        }
+    )
+    slow_tests = _collect(["[]", "null", "3", line])
+    assert slow_tests.warnings == [("tests/a.py::t", 12.0)]
+
+
+def test_node_ids_with_markdown_and_command_characters_are_escaped() -> None:
+    nodeid = 'tests/a.py::t[```json\n{"a": "b|c"}\n``` 100%]'
+    slow_tests = _collect([_report(nodeid, 25.0)])
+
+    [annotation] = annotations(slow_tests)
+    assert "\n" not in annotation
+    assert "%0A" in annotation
+    assert "100%25" in annotation
+
+    [row] = [line for line in step_summary(slow_tests, "t").splitlines() if line.startswith("| Fail")]
+    assert row.count("|") == 4  # The pipe inside the node ID does not add a cell.
+    assert "```" in row
+    assert "&#124;" in row
+    assert "<code>" in row
+
+
+def test_script_runs_by_path(tmp_path: Path) -> None:
+    # The workflows run the file directly rather than importing it.
+    report = tmp_path / "pytest-report.jsonl"
+    report.write_text(_report("tests/a.py::fail", 30.0) + "\n")
+    script = Path(__file__).resolve().parents[1] / "scripts" / "build" / "check_slow_tests.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "--report", str(report)],
+        capture_output=True,
+        text=True,
+        env={"SLOW_TEST_REPORT_THRESHOLD": "10", "SLOW_TEST_FAIL_THRESHOLD": "20"},
+        check=False,
+    )
+    assert result.returncode == 1, result.stderr
+    assert "tests/a.py::fail [FAIL]" in result.stdout
