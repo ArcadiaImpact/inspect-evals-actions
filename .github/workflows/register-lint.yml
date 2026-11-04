@@ -13,6 +13,8 @@ on:
       - scripts/smoke/**
       - tests/test_summarise_smoke_test_log.py
       - tests/test_annotate_smoke_log.py
+      - scripts/build/**
+      - tests/test_check_slow_tests.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
@@ -25,6 +27,8 @@ on:
       - scripts/smoke/**
       - tests/test_summarise_smoke_test_log.py
       - tests/test_annotate_smoke_log.py
+      - scripts/build/**
+      - tests/test_check_slow_tests.py
       - .github/workflows/register-lint.yml
       - pyproject.toml
       - uv.lock
