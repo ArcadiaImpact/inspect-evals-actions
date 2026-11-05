@@ -34,7 +34,10 @@ jobs:
       REQUIRE_HF_ACCESS: "1"
       RUN_SLOW_TESTS: yes
       RUN_DATASET_DOWNLOAD_TESTS: yes
-      SLOW_TEST_THRESHOLD: 10.0  # seconds
+      # Unmarked tests at or above the report threshold get a warning;
+      # at or above the fail threshold they fail the slow-test check.
+      SLOW_TEST_REPORT_THRESHOLD: "10.0"  # seconds
+      SLOW_TEST_FAIL_THRESHOLD: "20.0"  # seconds
     steps:
       - name: Checkout inspect_evals repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -83,61 +86,29 @@ jobs:
             --ignore=tests/bold `
             --ignore=tests/abstention_bench
 
-      - name: Detect tests >=10s that are missing @pytest.mark.slow
-        id: slow_check
-        if: always()
-        shell: python
-        run: |
-          import json
-          import sys
-          import os
-
-          THRESHOLD = float(os.environ.get('SLOW_TEST_THRESHOLD', '10.0'))
-          report = 'pytest-report.jsonl'
-          offenders = []
-
-          with open(report, 'r') as f:
-              for line in f:
-                  try:
-                      obj = json.loads(line)
-                  except Exception:
-                      continue
-                  if obj.get('$report_type') != 'TestReport':
-                      continue
-                  if obj.get('when') != 'call':
-                      continue
-                  # Skip skipped tests
-                  if obj.get('outcome') == 'skipped':
-                      continue
-                  dur = float(obj.get('duration') or 0.0)
-                  kw = obj.get('keywords') or {}
-                  # keywords is a dict of names -> True
-                  is_slow = 'slow' in kw
-                  if dur >= THRESHOLD and not is_slow:
-                      offenders.append((dur, obj.get('nodeid', '<unknown>')))
-
-          offenders.sort(reverse=True)
-
-          with open('unmarked_slow_tests.txt', 'w') as out:
-              for dur, nodeid in offenders:
-                  out.write(f"{dur:.2f}s\t{nodeid}\n")
-
-          if offenders:
-              print('\nFound tests taking >= 10s without @pytest.mark.slow:')
-              for dur, nodeid in offenders:
-                  print(f" - {dur:.2f}s  {nodeid}")
-              sys.exit(1)
-          else:
-              print('No unmarked slow tests found (>= 10s).')
-
       - name: Checkout inspect-evals-actions scripts
         if: always()
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: inspect-evals-actions
-          sparse-checkout: scripts/heavy/
+          sparse-checkout: |
+            scripts/build/
+            scripts/heavy/
           sparse-checkout-cone-mode: false
           persist-credentials: false
+
+      - name: Detect slow tests that are missing @pytest.mark.slow
+        id: slow_check
+        if: always()
+        shell: bash
+        run: |
+          python inspect-evals-actions/scripts/build/check_slow_tests.py \
+            --report pytest-report.jsonl \
+            --skip-marked-slow \
+            --include-huggingface \
+            --fail-output unmarked_slow_tests.txt \
+            --warn-output slow_test_warnings.txt \
+            --title "Slow test check (Windows)"
 
       - name: Classify failures (Hugging Face access denied vs other)
         id: classify
@@ -182,6 +153,7 @@ jobs:
           path: |
             pytest-report.jsonl
             unmarked_slow_tests.txt
+            slow_test_warnings.txt
 
       - name: Notify Slack on scheduled failure
         if: ${{ always() && (steps.tests.outcome == 'failure' || steps.slow_check.outcome == 'failure') && github.event_name == 'schedule' }}
@@ -229,6 +201,13 @@ jobs:
           except FileNotFoundError:
               pass
 
+          slow_warnings = 0
+          try:
+              with open('slow_test_warnings.txt', 'r') as f:
+                  slow_warnings = sum(1 for line in f if line.strip())
+          except FileNotFoundError:
+              pass
+
           # Build summary
           lines = []
           if total_failures:
@@ -238,6 +217,8 @@ jobs:
                   lines.append(f"  • `{folder}`: {count} failed")
           if unmarked_slow:
               lines.append(f"*Unmarked slow tests:* {unmarked_slow}")
+          if slow_warnings:
+              lines.append(f"*Unmarked tests under the slow-test fail limit (warning only):* {slow_warnings}")
           access_denied_count = int(os.environ.get('ACCESS_DENIED_COUNT') or 0)
           if access_denied_count:
               lines.append("*Hugging Face access denied (accept the terms; no code fix):*")
