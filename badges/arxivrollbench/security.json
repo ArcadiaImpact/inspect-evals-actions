@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "label": "lint: security",
+  "message": "layout unsupported",
+  "color": "lightgrey"
+}

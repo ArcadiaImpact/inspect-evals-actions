@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "label": "lint: best practices",
+  "message": "layout unsupported",
+  "color": "lightgrey"
+}
