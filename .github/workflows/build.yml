@@ -654,6 +654,41 @@ jobs:
           if not has_slow and not has_isolated_slow:
               print('No slow tests found in changed paths - skipping targeted runs.')
           PY
+
+      - name: Check epoch overrides for changed evals
+        if: env.TEST_PATHS != ''
+        # No HF secrets here, so evals that use Hugging Face skip; the nightly smoke test covers them.
+        shell: bash
+        run: |
+          uv run python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          test_file = Path('tests/test_epoch_override.py')
+          if not test_file.is_file():
+              print('Epoch override test is absent in this revision; skipping.')
+              sys.exit(0)
+
+          selected_evals = [
+              Path(p).name for p in os.environ['TEST_PATHS'].split()
+              if (Path('src/inspect_evals') / Path(p).name / 'eval.yaml').is_file()
+          ]
+          if not selected_evals:
+              print('No evals in the selected test directories.')
+              sys.exit(0)
+          subprocess.run(
+              [
+                  'uv', 'run', 'pytest', str(test_file),
+                  '-n', '2', '-rA', '--durations=50',
+                  '--runslow', '--dataset-download',
+                  '--epoch-check-evals', ','.join(selected_evals),
+              ],
+              check=True,
+          )
+          PY
+
       - name: Run targeted tests
         if: env.HAS_SLOW_TESTS == 'true'
         # No HF/Kaggle secrets on the fork-PR path (incident 2026-06-09).
