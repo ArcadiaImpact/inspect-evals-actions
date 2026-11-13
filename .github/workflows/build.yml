@@ -393,6 +393,9 @@ jobs:
           #     iojs.org (nvm's node and io.js mirrors), registry.npmjs.org
           #     (npm install). The runner does not install Node. The container
           #     reads the Expensify .nvmrc already in the image.
+          #   Frontier-CS sandbox build: julialang-s3.julialang.org (the Julia
+          #     runtime tarball that the frontier_cs Dockerfile fetches with wget.
+          #     PySR needs Julia for the symbolic_regression research problems).
           #   datasets (which eval needs each, per inspect_evals/ASSETS.yaml):
           #     *.blob.core.windows.net — openaipublic (browse_comp, gpqa, healthbench,
           #       mgsm, simpleqa) + HF Xet's rotating Azure content shards
@@ -425,6 +428,7 @@ jobs:
             github.com:443
             huggingface.co:443
             iojs.org:443
+            julialang-s3.julialang.org:443
             *.blob.core.windows.net:443
             nodejs.org:443
             pkg-containers.githubusercontent.com:443
