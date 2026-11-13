@@ -5,10 +5,11 @@ name: Compatibility Matrix
 #
 # PR test runs are now Linux-only (and label-gated), and the run-heavy-tests*
 # scheduled workflows only exercise Python 3.11. That leaves OS x Python
-# compatibility — notably Windows x {3.12, 3.13} — and the clean-install smoke
-# with no scheduled coverage. This workflow runs the CHEAP test tiers (clean
-# install + the non-slow suite) across the full [linux, windows] x [3.11, 3.12,
-# 3.13] matrix nightly. Slow + dataset-download coverage stays in run-heavy-tests*.
+# compatibility — notably Windows x {3.12, 3.13, 3.14} — and the clean-install
+# smoke with no scheduled coverage. This workflow runs the CHEAP test tiers
+# (clean install + the non-slow suite) across the full [linux, windows] x [3.11,
+# 3.12, 3.13, 3.14] matrix nightly. Slow + dataset-download coverage stays in
+# run-heavy-tests*.
 #
 # No HF/Kaggle secrets: dataset-download tests are disabled here, so the matrix
 # stays fast/reliable and needs no auth.
@@ -41,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest-8-cores, windows-latest-8-cores]
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
@@ -93,7 +94,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest-8-cores, windows-latest-8-cores]
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     env:
       RUN_SLOW_TESTS: no
       RUN_DATASET_DOWNLOAD_TESTS: no # Note: dataset-download tests are disabled to keep the matrix fast and reliable
