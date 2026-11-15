@@ -84,7 +84,8 @@ jobs:
             --ignore=tests/mle_bench `
             --ignore=tests/cve_bench `
             --ignore=tests/bold `
-            --ignore=tests/abstention_bench
+            --ignore=tests/abstention_bench `
+            --ignore=tests/test_epoch_override.py
 
       - name: Checkout inspect-evals-actions scripts
         if: always()

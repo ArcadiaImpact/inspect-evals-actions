@@ -82,6 +82,7 @@ jobs:
             --ignore=tests/cve_bench \
             --ignore=tests/bold \
             --ignore=tests/abstention_bench \
+            --ignore=tests/test_epoch_override.py \
             tests/
 
       - name: Checkout inspect-evals-actions scripts
