@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 
 [[package]]
@@ -50,22 +50,22 @@ dev = [
     { name = "zizmor", specifier = "==1.30.1" },
 ]
 register-lint = [
-    { name = "inspect-evals-lint", specifier = "==0.12.0" },
+    { name = "inspect-evals-lint", specifier = "==0.13.0" },
     { name = "pytest", specifier = "==9.1.1" },
     { name = "pyyaml", specifier = "==6.0.3" },
 ]
 
 [[package]]
 name = "inspect-evals-lint"
-version = "0.12.0"
+version = "0.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyyaml" },
     { name = "rich" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/28/54/40758a95395747915b00d11be9a376fee01cc45623a0e0458d1e41b2c2b5/inspect_evals_lint-0.12.0.tar.gz", hash = "sha256:524062d1dee178d046e91cbd1052279b16a94d0f9d5243f55ceffd2b1d193ffd", size = 154080, upload-time = "2026-10-15T02:17:00.41Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/c1/25897f12625ca4462099b4ec50b3a5d793d75981c563e5cfc618364437e7/inspect_evals_lint-0.13.0.tar.gz", hash = "sha256:e3db1220299112b7ec0a4a34a5a6d9db934a5db0bb3ae11e3b0871cdd38d6072", size = 181033, upload-time = "2026-11-05T06:40:34.716Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/cb/861c6ac5f7ff08abf5c7a9a2a2c563e1ae30d44033e1d725a1131259aaab/inspect_evals_lint-0.12.0-py3-none-any.whl", hash = "sha256:a39caa18aecd48a45cdae156d6c8208b1f9fe6c70a3ebecfd6780adad254d472", size = 164749, upload-time = "2026-10-15T02:16:58.748Z" },
+    { url = "https://files.pythonhosted.org/packages/28/3d/ad580c955334eeecd512cbe16ec5c025c0b97d77f388c21c78305b183937/inspect_evals_lint-0.13.0-py3-none-any.whl", hash = "sha256:0c9e6d3858f97d532613bf2e3f545dd00ebcd5b4a28beb5d3f0a5dc0a601e674", size = 193753, upload-time = "2026-11-05T06:40:32.971Z" },
 ]
 
 [[package]]
