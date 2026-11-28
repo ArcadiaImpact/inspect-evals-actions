@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "label": "lint: security",
+  "message": "0/1",
+  "color": "red"
+}

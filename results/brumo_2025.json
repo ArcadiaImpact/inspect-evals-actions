@@ -1,0 +1,1190 @@
+{
+  "id": "brumo_2025",
+  "repository_url": "https://github.com/Mamiglia/inspect-matharena",
+  "commit": "04caa9484fd9d8b9dfb9a153ab1fcdc5dbe0e7ba",
+  "task_paths": [
+    "src/matharena/tasks/brumo.py"
+  ],
+  "status": "linted",
+  "checked_at": "2026-11-28T05:18:33+00:00",
+  "error": null,
+  "lint_version": "0.12.0",
+  "layouts": [
+    {
+      "eval_name": "tasks",
+      "source_root": "src/matharena",
+      "import_prefix": "matharena"
+    }
+  ],
+  "score": {
+    "pass": 10,
+    "fail": 9,
+    "warn": 1,
+    "skip": 17,
+    "suppressed": 0,
+    "applicable": 20,
+    "passing": 11,
+    "score": 0.55,
+    "by_category": {
+      "best_practices": {
+        "pass": 2,
+        "fail": 0,
+        "warn": 0,
+        "skip": 10,
+        "suppressed": 0,
+        "applicable": 2,
+        "passing": 2,
+        "score": 1.0
+      },
+      "code_quality": {
+        "pass": 4,
+        "fail": 0,
+        "warn": 0,
+        "skip": 3,
+        "suppressed": 0,
+        "applicable": 4,
+        "passing": 4,
+        "score": 1.0
+      },
+      "file_structure": {
+        "pass": 3,
+        "fail": 2,
+        "warn": 1,
+        "skip": 2,
+        "suppressed": 0,
+        "applicable": 6,
+        "passing": 4,
+        "score": 0.6667
+      },
+      "security": {
+        "pass": 1,
+        "fail": 0,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 1,
+        "passing": 1,
+        "score": 1.0
+      },
+      "tests": {
+        "pass": 0,
+        "fail": 7,
+        "warn": 0,
+        "skip": 1,
+        "suppressed": 0,
+        "applicable": 7,
+        "passing": 0,
+        "score": 0.0
+      }
+    }
+  },
+  "lint": {
+    "schema_version": 3,
+    "version": "0.12.0",
+    "passed": false,
+    "summary": {
+      "pass": 10,
+      "fail": 31,
+      "warn": 7,
+      "skip": 17,
+      "suppressed": 0
+    },
+    "score": {
+      "pass": 10,
+      "fail": 9,
+      "warn": 1,
+      "skip": 17,
+      "suppressed": 0,
+      "applicable": 20,
+      "passing": 11,
+      "score": 0.55,
+      "by_category": {
+        "best_practices": {
+          "pass": 2,
+          "fail": 0,
+          "warn": 0,
+          "skip": 10,
+          "suppressed": 0,
+          "applicable": 2,
+          "passing": 2,
+          "score": 1.0
+        },
+        "code_quality": {
+          "pass": 4,
+          "fail": 0,
+          "warn": 0,
+          "skip": 3,
+          "suppressed": 0,
+          "applicable": 4,
+          "passing": 4,
+          "score": 1.0
+        },
+        "file_structure": {
+          "pass": 3,
+          "fail": 2,
+          "warn": 1,
+          "skip": 2,
+          "suppressed": 0,
+          "applicable": 6,
+          "passing": 4,
+          "score": 0.6667
+        },
+        "security": {
+          "pass": 1,
+          "fail": 0,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 1,
+          "passing": 1,
+          "score": 1.0
+        },
+        "tests": {
+          "pass": 0,
+          "fail": 7,
+          "warn": 0,
+          "skip": 1,
+          "suppressed": 0,
+          "applicable": 7,
+          "passing": 0,
+          "score": 0.0
+        }
+      }
+    },
+    "packages": [
+      {
+        "name": "tasks",
+        "kind": "eval",
+        "passed": false,
+        "skipped": null,
+        "summary": {
+          "pass": 10,
+          "fail": 31,
+          "warn": 7,
+          "skip": 17,
+          "suppressed": 0
+        },
+        "score": {
+          "pass": 10,
+          "fail": 9,
+          "warn": 1,
+          "skip": 17,
+          "suppressed": 0,
+          "applicable": 20,
+          "passing": 11,
+          "score": 0.55,
+          "by_category": {
+            "best_practices": {
+              "pass": 2,
+              "fail": 0,
+              "warn": 0,
+              "skip": 10,
+              "suppressed": 0,
+              "applicable": 2,
+              "passing": 2,
+              "score": 1.0
+            },
+            "code_quality": {
+              "pass": 4,
+              "fail": 0,
+              "warn": 0,
+              "skip": 3,
+              "suppressed": 0,
+              "applicable": 4,
+              "passing": 4,
+              "score": 1.0
+            },
+            "file_structure": {
+              "pass": 3,
+              "fail": 2,
+              "warn": 1,
+              "skip": 2,
+              "suppressed": 0,
+              "applicable": 6,
+              "passing": 4,
+              "score": 0.6667
+            },
+            "security": {
+              "pass": 1,
+              "fail": 0,
+              "warn": 0,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 1,
+              "passing": 1,
+              "score": 1.0
+            },
+            "tests": {
+              "pass": 0,
+              "fail": 7,
+              "warn": 0,
+              "skip": 1,
+              "suppressed": 0,
+              "applicable": 7,
+              "passing": 0,
+              "score": 0.0
+            }
+          }
+        },
+        "rules": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "status": "warn",
+            "diagnostics": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "status": "fail",
+            "diagnostics": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29
+            ]
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "status": "fail",
+            "diagnostics": [
+              30
+            ]
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "readme_task_args",
+            "code": "IEFS007",
+            "category": "file_structure",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "readme_dependency_groups",
+            "code": "IEFS008",
+            "category": "file_structure",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "shared_code_extraction",
+            "code": "IECQ006",
+            "category": "code_quality",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "ruff_rules_enabled",
+            "code": "IECQ007",
+            "category": "code_quality",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              31
+            ]
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              32
+            ]
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              33
+            ]
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              34
+            ]
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              35
+            ]
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              36
+            ]
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "status": "fail",
+            "diagnostics": [
+              37
+            ]
+          },
+          {
+            "rule": "custom_metric_tests",
+            "code": "IETS008",
+            "category": "tests",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "status": "pass",
+            "diagnostics": []
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "shuffle_choices_seeded",
+            "code": "IEBP010",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "shuffle_seeded",
+            "code": "IEBP011",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "metric_epoch_safety",
+            "code": "IEBP014",
+            "category": "best_practices",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "sandbox_privileges",
+            "code": "IESC001",
+            "category": "security",
+            "status": "skip",
+            "diagnostics": []
+          },
+          {
+            "rule": "host_code_execution",
+            "code": "IESC002",
+            "category": "security",
+            "status": "pass",
+            "diagnostics": []
+          }
+        ],
+        "outcomes": [
+          {
+            "rule": "package_location",
+            "code": "IEFS001",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "Package located at src/matharena/tasks"
+          },
+          {
+            "rule": "eval_yaml",
+            "code": "IEFS005",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No eval.yaml; not required in this layout"
+          },
+          {
+            "rule": "readme",
+            "code": "IEFS006",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "README.md exists"
+          },
+          {
+            "rule": "readme_task_args",
+            "code": "IEFS007",
+            "category": "file_structure",
+            "status": "skip",
+            "message": "No -T arguments to tasks in this package in the README"
+          },
+          {
+            "rule": "readme_dependency_groups",
+            "code": "IEFS008",
+            "category": "file_structure",
+            "status": "pass",
+            "message": "All 1 extra(s) and group(s) in README commands exist"
+          },
+          {
+            "rule": "private_api_imports",
+            "code": "IECQ001",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No private API imports found"
+          },
+          {
+            "rule": "score_constants",
+            "code": "IECQ002",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "Score() calls appear to use constants or computed values"
+          },
+          {
+            "rule": "unscored_reason",
+            "code": "IECQ003",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "No Score.unscored() calls found"
+          },
+          {
+            "rule": "external_dependencies",
+            "code": "IECQ004",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No external dependencies detected beyond core requirements"
+          },
+          {
+            "rule": "suppression_syntax",
+            "code": "IECQ005",
+            "category": "code_quality",
+            "status": "pass",
+            "message": "No suppression comments"
+          },
+          {
+            "rule": "shared_code_extraction",
+            "code": "IECQ006",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "inspect_evals.utils.code.extract_code_block is not available: no helper package defines it and pyproject.toml does not depend on inspect-evals"
+          },
+          {
+            "rule": "ruff_rules_enabled",
+            "code": "IECQ007",
+            "category": "code_quality",
+            "status": "skip",
+            "message": "ruff is not installed alongside the linter or on PATH, so the ruff configuration cannot be resolved"
+          },
+          {
+            "rule": "custom_metric_tests",
+            "code": "IETS008",
+            "category": "tests",
+            "status": "skip",
+            "message": "No custom metrics found"
+          },
+          {
+            "rule": "get_model_location",
+            "code": "IEBP001",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "get_model() calls are properly inside @solver/@scorer/@agent decorated functions"
+          },
+          {
+            "rule": "model_role_resolution",
+            "code": "IEBP002",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No get_model(role=...) calls found"
+          },
+          {
+            "rule": "sample_ids",
+            "code": "IEBP003",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No Sample() or FieldSpec() calls found"
+          },
+          {
+            "rule": "task_overridable_defaults",
+            "code": "IEBP004",
+            "category": "best_practices",
+            "status": "pass",
+            "message": "Tasks provide defaults for overridable parameters"
+          },
+          {
+            "rule": "sandbox_image_pinning",
+            "code": "IEBP005",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No compose files found"
+          },
+          {
+            "rule": "gpu_sandbox_check",
+            "code": "IEBP006",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No eval.yaml to read a GPU requirement from"
+          },
+          {
+            "rule": "dockerfile_locking",
+            "code": "IEBP007",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No Dockerfile found"
+          },
+          {
+            "rule": "duplicate_filter_acknowledged",
+            "code": "IEBP008",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No filter_duplicate_ids() calls found"
+          },
+          {
+            "rule": "known_broken_reported",
+            "code": "IEBP009",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No drop_known_broken() calls found"
+          },
+          {
+            "rule": "shuffle_choices_seeded",
+            "code": "IEBP010",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No call passes shuffle_choices= or calls .shuffle_choices()"
+          },
+          {
+            "rule": "shuffle_seeded",
+            "code": "IEBP011",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No call passes shuffle= or calls .shuffle()"
+          },
+          {
+            "rule": "metric_epoch_safety",
+            "code": "IEBP014",
+            "category": "best_practices",
+            "status": "skip",
+            "message": "No @metric or @score_reducer functions found"
+          },
+          {
+            "rule": "sandbox_privileges",
+            "code": "IESC001",
+            "category": "security",
+            "status": "skip",
+            "message": "No compose files found"
+          },
+          {
+            "rule": "host_code_execution",
+            "code": "IESC002",
+            "category": "security",
+            "status": "pass",
+            "message": "No reportable code execution sinks in 8 host Python file(s)"
+          }
+        ],
+        "diagnostics": [
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in aime.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/aime.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in apex.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/apex.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in arxivmath.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/arxivmath.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in brumo.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/brumo.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in cmimc.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/cmimc.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in hmmt.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/hmmt.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "main_file",
+            "code": "IEFS002",
+            "category": "file_structure",
+            "severity": "warning",
+            "status": "warn",
+            "message": "@task functions are defined in smt.py rather than tasks.py or tasks.py",
+            "file": "src/matharena/tasks/smt.py",
+            "line": null,
+            "column": null,
+            "hint": "move them to tasks.py or tasks.py, the modules readers look in first"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'aime'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .aime import aime` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'aime_2024_I'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .aime import aime_2024_I` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'aime_2024_II'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .aime import aime_2024_II` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'aime_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .aime import aime_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'aime_2026'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .aime import aime_2026` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'apex'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .apex import apex` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'apex_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .apex import apex_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'apex_shortlist'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .apex import apex_shortlist` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_1225'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_1225` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_0126'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_0126` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_0226'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_0226` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_0326'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_0326` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_0426'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_0426` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'arxivmath_0526'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .arxivmath import arxivmath_0526` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'brumo_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .brumo import brumo_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'cmimc_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .cmimc import cmimc_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'hmmt'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .hmmt import hmmt` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'hmmt_feb_2024'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .hmmt import hmmt_feb_2024` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'hmmt_feb_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .hmmt import hmmt_feb_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'hmmt_nov_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .hmmt import hmmt_nov_2025` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'hmmt_feb_2026'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .hmmt import hmmt_feb_2026` and list it in __all__"
+          },
+          {
+            "rule": "init_exports",
+            "code": "IEFS003",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "__init__.py does not export the @task function 'smt_2025'",
+            "file": "src/matharena/tasks/__init__.py",
+            "line": null,
+            "column": null,
+            "hint": "add `from .smt import smt_2025` and list it in __all__"
+          },
+          {
+            "rule": "registry",
+            "code": "IEFS004",
+            "category": "file_structure",
+            "severity": "error",
+            "status": "fail",
+            "message": "Evaluation not registered",
+            "file": "pyproject.toml",
+            "line": null,
+            "column": null,
+            "hint": "add to pyproject.toml: [project.entry-points.inspect_ai]\ntasks = \"matharena.tasks\""
+          },
+          {
+            "rule": "tests_exist",
+            "code": "IETS001",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "Missing test directory: tests/tasks (or test files directly under tests/)",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "tests_init",
+            "code": "IETS002",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "e2e_test",
+            "code": "IETS003",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "record_to_sample_test",
+            "code": "IETS004",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_solver_tests",
+            "code": "IETS005",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_scorer_tests",
+            "code": "IETS006",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          },
+          {
+            "rule": "custom_tool_tests",
+            "code": "IETS007",
+            "category": "tests",
+            "severity": "error",
+            "status": "fail",
+            "message": "No test directory exists",
+            "file": "tests/tasks",
+            "line": null,
+            "column": null,
+            "hint": null
+          }
+        ]
+      }
+    ]
+  }
+}
